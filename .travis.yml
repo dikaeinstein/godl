@@ -1,0 +1,13 @@
+language: go
+go:
+- 1.11.x
+- master
+os:
+- linux
+- osx
+osx_image: xcode10.1
+dist: trusty
+install: true
+script:
+  - env GO111MODULE=on go build
+  - godl --help
