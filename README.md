@@ -2,6 +2,8 @@
 
 Godl is a CLI tool used to download and install go binary releases on mac.
 
+[![Build Status](https://travis-ci.com/dikaeinstein/godl.svg?branch=master)](https://travis-ci.com/dikaeinstein/godl)
+
 ## Installation
 
 ```go get -u https://github.com/dikaeinstein/godl```
