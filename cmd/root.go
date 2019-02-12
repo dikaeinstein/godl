@@ -124,7 +124,7 @@ func downloadGoBinary(archiveName, downloadPath string) {
 }
 
 func installGo(archivePath string) {
-	cm := exec.Command("tar", "-C", path.Join("/usr", "local", "test"), "-xzf", archivePath)
+	cm := exec.Command("tar", "-C", path.Join("/usr", "local"), "-xzf", archivePath)
 	handleShellCommand(cm)
 }
 
