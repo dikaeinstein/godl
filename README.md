@@ -14,6 +14,10 @@ If you've have setup your $GOPATH correctly, you should have `godl` command in y
 
 Run `godl --version` to verify.
 
+Run `godl --help` to get help and see available options
+
+Example: `godl go1.11.4.darwin-amd64.tar.gz ~/Downloads`
+
 ## Musings
 
 This tool is a direct conversion of my shell script to download and install go binary releases. So its a naive implementation that gets the job done 😎.
