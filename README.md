@@ -27,3 +27,7 @@ This tool is a direct conversion of my shell script to download and install go b
 The implementation of the tool could get better by taking advantage of
  the concurrency primitives of golang. Like using the `net/http` package to
  fetch the binary archive and stream the response to a goroutine in charge of extracting the tarball and installing it. Similar to this shell command: `curl -L [url] | tar -xfz [path/to/install/binary]`.
+
+### Contributing
+
+You can take a shot at the suggested improvements from the README. Also follow the convention from the `contribution.md`
