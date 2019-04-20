@@ -15,10 +15,8 @@
 package cmd
 
 import (
-	"bufio"
 	"errors"
 	"fmt"
-	"io"
 	"os"
 	"os/exec"
 	"path"
@@ -120,33 +118,28 @@ func downloadAndInstallGo(cmd *cobra.Command, args []string) {
 func downloadGoBinary(archiveName, downloadPath string) {
 	const HOST = "https://dl.google.com/go/"
 	cm := exec.Command("curl", "-L", HOST+archiveName, "-o", downloadPath)
-	handleShellCommand(cm)
+	fmt.Printf("Downloading go binary %v from %v\n", archiveName, HOST)
+	runCommand(cm)
+	fmt.Println("Download complete")
 }
 
 func installGo(archivePath string) {
 	cm := exec.Command("tar", "-C", path.Join("/usr", "local"), "-xzf", archivePath)
-	handleShellCommand(cm)
+	fmt.Println("Installing binary into /usr/local/go")
+	runCommand(cm)
+	fmt.Println("Installation Complete. Type `go version` to check installation")
 }
 
-func displayProgress(rc io.ReadCloser) {
-	input := bufio.NewScanner(rc)
-	input.Split(bufio.ScanBytes)
-	for input.Scan() {
-		fmt.Print(input.Text())
-	}
+func runCommand(c *exec.Cmd) {
+	c.Stdin = os.Stdin
+	c.Stdout = os.Stdout
+	c.Stderr = os.Stderr
+
+	must(c.Run())
 }
 
-func handleShellCommand(c *exec.Cmd) {
-	stderr, _ := c.StderrPipe()
-	err := c.Start()
+func must(err error) {
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-	go displayProgress(stderr)
-	err = c.Wait()
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		panic(err)
 	}
 }
