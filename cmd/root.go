@@ -15,12 +15,9 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"os"
-	"os/exec"
 	"path"
-	"strings"
 
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
@@ -31,25 +28,8 @@ var cfgFile string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "godl [go_archive] [path_to_save_archive]",
+	Use:   "godl COMMAND",
 	Short: "Godl is a CLI tool used to download and install go binary releases on mac",
-	Long: `
-Godl is a CLI tool used to download and install go binary releases on mac.
-It downloads the go binary archive specified from https://golang.org/dl/, saves it at specified
-path and unpacks it into /usr/local/. The downloaded archive can be found at specified download path
-or $HOME/Downloads by default.`,
-	Example: "godl go1.11.4.darwin-amd64.tar.gz ~/Downloads -r",
-	Version: "0.0.1",
-	Run:     downloadAndInstallGo,
-	Args: func(cmd *cobra.Command, args []string) error {
-		if len(args) < 1 {
-			return errors.New("provide binary archive to download")
-		}
-		if !strings.HasSuffix(args[0], ".tar.gz") {
-			return errors.New("provide valid archive name i.e a tar.gz file")
-		}
-		return nil
-	},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -71,7 +51,6 @@ func init() {
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
-	rootCmd.Flags().BoolP("remove", "r", false, "Remove flag is optional and is used to remove the downloaded archive after installing go.")
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -100,42 +79,12 @@ func initConfig() {
 	}
 }
 
-// Download and install go binary
-func downloadAndInstallGo(cmd *cobra.Command, args []string) {
-	var downloadPath string
-	var archiveName = args[0]
-	if len(args) > 1 && len(args) <= 2 {
-		downloadPath = args[1] + archiveName
-	} else {
-		home, _ := homedir.Dir()
-		downloadPath = path.Join(home, "Downloads", archiveName)
+func getDownloadDir() (string, error) {
+	home, err := homedir.Dir()
+	if err != nil {
+		return "", fmt.Errorf("%v: home directory cannot be detected", err)
 	}
-
-	downloadGoBinary(archiveName, downloadPath)
-	installGo(downloadPath)
-}
-
-func downloadGoBinary(archiveName, downloadPath string) {
-	const HOST = "https://dl.google.com/go/"
-	cm := exec.Command("curl", "-L", HOST+archiveName, "-o", downloadPath)
-	fmt.Printf("Downloading go binary %v from %v\n", archiveName, HOST)
-	runCommand(cm)
-	fmt.Println("Download complete")
-}
-
-func installGo(archivePath string) {
-	cm := exec.Command("tar", "-C", path.Join("/usr", "local"), "-xzf", archivePath)
-	fmt.Println("Installing binary into /usr/local/go")
-	runCommand(cm)
-	fmt.Println("Installation Complete. Type `go version` to check installation")
-}
-
-func runCommand(c *exec.Cmd) {
-	c.Stdin = os.Stdin
-	c.Stdout = os.Stdout
-	c.Stderr = os.Stderr
-
-	must(c.Run())
+	return path.Join(home, "godl", "downloads"), nil
 }
 
 func must(err error) {

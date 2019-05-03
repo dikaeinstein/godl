@@ -7,9 +7,9 @@ import (
 	"io/ioutil"
 	"net/http"
 	"testing"
-	"unicode/utf8"
 )
 
+// inMemoryWriter is an in-memory writer that writes to
 type inMemoryWriter struct {
 	*bytes.Buffer
 }
@@ -21,14 +21,16 @@ func (iM *inMemoryWriter) Write(p []byte) (int, error) {
 
 func (iM *inMemoryWriter) Close() error { return nil }
 
-type inMemoryFileCreator struct{}
+type inMemoryFileCreatorRenamer struct {
+	writer bytes.Buffer
+}
 
-func (inMem *inMemoryFileCreator) Create(name string) (io.WriteCloser, error) {
-	w := &inMemoryWriter{new(bytes.Buffer)}
+func (inMemFCR *inMemoryFileCreatorRenamer) Create(name string) (io.WriteCloser, error) {
+	w := &inMemoryWriter{&inMemFCR.writer}
 	return w, nil
 }
 
-func (inMem *inMemoryFileCreator) Rename(oldPath, newPath string) error {
+func (inMemFCR *inMemoryFileCreatorRenamer) Rename(oldPath, newPath string) error {
 	return nil
 }
 
@@ -48,10 +50,10 @@ func NewTestClient(fn RoundTripFunc) *http.Client {
 }
 
 func TestDownloadGoBinary(t *testing.T) {
-	ic := &inMemoryFileCreator{}
+	ic := &inMemoryFileCreatorRenamer{}
 	testClient := NewTestClient(func(req *http.Request) *http.Response {
 		testData := bytes.NewBufferString("This is test data")
-		contentLength := fmt.Sprintf("%v", utf8.RuneCount(testData.Bytes()))
+		contentLength := fmt.Sprintf("%v", len(testData.Bytes()))
 
 		return &http.Response{
 			StatusCode: http.StatusOK,
@@ -62,13 +64,19 @@ func TestDownloadGoBinary(t *testing.T) {
 		}
 	})
 	testGoBinDownloader := &goBinaryDownloader{
-		BaseURL: "",
+		BaseURL: "https://dl.google.com/go/",
 		Client:  testClient,
-		FC:      ic,
+		fCR:     ic,
 	}
 
 	err := testGoBinDownloader.download("1.12", ".")
 	if err != nil {
 		t.Errorf("Error downloading go binary: %v", err)
 	}
+
+	if ic.writer.String() != "This is test data" {
+		t.Errorf("Data downloaded does not match data written to archive")
+	}
+
+	ic.writer.Reset()
 }

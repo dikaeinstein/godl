@@ -31,16 +31,20 @@ import (
 
 type fileCreator interface {
 	Create(name string) (io.WriteCloser, error)
+}
+
+type fileCreatorRenamer interface {
+	fileCreator
 	Rename(oldPath, newPath string) error
 }
 
-type fsFileCreator struct{}
+type fsFileCreatorRenamer struct{}
 
-func (ac *fsFileCreator) Create(name string) (io.WriteCloser, error) {
+func (ac fsFileCreatorRenamer) Create(name string) (io.WriteCloser, error) {
 	return os.Create(name)
 }
 
-func (ac *fsFileCreator) Rename(oldPath, newPath string) error {
+func (ac fsFileCreatorRenamer) Rename(oldPath, newPath string) error {
 	return os.Rename(oldPath, newPath)
 }
 
@@ -52,7 +56,7 @@ var downloadCmd = &cobra.Command{
 
 If no download directory is specified, godl downloads the archive into
 $HOME/godl/downloads.`,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		home, err := homedir.Dir()
 		if err != nil {
 			log.Fatalf("%v: home directory cannot be detected", err)
@@ -68,17 +72,21 @@ $HOME/godl/downloads.`,
 		}
 
 		archiveVersion := args[0]
-		fc := &fsFileCreator{}
+		fcr := fsFileCreatorRenamer{}
 
 		goBinDownloader := goBinaryDownloader{
 			Client:  &http.Client{},
 			BaseURL: "https://dl.google.com/go/",
-			FC:      fc,
+			fCR:     fcr,
 		}
 
 		fmt.Printf("Downloading go binary %v\n", archiveVersion)
-		goBinDownloader.download(archiveVersion, downloadDir)
+		err = goBinDownloader.download(archiveVersion, downloadDir)
+		if err != nil {
+			return err
+		}
 		fmt.Println("Download complete")
+		return nil
 	},
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
@@ -113,7 +121,7 @@ func (wc *writeCounter) PrintProgress() {
 type goBinaryDownloader struct {
 	Client  *http.Client
 	BaseURL string
-	FC      fileCreator
+	fCR     fileCreatorRenamer
 }
 
 func (goBinDown *goBinaryDownloader) download(archiveVersion, downloadDir string) error {
@@ -127,7 +135,7 @@ func (goBinDown *goBinaryDownloader) download(archiveVersion, downloadDir string
 
 	// Create the file with tmp extension. So we don't overwrite until
 	// the file is completely downloaded.
-	tmpFile, err := goBinDown.FC.Create(downloadPath + ".tmp")
+	tmpFile, err := goBinDown.fCR.Create(downloadPath + ".tmp")
 	if err != nil {
 		return err
 	}
@@ -155,5 +163,5 @@ func (goBinDown *goBinaryDownloader) download(archiveVersion, downloadDir string
 	fmt.Println()
 
 	// Rename the temporary file once fully downloaded
-	return goBinDown.FC.Rename(downloadPath+".tmp", downloadPath)
+	return goBinDown.fCR.Rename(downloadPath+".tmp", downloadPath)
 }

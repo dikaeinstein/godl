@@ -9,5 +9,5 @@ osx_image: xcode10.1
 dist: trusty
 install: true
 script:
-  - env GO111MODULE=on go build
-  - ./godl --help
+  - make test
+  - make build
