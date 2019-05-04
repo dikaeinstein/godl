@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"path/filepath"
 
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
@@ -85,6 +86,30 @@ func getDownloadDir() (string, error) {
 		return "", fmt.Errorf("%v: home directory cannot be detected", err)
 	}
 	return path.Join(home, "godl", "downloads"), nil
+}
+
+func versionExists(archiveVersion string) (bool, error) {
+	const (
+		archivePostfix = "darwin-amd64.tar.gz"
+		archivePrefix  = "go"
+	)
+
+	goDownloadDir, err := getDownloadDir()
+	if err != nil {
+		return false, err
+	}
+
+	archiveName := fmt.Sprintf("%s%s.%s", archivePrefix, archiveVersion, archivePostfix)
+	downloadPath := filepath.Join(filepath.Join(goDownloadDir, archiveName))
+	_, err = os.Stat(downloadPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return false, nil
+		}
+		return true, err // Assuming that other forms of errors are not due to non-existence
+	}
+
+	return true, nil
 }
 
 func must(err error) {

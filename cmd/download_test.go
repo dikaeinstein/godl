@@ -69,7 +69,7 @@ func TestDownloadGoBinary(t *testing.T) {
 		fCR:     ic,
 	}
 
-	err := testGoBinDownloader.download("1.12", ".")
+	err := testGoBinDownloader.download("1.12", true)
 	if err != nil {
 		t.Errorf("Error downloading go binary: %v", err)
 	}

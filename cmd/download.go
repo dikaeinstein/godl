@@ -18,14 +18,12 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"math"
 	"net/http"
 	"os"
-	"path"
+	"path/filepath"
 	"strconv"
 
-	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 )
 
@@ -48,29 +46,17 @@ func (ac fsFileCreatorRenamer) Rename(oldPath, newPath string) error {
 	return os.Rename(oldPath, newPath)
 }
 
+var forceDownload bool
+
 // downloadCmd represents the download command
 var downloadCmd = &cobra.Command{
-	Use:   "download [version] [downloadDir]",
+	Use:   "download [version]",
 	Short: "Download go binary archive",
-	Long: `Download the archive version from https://golang.org/dl/ and save to specified directory.
+	Long: `Download the archive version from https://golang.org/dl/ and save to $HOME/godl/downloads.
 
-If no download directory is specified, godl downloads the archive into
-$HOME/godl/downloads.`,
+By default, if archive version already exists locally, godl doesn't attempt to download it again.
+To force it to download the version again pass the --force flag`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		home, err := homedir.Dir()
-		if err != nil {
-			log.Fatalf("%v: home directory cannot be detected", err)
-		}
-
-		var downloadDir string
-		if len(args) > 1 && len(args) <= 2 {
-			downloadDir = args[1]
-		} else {
-			godlDownloadDir := path.Join(home, "godl", "downloads")
-			must(os.MkdirAll(godlDownloadDir, os.ModePerm))
-			downloadDir = godlDownloadDir
-		}
-
 		archiveVersion := args[0]
 		fcr := fsFileCreatorRenamer{}
 
@@ -81,7 +67,7 @@ $HOME/godl/downloads.`,
 		}
 
 		fmt.Printf("Downloading go binary %v\n", archiveVersion)
-		err = goBinDownloader.download(archiveVersion, downloadDir)
+		err := goBinDownloader.download(archiveVersion, forceDownload)
 		if err != nil {
 			return err
 		}
@@ -98,6 +84,7 @@ $HOME/godl/downloads.`,
 
 func init() {
 	rootCmd.AddCommand(downloadCmd)
+	downloadCmd.Flags().BoolVarP(&forceDownload, "force", "f", false, "Force download")
 }
 
 // writeCounter counts the number of bytes written to it.
@@ -124,14 +111,33 @@ type goBinaryDownloader struct {
 	fCR     fileCreatorRenamer
 }
 
-func (goBinDown *goBinaryDownloader) download(archiveVersion, downloadDir string) error {
+func (goBinDown *goBinaryDownloader) download(archiveVersion string, forceDownload bool) error {
 	const (
 		archivePostfix = "darwin-amd64.tar.gz"
 		archivePrefix  = "go"
 	)
 
+	godlDownloadDir, err := getDownloadDir()
+	if err != nil {
+		return err
+	}
+
+	// Create download directory and its parent
+	must(os.MkdirAll(godlDownloadDir, os.ModePerm))
+
+	exists, err := versionExists(archiveVersion)
+	// handle stat errors even when file exists
+	if err != nil {
+		return err
+	}
+	// return early if archive is already downloaded and forceDownload is false
+	if exists && !forceDownload {
+		fmt.Println("archive has already been downloaded")
+		return nil
+	}
+
 	archiveName := fmt.Sprintf("%s%s.%s", archivePrefix, archiveVersion, archivePostfix)
-	downloadPath := path.Join(downloadDir, archiveName)
+	downloadPath := filepath.Join(godlDownloadDir, archiveName)
 
 	// Create the file with tmp extension. So we don't overwrite until
 	// the file is completely downloaded.
