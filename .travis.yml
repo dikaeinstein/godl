@@ -9,5 +9,6 @@ osx_image: xcode10.1
 dist: trusty
 install: true
 script:
+  - make install
   - make test
   - make build

@@ -13,7 +13,11 @@ prepare_environment:
 
 ## Fetch dependencies
 install:prepare_environment
-	go get -t -v ./...
+	go get -v ./...
+
+## Run tests
+test:
+	APP_ENV=test go test -race -v ./...
 
 ## Build binary
 build:prepare_environment
