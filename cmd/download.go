@@ -66,8 +66,13 @@ To force it to download the version again pass the --force flag`,
 			fCR:     fcr,
 		}
 
+		godlDownloadDir, err := getDownloadDir()
+		if err != nil {
+			return err
+		}
+
 		fmt.Printf("Downloading go binary %v\n", archiveVersion)
-		err := goBinDownloader.download(archiveVersion, forceDownload)
+		err = goBinDownloader.download(archiveVersion, godlDownloadDir, forceDownload)
 		if err != nil {
 			return err
 		}
@@ -111,21 +116,16 @@ type goBinaryDownloader struct {
 	fCR     fileCreatorRenamer
 }
 
-func (goBinDown *goBinaryDownloader) download(archiveVersion string, forceDownload bool) error {
+func (goBinDown *goBinaryDownloader) download(archiveVersion, downloadDir string, forceDownload bool) error {
 	const (
 		archivePostfix = "darwin-amd64.tar.gz"
 		archivePrefix  = "go"
 	)
 
-	godlDownloadDir, err := getDownloadDir()
-	if err != nil {
-		return err
-	}
-
 	// Create download directory and its parent
-	must(os.MkdirAll(godlDownloadDir, os.ModePerm))
+	must(os.MkdirAll(downloadDir, os.ModePerm))
 
-	exists, err := versionExists(archiveVersion)
+	exists, err := versionExists(archiveVersion, downloadDir)
 	// handle stat errors even when file exists
 	if err != nil {
 		return err
@@ -137,7 +137,7 @@ func (goBinDown *goBinaryDownloader) download(archiveVersion string, forceDownlo
 	}
 
 	archiveName := fmt.Sprintf("%s%s.%s", archivePrefix, archiveVersion, archivePostfix)
-	downloadPath := filepath.Join(godlDownloadDir, archiveName)
+	downloadPath := filepath.Join(downloadDir, archiveName)
 
 	// Create the file with tmp extension. So we don't overwrite until
 	// the file is completely downloaded.

@@ -44,14 +44,6 @@ func Execute() {
 
 func init() {
 	cobra.OnInitialize(initConfig)
-
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.godl.yaml)")
-
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -83,25 +75,21 @@ func initConfig() {
 func getDownloadDir() (string, error) {
 	home, err := homedir.Dir()
 	if err != nil {
-		return "", fmt.Errorf("%v: home directory cannot be detected", err)
+		return "", fmt.Errorf("home directory cannot be detected: %v", err)
 	}
 	return path.Join(home, "godl", "downloads"), nil
 }
 
-func versionExists(archiveVersion string) (bool, error) {
+func versionExists(archiveVersion, downloadDir string) (bool, error) {
 	const (
 		archivePostfix = "darwin-amd64.tar.gz"
 		archivePrefix  = "go"
 	)
 
-	goDownloadDir, err := getDownloadDir()
-	if err != nil {
-		return false, err
-	}
-
 	archiveName := fmt.Sprintf("%s%s.%s", archivePrefix, archiveVersion, archivePostfix)
-	downloadPath := filepath.Join(filepath.Join(goDownloadDir, archiveName))
-	_, err = os.Stat(downloadPath)
+	downloadPath := filepath.Join(filepath.Join(downloadDir, archiveName))
+
+	_, err := os.Stat(downloadPath)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return false, nil

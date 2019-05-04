@@ -20,7 +20,6 @@ import (
 	"path"
 
 	"github.com/mholt/archiver"
-
 	"github.com/spf13/cobra"
 )
 
@@ -49,12 +48,19 @@ var installCmd = &cobra.Command{
 				CompressionLevel: -1,
 			},
 		}
+
+		godlDownloadDir, err := getDownloadDir()
+		if err != nil {
+			return err
+		}
+
 		fmt.Println("Installing binary into /usr/local")
-		err := installGoBinary(args[0], gz)
+		err = installGoBinary(args[0], godlDownloadDir, gz)
 		if err != nil {
 			return err
 		}
 		fmt.Println("Installation Complete. Type `go version` to check installation")
+
 		return nil
 	},
 	Args: func(cmd *cobra.Command, args []string) error {
@@ -69,20 +75,22 @@ func init() {
 	rootCmd.AddCommand(installCmd)
 }
 
-func installGoBinary(archiveVersion string, ua unArchiver) error {
+func installGoBinary(archiveVersion, downloadDir string, ua unArchiver) error {
 	const (
 		archivePostfix = "darwin-amd64.tar.gz"
 		archivePrefix  = "go"
 	)
 
-	godlDownloadDir, err := getDownloadDir()
+	archiveName := fmt.Sprintf("%s%s.%s", archivePrefix, archiveVersion, archivePostfix)
+	downloadPath := path.Join(downloadDir, archiveName)
 
+	exists, err := versionExists(archiveVersion, downloadDir)
 	if err != nil {
 		return err
 	}
-
-	archiveName := fmt.Sprintf("%s%s.%s", archivePrefix, archiveVersion, archivePostfix)
-	downloadPath := path.Join(godlDownloadDir, archiveName)
+	if !exists {
+		return fmt.Errorf("The specified version has not been downloaded, please download and try again")
+	}
 
 	target := path.Join("/usr", "local")
 	return ua.Unarchive(downloadPath, target)

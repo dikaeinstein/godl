@@ -69,7 +69,7 @@ func TestDownloadGoBinary(t *testing.T) {
 		fCR:     ic,
 	}
 
-	err := testGoBinDownloader.download("1.12", true)
+	err := testGoBinDownloader.download("1.12", ".", true)
 	if err != nil {
 		t.Errorf("Error downloading go binary: %v", err)
 	}
@@ -79,4 +79,20 @@ func TestDownloadGoBinary(t *testing.T) {
 	}
 
 	ic.writer.Reset()
+}
+
+func TestDownloadCmdCalledWithNoArgs(t *testing.T) {
+	_, err := executeCommand(rootCmd, "download")
+	expected := "provide binary archive version to download"
+	got := err.Error()
+	if got != expected {
+		t.Errorf("godl download Unknown error: %v", err)
+	}
+}
+
+func TestDownloadCmdHelp(t *testing.T) {
+	_, err := executeCommand(rootCmd, "download", "-h")
+	if err != nil {
+		t.Errorf("godl download failed: %v", err)
+	}
 }
