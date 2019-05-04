@@ -7,8 +7,12 @@ os:
 - osx
 osx_image: xcode10.1
 dist: trusty
+env:
+  - GO111MODULE=on
+before_install:
+  - go get github.com/mattn/goveralls
 install: true
 script:
   - make install
-  - make test
+  - goveralls -service=travis-ci
   - make build
