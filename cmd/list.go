@@ -17,6 +17,7 @@ package cmd
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -45,6 +46,9 @@ func listDownloadedBinaryArchives(downloadDir string) error {
 		archiveSuffix = ".darwin-amd64.tar.gz"
 		archivePrefix = "go"
 	)
+
+	// Create download directory and its parent
+	must(os.MkdirAll(downloadDir, os.ModePerm))
 
 	files, err := ioutil.ReadDir(downloadDir)
 	if err != nil {
