@@ -3,6 +3,7 @@
 Godl is a CLI tool used to download and install go binary releases on mac.
 
 [![Build Status](https://travis-ci.com/dikaeinstein/godl.svg?branch=master)](https://travis-ci.com/dikaeinstein/godl)
+[![Coverage Status](https://coveralls.io/repos/github/dikaeinstein/godl/badge.svg?branch=master)](https://coveralls.io/github/dikaeinstein/godl?branch=master)
 
 ## Installation
 
@@ -12,21 +13,42 @@ Godl is a CLI tool used to download and install go binary releases on mac.
 
 If you've have setup your $GOPATH correctly, you should have `godl` command in your $PATH.
 
-Run `godl --version` to verify.
+Run `godl version` to verify.
 
-Run `godl --help` to get help and see available options
+Run `godl help` to get help and see available options
 
-Example: `godl go1.11.4.darwin-amd64.tar.gz ~/Downloads`
+## Subcommands
 
-## Musings
+* `download` — Download go binary archive
+* `help` — Help about any command
+* `install` — Installs the specified go binary archive version
+* `list` — List the downloaded versions
+* `version` — Show the godl version information
 
-This tool is a direct conversion of my shell script to download and install go binary releases. So its a naive implementation that gets the job done 😎.
+## Typical Usage (example)
 
-### Improvements
+To download and install go1.12.4:
 
-The implementation of the tool could get better by taking advantage of
- the concurrency primitives of golang. Like using the `net/http` package to
- fetch the binary archive and stream the response to a goroutine in charge of extracting the tarball and installing it. Similar to this shell command: `curl -L [url] | tar -xfz [path/to/install/binary]`.
+```bash
+godl download 1.12.4
+
+godl install 1.12.4
+```
+
+Then run
+
+```bash
+go version
+```
+
+```bash
+output: go version go1.12.4 darwin/amd64 // or something similar
+```
+
+### Improvements / Coming features
+
+* List remote versions of go
+* The install command downloads archive if has not being downloaded before installing instead of failing with an error
 
 ### Contributing
 
