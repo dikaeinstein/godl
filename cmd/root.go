@@ -77,7 +77,7 @@ func getDownloadDir() (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("home directory cannot be detected: %v", err)
 	}
-	return path.Join(home, "godl", "downloads"), nil
+	return path.Join(home, ".godl", "downloads"), nil
 }
 
 func versionExists(archiveVersion, downloadDir string) (bool, error) {
