@@ -6,7 +6,7 @@ VERSION=$(shell git describe --tags)
 GO_VERSION=$(shell go version)
 
 # setup -ldflags for go build
-LD_FLAGS=-ldflags '-X "$(PACKAGE)/cmd.version=$(VERSION)" -X "$(PACKAGE)/cmd.buildDate=$(BUILD_DATE)" -X "$(PACKAGE)/cmd.goVersion=$(GO_VERSION)" -X "$(PACKAGE)/cmd.gitHash=$(GIT_COMMIT_HASH)"'
+LD_FLAGS=-ldflags '-s -X "$(PACKAGE)/cmd.version=$(VERSION)" -X "$(PACKAGE)/cmd.buildDate=$(BUILD_DATE)" -X "$(PACKAGE)/cmd.goVersion=$(GO_VERSION)" -X "$(PACKAGE)/cmd.gitHash=$(GIT_COMMIT_HASH)"'
 
 ## Fetch dependencies
 install:
@@ -18,7 +18,7 @@ test:
 
 ## Build binary
 build:
-	GO111MODULE=on go build $(LD_FLAGS)
+	GO111MODULE=on go build -a $(LD_FLAGS)
 
 ## Execute binary
 run:build
