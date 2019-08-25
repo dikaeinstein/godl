@@ -38,7 +38,7 @@ func (gz gzipUnArchiver) Unarchive(source, target string) error {
 // installCmd represents the install command
 var installCmd = &cobra.Command{
 	Use:   "install [version]",
-	Short: "Installs the specified go binary archive version or path into /usr/local",
+	Short: "Installs the specified go binary archive version or path into /usr/local.",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		gz := gzipUnArchiver{
 			z: archiver.TarGz{

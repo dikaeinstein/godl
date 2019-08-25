@@ -26,14 +26,14 @@ import (
 // listCmd represents the list command
 var listCmd = &cobra.Command{
 	Use:   "list",
-	Short: "List the downloaded versions",
+	Short: "List the downloaded versions.",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		goBinaryDownloader, err := getDownloadDir()
+		d, err := getDownloadDir()
 		if err != nil {
 			return err
 		}
 
-		return listDownloadedBinaryArchives(goBinaryDownloader)
+		return listDownloadedBinaryArchives(d)
 	},
 }
 

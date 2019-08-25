@@ -6,7 +6,7 @@ VERSION=$(shell git describe --tags)
 GO_VERSION=$(shell go version)
 
 # setup -ldflags for go build
-LD_FLAGS=-ldflags '-s -X "$(PACKAGE)/cmd.version=$(VERSION)" -X "$(PACKAGE)/cmd.buildDate=$(BUILD_DATE)" -X "$(PACKAGE)/cmd.goVersion=$(GO_VERSION)" -X "$(PACKAGE)/cmd.gitHash=$(GIT_COMMIT_HASH)"'
+LD_FLAGS=-ldflags '-s -X "$(PACKAGE)/pkg/cmd.version=$(VERSION)" -X "$(PACKAGE)/pkg/cmd.buildDate=$(BUILD_DATE)" -X "$(PACKAGE)/pkg/cmd.goVersion=$(GO_VERSION)" -X "$(PACKAGE)/pkg/cmd.gitHash=$(GIT_COMMIT_HASH)"'
 
 ## Fetch dependencies
 install:
@@ -18,13 +18,13 @@ test:
 
 ## Build binary
 build:
-	GO111MODULE=on go build -a $(LD_FLAGS)
+	GO111MODULE=on go build -a $(LD_FLAGS) -o godl cmd/main.go
 
 ## Execute binary
-run:build
-	./$(BINARY_NAME)
+run:
+	GO111MODULE=on go run -a $(LD_FLAGS) cmd/main.go
 
 .PHONY: clean
 ## Remove binary
 clean:
-	if [ -f $(BINARY_NAME) ]; then rm -f $(BINARY_NAME) fi;
+	if [ -f $(BINARY_NAME) ]; then rm -f $(BINARY_NAME); fi

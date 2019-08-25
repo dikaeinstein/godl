@@ -51,11 +51,11 @@ var forceDownload bool
 // downloadCmd represents the download command
 var downloadCmd = &cobra.Command{
 	Use:   "download [version]",
-	Short: "Download go binary archive",
+	Short: "Download go binary archive.",
 	Long: `Download the archive version from https://golang.org/dl/ and save to $HOME/godl/downloads.
 
 By default, if archive version already exists locally, godl doesn't attempt to download it again.
-To force it to download the version again pass the --force flag`,
+To force it to download the version again pass the --force flag.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		archiveVersion := args[0]
 		fcr := fsFileCreatorRenamer{}

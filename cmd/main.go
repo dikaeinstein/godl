@@ -12,31 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package cmd
+package main
 
-import (
-	"fmt"
+import "github.com/dikaeinstein/godl/pkg/cmd"
 
-	"github.com/spf13/cobra"
-)
-
-var (
-	version   = "unknown version"
-	gitHash   = "unknown commit"
-	goVersion = "unknow go version"
-	buildDate = "unknown build date"
-)
-
-// versionCmd represents the version command
-var versionCmd = &cobra.Command{
-	Use:   "version",
-	Short: "Show the godl version information",
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("Version: %s\nGo version: %s\nGit hash: %s\nBuilt: %s\n",
-			version, goVersion, gitHash, buildDate)
-	},
-}
-
-func init() {
-	rootCmd.AddCommand(versionCmd)
+func main() {
+	cmd.Execute()
 }
