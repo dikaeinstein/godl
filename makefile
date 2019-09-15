@@ -9,7 +9,7 @@ GO_VERSION=$(shell go version)
 LD_FLAGS=-ldflags '-s -X "$(PACKAGE)/pkg/cmd.version=$(VERSION)" -X "$(PACKAGE)/pkg/cmd.buildDate=$(BUILD_DATE)" -X "$(PACKAGE)/pkg/cmd.goVersion=$(GO_VERSION)" -X "$(PACKAGE)/pkg/cmd.gitHash=$(GIT_COMMIT_HASH)"'
 
 ## Fetch dependencies
-install:
+fetch:
 	GO111MODULE=on go get -v ./...
 
 ## Run tests
@@ -19,6 +19,10 @@ test:
 ## Build binary
 build:
 	GO111MODULE=on go build -a $(LD_FLAGS) -o godl cmd/main.go
+
+## Simulate installing the binary to $GOBIN path using `go build`
+install:
+	GO111MODULE=on go build -a $(LD_FLAGS) -o $(GOBIN)/godl cmd/main.go
 
 ## Execute binary
 run:

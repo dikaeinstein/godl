@@ -9,9 +9,11 @@ Godl is a CLI tool used to download and install go binary releases on mac.
 
 ```go get -u https://github.com/dikaeinstein/godl```
 
-```go install github.com/dikaeinstein/godl```
+```cd path/installed```
 
-If you've have setup your $GOPATH correctly, you should have `godl` command in your $PATH.
+Then run: ```make install```
+
+If you've have setup your $GOPATH and $GOBIN correctly, you should have `godl` command in your $PATH.
 
 Run `godl version` to verify.
 
