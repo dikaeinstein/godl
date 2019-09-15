@@ -1,6 +1,6 @@
 language: go
 go:
-- 1.11.x
+- 1.12.x
 - master
 os:
 - linux
@@ -13,6 +13,6 @@ before_install:
   - go get github.com/mattn/goveralls
 install: true
 script:
-  - make install
+  - make fetch
   - goveralls -service=travis-ci
   - make build
