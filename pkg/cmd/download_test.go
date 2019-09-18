@@ -2,8 +2,6 @@ package cmd
 
 import (
 	"bytes"
-	"fmt"
-	"io"
 	"io/ioutil"
 	"net/http"
 	"testing"
@@ -21,11 +19,13 @@ func (iM *inMemoryWriter) Write(p []byte) (int, error) {
 
 func (iM *inMemoryWriter) Close() error { return nil }
 
+func (iM *inMemoryWriter) Name() string { return "in-mem" }
+
 type inMemoryFileCreatorRenamer struct {
 	writer bytes.Buffer
 }
 
-func (inMemFCR *inMemoryFileCreatorRenamer) Create(name string) (io.WriteCloser, error) {
+func (inMemFCR *inMemoryFileCreatorRenamer) Create(name string) (writeCloseNamer, error) {
 	w := &inMemoryWriter{&inMemFCR.writer}
 	return w, nil
 }
@@ -49,24 +49,32 @@ func NewTestClient(fn RoundTripFunc) *http.Client {
 	}
 }
 
+// getBinaryHash downloads the given URL and returns it as a string.
+func genTestHash(url string) (string, error) {
+	return "kdaksjkldfjkdjlks34u3u4iqkj", nil
+}
+
+func fakeVerifyHash(file, hex string) error {
+	return nil
+}
+
 func TestDownloadGoBinary(t *testing.T) {
 	ic := &inMemoryFileCreatorRenamer{}
 	testClient := NewTestClient(func(req *http.Request) *http.Response {
 		testData := bytes.NewBufferString("This is test data")
-		contentLength := fmt.Sprintf("%v", len(testData.Bytes()))
 
 		return &http.Response{
-			StatusCode: http.StatusOK,
-			Body:       ioutil.NopCloser(testData),
-			Header: map[string][]string{
-				"Content-Length": []string{contentLength},
-			},
+			StatusCode:    http.StatusOK,
+			Body:          ioutil.NopCloser(testData),
+			ContentLength: int64(len(testData.Bytes())),
 		}
 	})
 	testGoBinDownloader := &goBinaryDownloader{
-		BaseURL: "https://dl.google.com/go/",
-		Client:  testClient,
-		fCR:     ic,
+		BaseURL:    "https://dl.google.com/go/",
+		Client:     testClient,
+		fCR:        ic,
+		genHash:    genTestHash,
+		verifyHash: fakeVerifyHash,
 	}
 
 	err := testGoBinDownloader.download("1.12", ".", true)

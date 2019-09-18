@@ -14,7 +14,7 @@ fetch:
 
 ## Run tests
 test:
-	GO111MODULE=on APP_ENV=test go test -race -v ./...
+	GO111MODULE=on go test -race -v ./...
 
 ## Build binary
 build:
