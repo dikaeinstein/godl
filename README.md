@@ -25,6 +25,7 @@ Run `godl help` to get help and see available options
 * `help` — Help about any command
 * `install` — Installs the specified go binary release version
 * `list|ls` — List the downloaded versions
+* `list-remote|ls-remote` — List available remote versions
 * `version` — Show the godl version information
 
 ## Typical Usage (example)
