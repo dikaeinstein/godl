@@ -20,6 +20,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
+func init() {
+	rootCmd.AddCommand(versionCmd)
+}
+
 var (
 	version   = "unknown version"
 	gitHash   = "unknown commit"
@@ -35,8 +39,4 @@ var versionCmd = &cobra.Command{
 		fmt.Printf("Version: %s\nGo version: %s\nGit hash: %s\nBuilt: %s\n",
 			version, goVersion, gitHash, buildDate)
 	},
-}
-
-func init() {
-	rootCmd.AddCommand(versionCmd)
 }

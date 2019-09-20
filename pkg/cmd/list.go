@@ -23,10 +23,15 @@ import (
 	"github.com/spf13/cobra"
 )
 
+func init() {
+	rootCmd.AddCommand(listCmd)
+}
+
 // listCmd represents the list command
 var listCmd = &cobra.Command{
-	Use:   "list",
-	Short: "List the downloaded versions.",
+	Use:     "list",
+	Aliases: []string{"ls"},
+	Short:   "List the downloaded versions.",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		d, err := getDownloadDir()
 		if err != nil {
@@ -35,10 +40,6 @@ var listCmd = &cobra.Command{
 
 		return listDownloadedBinaryArchives(d)
 	},
-}
-
-func init() {
-	rootCmd.AddCommand(listCmd)
 }
 
 func listDownloadedBinaryArchives(downloadDir string) error {

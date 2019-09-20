@@ -16,6 +16,10 @@ fetch:
 test:
 	GO111MODULE=on go test -race -v ./...
 
+## Run tests with coverage
+test-cover:
+	GO111MODULE=on go test -coverprofile=cover.out -race -v ./...
+
 ## Build binary
 build:
 	GO111MODULE=on go build -a $(LD_FLAGS) -o godl cmd/main.go

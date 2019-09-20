@@ -25,6 +25,10 @@ import (
 	"github.com/spf13/viper"
 )
 
+func init() {
+	cobra.OnInitialize(initConfig)
+}
+
 var cfgFile string
 
 // rootCmd represents the base command when called without any subcommands
@@ -40,10 +44,6 @@ func Execute() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-}
-
-func init() {
-	cobra.OnInitialize(initConfig)
 }
 
 // initConfig reads in config file and ENV variables if set.

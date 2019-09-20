@@ -17,22 +17,15 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"os"
 	"path"
 
 	"github.com/mholt/archiver"
 	"github.com/spf13/cobra"
 )
 
-type unArchiver interface {
-	Unarchive(source, target string) error
-}
-
-type gzipUnArchiver struct {
-	z archiver.TarGz
-}
-
-func (gz gzipUnArchiver) Unarchive(source, target string) error {
-	return gz.z.Unarchive(source, target)
+func init() {
+	rootCmd.AddCommand(installCmd)
 }
 
 // installCmd represents the install command
@@ -49,19 +42,12 @@ var installCmd = &cobra.Command{
 			},
 		}
 
-		godlDownloadDir, err := getDownloadDir()
+		dlDir, err := getDownloadDir()
 		if err != nil {
 			return err
 		}
 
-		fmt.Println("Installing binary into /usr/local")
-		err = installGoBinary(args[0], godlDownloadDir, gz)
-		if err != nil {
-			return err
-		}
-		fmt.Println("Installation Complete. Type `go version` to check installation")
-
-		return nil
+		return installRelease(args[0], dlDir, gz, fsRemover{})
 	},
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
@@ -71,20 +57,34 @@ var installCmd = &cobra.Command{
 	},
 }
 
-func init() {
-	rootCmd.AddCommand(installCmd)
+func installRelease(version, dlDir string, gz unArchiver, dr dirRemover) error {
+	fmt.Println("Installing binary into /usr/local")
+	gi := goInstaller{dlDir, gz, dr}
+	err := gi.install(version)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("Installation Complete. Type `go version` to check installation")
+	return nil
 }
 
-func installGoBinary(archiveVersion, downloadDir string, ua unArchiver) error {
+type goInstaller struct {
+	dlDir string
+	ua    unArchiver
+	dr    dirRemover
+}
+
+func (gi goInstaller) install(archiveVersion string) error {
 	const (
 		archivePostfix = "darwin-amd64.tar.gz"
 		archivePrefix  = "go"
 	)
 
 	archiveName := fmt.Sprintf("%s%s.%s", archivePrefix, archiveVersion, archivePostfix)
-	downloadPath := path.Join(downloadDir, archiveName)
+	downloadPath := path.Join(gi.dlDir, archiveName)
 
-	exists, err := versionExists(archiveVersion, downloadDir)
+	exists, err := versionExists(archiveVersion, gi.dlDir)
 	if err != nil {
 		return err
 	}
@@ -92,6 +92,42 @@ func installGoBinary(archiveVersion, downloadDir string, ua unArchiver) error {
 		return fmt.Errorf("The specified version has not been downloaded, please download and try again")
 	}
 
+	// clean install - remove existing go installation before installing
+	// new version
+	err = removeGo(gi.dr)
+	if err != nil {
+		return fmt.Errorf("error removing old installation: %v", err)
+	}
 	target := path.Join("/usr", "local")
-	return ua.Unarchive(downloadPath, target)
+	return gi.ua.Unarchive(downloadPath, target)
+}
+
+type unArchiver interface {
+	Unarchive(source, target string) error
+}
+
+type gzipUnArchiver struct {
+	z archiver.TarGz
+}
+
+func (gz gzipUnArchiver) Unarchive(source, target string) error {
+	return gz.z.Unarchive(source, target)
+}
+
+type dirRemover interface {
+	RemoveAll(path string) error
+}
+
+type fsRemover struct{}
+
+func (f fsRemover) RemoveAll(path string) error {
+	return os.RemoveAll(path)
+}
+
+func removeGo(dr dirRemover) error {
+	err := dr.RemoveAll(path.Join("/usr", "local", "go"))
+	if err != nil {
+		return err
+	}
+	return nil
 }

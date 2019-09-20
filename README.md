@@ -23,18 +23,18 @@ Run `godl help` to get help and see available options
 
 * `download` — Download go binary archive
 * `help` — Help about any command
-* `install` — Installs the specified go binary archive version
-* `list` — List the downloaded versions
+* `install` — Installs the specified go binary release version
+* `list|ls` — List the downloaded versions
 * `version` — Show the godl version information
 
 ## Typical Usage (example)
 
-To download and install go1.12.4:
+To download and install go1.13:
 
 ```bash
-godl download 1.12.4
+godl download 1.13
 
-godl install 1.12.4
+godl install 1.13
 ```
 
 Then run
@@ -44,13 +44,13 @@ go version
 ```
 
 ```bash
-output: go version go1.12.4 darwin/amd64 // or something similar
+output: go version go1.13 darwin/amd64 // or something similar
 ```
 
 ### Improvements / Coming features
 
-* List remote versions of go
 * The install command downloads archive if has not being downloaded before installing instead of failing with an error
+* auto-completion (bash & zsh)
 
 ### Contributing
 

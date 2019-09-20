@@ -28,6 +28,133 @@ import (
 	"github.com/spf13/cobra"
 )
 
+func init() {
+	rootCmd.AddCommand(downloadCmd)
+	downloadCmd.Flags().BoolVarP(&forceDownload, "force", "f", false, "Force download")
+}
+
+// downloadCmd represents the download command
+var downloadCmd = &cobra.Command{
+	Use:   "download [version]",
+	Short: "Download go binary archive.",
+	Long: `Download the archive version from https://golang.org/dl/ and save to $HOME/godl/downloads.
+
+By default, if archive version already exists locally, godl doesn't attempt to download it again.
+To force it to download the version again pass the --force flag.`,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		archiveVersion := args[0]
+		fcr := fsFileCreatorRenamer{}
+		dlDir, err := getDownloadDir()
+		if err != nil {
+			return err
+		}
+
+		dl := &goBinaryDownloader{
+			baseURL:       "https://storage.googleapis.com/golang/",
+			client:        &http.Client{},
+			downloadDir:   dlDir,
+			fCR:           fcr,
+			forceDownload: forceDownload,
+			genHash:       getBinaryHash,
+			verifyHash:    verifyHash,
+		}
+
+		return downloadRelease(archiveVersion, dl)
+	},
+	Args: func(cmd *cobra.Command, args []string) error {
+		if len(args) < 1 {
+			return errors.New("provide binary archive version to download")
+		}
+		return nil
+	},
+}
+
+func downloadRelease(archiveVersion string, dl *goBinaryDownloader) error {
+	fmt.Printf("Downloading go binary %v\n", archiveVersion)
+	err := dl.download(archiveVersion)
+	if err != nil {
+		return fmt.Errorf("error downloading %v: %v", archiveVersion, err)
+	}
+
+	fmt.Println("\nDownload complete")
+	return nil
+}
+
+type goBinaryDownloader struct {
+	baseURL       string
+	client        *http.Client
+	downloadDir   string
+	fCR           fileCreatorRenamer
+	forceDownload bool
+	genHash       hashGenerator
+	verifyHash    hashVerifier
+}
+
+func (g *goBinaryDownloader) download(version string) error {
+	// Create download directory and its parent
+	must(os.MkdirAll(g.downloadDir, os.ModePerm))
+
+	exists, err := versionExists(version, g.downloadDir)
+	// handle stat errors even when file exists
+	if err != nil {
+		return err
+	}
+	// return early if archive is already downloaded and forceDownload is false
+	if exists && !g.forceDownload {
+		fmt.Println("archive has already been downloaded")
+		return nil
+	}
+
+	if err = checkIfExistsRemote(g.baseURL, version); err != nil {
+		return err
+	}
+
+	archiveName := fmt.Sprintf("%s%s.%s", prefix, version, postfix)
+	downloadPath := filepath.Join(g.downloadDir, archiveName)
+
+	// Create the file with tmp extension. So we don't overwrite until
+	// the file is completely downloaded.
+	tmpFile, err := g.fCR.Create(downloadPath + ".tmp")
+	if err != nil {
+		return err
+	}
+	defer tmpFile.Close()
+
+	goURL := versionURL(g.baseURL, version)
+	res, err := g.client.Get(goURL)
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		return errors.New(res.Status)
+	}
+
+	// Create the writeCounter to be used with the writer
+	wc := &writeCounter{TotalExpectedBytes: res.ContentLength}
+
+	n, err := io.Copy(tmpFile, io.TeeReader(res.Body, wc))
+	if err != nil {
+		return err
+	}
+	if res.ContentLength != -1 && res.ContentLength != n {
+		return fmt.Errorf("copied %v bytes; expected %v", n, res.ContentLength)
+	}
+
+	wantHex, err := g.genHash(goURL + ".sha256")
+	if err != nil {
+		return err
+	}
+
+	if err = g.verifyHash(tmpFile.Name(), wantHex); err != nil {
+		return fmt.Errorf("error verifying SHA256 of %v: %v", tmpFile, err)
+	}
+
+	// Rename the temporary file once fully downloaded
+	return g.fCR.Rename(downloadPath+".tmp", downloadPath)
+}
+
 type writeCloseNamer interface {
 	io.WriteCloser
 	Name() string
@@ -59,51 +186,6 @@ const (
 	prefix  = "go"
 )
 
-// downloadCmd represents the download command
-var downloadCmd = &cobra.Command{
-	Use:   "download [version]",
-	Short: "Download go binary archive.",
-	Long: `Download the archive version from https://golang.org/dl/ and save to $HOME/godl/downloads.
-
-By default, if archive version already exists locally, godl doesn't attempt to download it again.
-To force it to download the version again pass the --force flag.`,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		archiveVersion := args[0]
-		fcr := fsFileCreatorRenamer{}
-
-		goBinDownloader := goBinaryDownloader{
-			Client: &http.Client{},
-			// BaseURL: "https://dl.google.com/go/",
-			BaseURL: "https://storage.googleapis.com/golang/",
-			fCR:     fcr,
-		}
-
-		godlDownloadDir, err := getDownloadDir()
-		if err != nil {
-			return err
-		}
-
-		fmt.Printf("Downloading go binary %v\n", archiveVersion)
-		err = goBinDownloader.download(archiveVersion, godlDownloadDir, forceDownload)
-		if err != nil {
-			return fmt.Errorf("error downloading %v: %v", archiveVersion, err)
-		}
-		fmt.Println("\nDownload complete")
-		return nil
-	},
-	Args: func(cmd *cobra.Command, args []string) error {
-		if len(args) < 1 {
-			return errors.New("provide binary archive version to download")
-		}
-		return nil
-	},
-}
-
-func init() {
-	rootCmd.AddCommand(downloadCmd)
-	downloadCmd.Flags().BoolVarP(&forceDownload, "force", "f", false, "Force download")
-}
-
 // writeCounter counts the number of bytes written to it.
 type writeCounter struct {
 	bytesWritten       int64
@@ -124,78 +206,6 @@ func (wc *writeCounter) PrintProgress() {
 
 type hashGenerator func(url string) (string, error)
 type hashVerifier func(file, wantHash string) error
-
-type goBinaryDownloader struct {
-	Client     *http.Client
-	BaseURL    string
-	fCR        fileCreatorRenamer
-	genHash    hashGenerator
-	verifyHash hashVerifier
-}
-
-func (goBinDown *goBinaryDownloader) download(version, downloadDir string, forceDownload bool) error {
-	// Create download directory and its parent
-	must(os.MkdirAll(downloadDir, os.ModePerm))
-
-	exists, err := versionExists(version, downloadDir)
-	// handle stat errors even when file exists
-	if err != nil {
-		return err
-	}
-	// return early if archive is already downloaded and forceDownload is false
-	if exists && !forceDownload {
-		fmt.Println("archive has already been downloaded")
-		return nil
-	}
-
-	if err = checkIfExistsRemote(goBinDown.BaseURL, version); err != nil {
-		return err
-	}
-
-	archiveName := fmt.Sprintf("%s%s.%s", prefix, version, postfix)
-	downloadPath := filepath.Join(downloadDir, archiveName)
-
-	// Create the file with tmp extension. So we don't overwrite until
-	// the file is completely downloaded.
-	tmpFile, err := goBinDown.fCR.Create(downloadPath + ".tmp")
-	if err != nil {
-		return err
-	}
-	defer tmpFile.Close()
-
-	goURL := versionURL(goBinDown.BaseURL, version)
-	res, err := goBinDown.Client.Get(goURL)
-	if err != nil {
-		return err
-	}
-	defer res.Body.Close()
-	if res.StatusCode != http.StatusOK {
-		return errors.New(res.Status)
-	}
-
-	// Create the writeCounter to be used with the writer
-	wc := &writeCounter{TotalExpectedBytes: res.ContentLength}
-
-	n, err := io.Copy(tmpFile, io.TeeReader(res.Body, wc))
-	if err != nil {
-		return err
-	}
-	if res.ContentLength != -1 && res.ContentLength != n {
-		return fmt.Errorf("copied %v bytes; expected %v", n, res.ContentLength)
-	}
-
-	wantHex, err := goBinDown.genHash(goURL + ".sha256")
-	if err != nil {
-		return err
-	}
-
-	if err = goBinDown.verifyHash(tmpFile.Name(), wantHex); err != nil {
-		return fmt.Errorf("error verifying SHA256 of %v: %v", tmpFile, err)
-	}
-
-	// Rename the temporary file once fully downloaded
-	return goBinDown.fCR.Rename(downloadPath+".tmp", downloadPath)
-}
 
 func versionURL(baseURL, version string) string {
 	return baseURL + prefix + version + "." + postfix

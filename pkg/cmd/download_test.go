@@ -43,7 +43,7 @@ func (f RoundTripFunc) RoundTrip(req *http.Request) (*http.Response, error) {
 }
 
 // NewTestClient returns *http.Client with a Fake Transport
-func NewTestClient(fn RoundTripFunc) *http.Client {
+func newTestClient(fn RoundTripFunc) *http.Client {
 	return &http.Client{
 		Transport: RoundTripFunc(fn),
 	}
@@ -58,9 +58,9 @@ func fakeVerifyHash(file, hex string) error {
 	return nil
 }
 
-func TestDownloadGoBinary(t *testing.T) {
+func TestDownloadRelease(t *testing.T) {
 	ic := &inMemoryFileCreatorRenamer{}
-	testClient := NewTestClient(func(req *http.Request) *http.Response {
+	testClient := newTestClient(func(req *http.Request) *http.Response {
 		testData := bytes.NewBufferString("This is test data")
 
 		return &http.Response{
@@ -69,15 +69,16 @@ func TestDownloadGoBinary(t *testing.T) {
 			ContentLength: int64(len(testData.Bytes())),
 		}
 	})
-	testGoBinDownloader := &goBinaryDownloader{
-		BaseURL:    "https://dl.google.com/go/",
-		Client:     testClient,
-		fCR:        ic,
-		genHash:    genTestHash,
-		verifyHash: fakeVerifyHash,
+	dl := &goBinaryDownloader{
+		baseURL:     "https://dl.google.com/go/",
+		client:      testClient,
+		downloadDir: ".",
+		fCR:         ic,
+		genHash:     genTestHash,
+		verifyHash:  fakeVerifyHash,
 	}
 
-	err := testGoBinDownloader.download("1.12", ".", true)
+	err := downloadRelease("1.12", dl)
 	if err != nil {
 		t.Errorf("Error downloading go binary: %v", err)
 	}
