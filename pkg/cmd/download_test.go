@@ -70,7 +70,7 @@ func TestDownloadRelease(t *testing.T) {
 		}
 	})
 	dl := &goBinaryDownloader{
-		baseURL:     "https://dl.google.com/go/",
+		baseURL:     "https://storage.googleapis.com/golang/",
 		client:      testClient,
 		downloadDir: ".",
 		fCR:         ic,
@@ -80,7 +80,7 @@ func TestDownloadRelease(t *testing.T) {
 
 	err := downloadRelease("1.12", dl)
 	if err != nil {
-		t.Errorf("Error downloading go binary: %v", err)
+		t.Fatalf("Error downloading go binary: %v", err)
 	}
 
 	if ic.writer.String() != "This is test data" {

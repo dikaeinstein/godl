@@ -30,12 +30,13 @@ import (
 
 func init() {
 	rootCmd.AddCommand(download)
-	download.Flags().BoolVarP(&forceDownload, "force", "f", false, "Force download")
+	download.Flags().BoolVarP(&forceDownload, "force", "f", false,
+		"Force download instead of using local version")
 }
 
 // downloadCmd represents the download command
 var download = &cobra.Command{
-	Use:   "download [version]",
+	Use:   "download version",
 	Short: "Download go binary archive.",
 	Long: `Download the archive version from https://golang.org/dl/ and save to $HOME/godl/downloads.
 
@@ -105,7 +106,7 @@ func (g *goBinaryDownloader) download(version string) error {
 		return nil
 	}
 
-	if err = checkIfExistsRemote(g.baseURL, version); err != nil {
+	if err = checkIfExistsRemote(g.baseURL, version, g.client); err != nil {
 		return err
 	}
 
@@ -251,9 +252,9 @@ func verifyHash(file, hex string) error {
 	return nil
 }
 
-func checkIfExistsRemote(baseURL, version string) error {
+func checkIfExistsRemote(baseURL, version string, c *http.Client) error {
 	u := versionURL(baseURL, version)
-	res, err := http.Get(u)
+	res, err := c.Head(u)
 	if err != nil {
 		return err
 	}

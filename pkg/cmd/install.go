@@ -17,6 +17,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"net/http"
 	"os"
 	"path"
 
@@ -30,9 +31,12 @@ func init() {
 
 // installCmd represents the install command
 var install = &cobra.Command{
-	Use:   "install [version]",
-	Short: "Installs the specified go binary archive version or path into /usr/local.",
+	Use:   "install version",
+	Short: "Installs the specified go binary version from local or remote.",
+	Long: `Installs the specified go binary version from local or remote.
+It fetches the version from the remote if not found locally before installing it.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
+		fcr := fsFileCreatorRenamer{}
 		gz := gzipUnArchiver{
 			z: archiver.TarGz{
 				Tar: &archiver.Tar{
@@ -47,7 +51,17 @@ var install = &cobra.Command{
 			return err
 		}
 
-		return installRelease(args[0], dlDir, gz, fsRemover{})
+		dl := &goBinaryDownloader{
+			baseURL:       "https://storage.googleapis.com/golang/",
+			client:        &http.Client{},
+			downloadDir:   dlDir,
+			fCR:           fcr,
+			forceDownload: forceDownload,
+			genHash:       getBinaryHash,
+			verifyHash:    verifyHash,
+		}
+
+		return installRelease(args[0], dlDir, gz, fsRemover{}, dl)
 	},
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
@@ -57,15 +71,14 @@ var install = &cobra.Command{
 	},
 }
 
-func installRelease(version, dlDir string, gz unArchiver, dr dirRemover) error {
+func installRelease(version, dlDir string, gz unArchiver, dr dirRemover, dl *goBinaryDownloader) error {
 	fmt.Println("Installing binary into /usr/local")
-	gi := goInstaller{dlDir, gz, dr}
-	err := gi.install(version)
-	if err != nil {
+	gi := goInstaller{dlDir, gz, dr, dl}
+
+	if err := gi.install(version); err != nil {
 		return err
 	}
 
-	fmt.Println("Installation Complete. Type `go version` to check installation")
 	return nil
 }
 
@@ -73,6 +86,7 @@ type goInstaller struct {
 	dlDir string
 	ua    unArchiver
 	dr    dirRemover
+	dl    *goBinaryDownloader
 }
 
 func (gi goInstaller) install(archiveVersion string) error {
@@ -88,18 +102,33 @@ func (gi goInstaller) install(archiveVersion string) error {
 	if err != nil {
 		return err
 	}
+
+	// download binary if it doesn't exist locally
 	if !exists {
-		return fmt.Errorf("The specified version has not been downloaded, please download and try again")
+		fmt.Printf("%v not found locally.\n", archiveVersion)
+		fmt.Println("fetching from remote...")
+		if err := gi.dl.download(archiveVersion); err != nil {
+			return fmt.Errorf("error downloading %v: %v", archiveVersion, err)
+		}
 	}
 
 	// clean install - remove existing go installation before installing
 	// new version
+	fmt.Println("removing old installation...")
 	err = removeGo(gi.dr)
 	if err != nil {
 		return fmt.Errorf("error removing old installation: %v", err)
 	}
+	fmt.Println("old installation removed")
+
+	fmt.Printf("unpacking %v ...", archiveVersion)
 	target := path.Join("/usr", "local")
-	return gi.ua.Unarchive(downloadPath, target)
+	if err := gi.ua.Unarchive(downloadPath, target); err != nil {
+		return err
+	}
+
+	fmt.Println("Installation successful. Type `go version` to check installation")
+	return nil
 }
 
 type unArchiver interface {

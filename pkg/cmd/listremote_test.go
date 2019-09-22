@@ -11,26 +11,26 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-var testClient = newTestClient(func(req *http.Request) *http.Response {
-	f, err := os.Open(path.Join("testdata", "listbucketresult.xml"))
-	if err != nil {
-		panic(err)
-	}
-
-	return &http.Response{
-		StatusCode: http.StatusOK,
-		Body:       f,
-	}
-})
-
-var failingTestClient = newTestClient(func(req *http.Request) *http.Response {
-	return &http.Response{
-		StatusCode: http.StatusNotFound,
-		Body:       ioutil.NopCloser(bytes.NewBufferString("")),
-	}
-})
-
 func TestListRemoteVersions(t *testing.T) {
+	testClient := newTestClient(func(req *http.Request) *http.Response {
+		f, err := os.Open(path.Join("testdata", "listbucketresult.xml"))
+		if err != nil {
+			panic(err)
+		}
+
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       f,
+		}
+	})
+
+	failingTestClient := newTestClient(func(req *http.Request) *http.Response {
+		return &http.Response{
+			StatusCode: http.StatusNotFound,
+			Body:       ioutil.NopCloser(bytes.NewBufferString("")),
+		}
+	})
+
 	tests := map[string]struct {
 		input *http.Client
 		want  string

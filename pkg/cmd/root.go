@@ -33,7 +33,7 @@ var cfgFile string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "godl COMMAND",
+	Use:   "godl [command]",
 	Short: "Godl is a CLI tool used to download and install go binary releases on mac.",
 }
 

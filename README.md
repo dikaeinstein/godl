@@ -50,7 +50,6 @@ output: go version go1.13 darwin/amd64 // or something similar
 
 ### Improvements / Coming features
 
-* The install command downloads archive if has not being downloaded before installing instead of failing with an error
 * auto-completion (bash & zsh)
 
 ### Contributing
