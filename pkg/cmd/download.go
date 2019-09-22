@@ -29,12 +29,12 @@ import (
 )
 
 func init() {
-	rootCmd.AddCommand(downloadCmd)
-	downloadCmd.Flags().BoolVarP(&forceDownload, "force", "f", false, "Force download")
+	rootCmd.AddCommand(download)
+	download.Flags().BoolVarP(&forceDownload, "force", "f", false, "Force download")
 }
 
 // downloadCmd represents the download command
-var downloadCmd = &cobra.Command{
+var download = &cobra.Command{
 	Use:   "download [version]",
 	Short: "Download go binary archive.",
 	Long: `Download the archive version from https://golang.org/dl/ and save to $HOME/godl/downloads.

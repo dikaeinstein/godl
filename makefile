@@ -6,7 +6,7 @@ VERSION=$(shell git describe --tags)
 GO_VERSION=$(shell go version)
 
 # setup -ldflags for go build
-LD_FLAGS=-ldflags '-s -X "$(PACKAGE)/pkg/cmd.version=$(VERSION)" -X "$(PACKAGE)/pkg/cmd.buildDate=$(BUILD_DATE)" -X "$(PACKAGE)/pkg/cmd.goVersion=$(GO_VERSION)" -X "$(PACKAGE)/pkg/cmd.gitHash=$(GIT_COMMIT_HASH)"'
+LD_FLAGS=-ldflags '-s -X "$(PACKAGE)/pkg/cmd.godlVersion=$(VERSION)" -X "$(PACKAGE)/pkg/cmd.buildDate=$(BUILD_DATE)" -X "$(PACKAGE)/pkg/cmd.goVersion=$(GO_VERSION)" -X "$(PACKAGE)/pkg/cmd.gitHash=$(GIT_COMMIT_HASH)"'
 
 ## Fetch dependencies
 fetch:

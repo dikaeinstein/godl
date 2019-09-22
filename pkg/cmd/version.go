@@ -21,22 +21,22 @@ import (
 )
 
 func init() {
-	rootCmd.AddCommand(versionCmd)
+	rootCmd.AddCommand(version)
 }
 
 var (
-	version   = "unknown version"
-	gitHash   = "unknown commit"
-	goVersion = "unknow go version"
-	buildDate = "unknown build date"
+	godlVersion = "unknown version"
+	gitHash     = "unknown commit"
+	goVersion   = "unknow go version"
+	buildDate   = "unknown build date"
 )
 
 // versionCmd represents the version command
-var versionCmd = &cobra.Command{
+var version = &cobra.Command{
 	Use:   "version",
 	Short: "Show the godl version information.",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Printf("Version: %s\nGo version: %s\nGit hash: %s\nBuilt: %s\n",
-			version, goVersion, gitHash, buildDate)
+			godlVersion, goVersion, gitHash, buildDate)
 	},
 }

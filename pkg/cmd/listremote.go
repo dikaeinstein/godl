@@ -16,10 +16,10 @@ import (
 )
 
 func init() {
-	rootCmd.AddCommand(listRemoteCmd)
+	rootCmd.AddCommand(listRemote)
 }
 
-var listRemoteCmd = &cobra.Command{
+var listRemote = &cobra.Command{
 	Use:     "list-remote",
 	Aliases: []string{"ls-remote"},
 	Short:   "List the available remote versions.",

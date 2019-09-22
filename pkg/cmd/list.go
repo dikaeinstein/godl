@@ -24,11 +24,11 @@ import (
 )
 
 func init() {
-	rootCmd.AddCommand(listCmd)
+	rootCmd.AddCommand(list)
 }
 
 // listCmd represents the list command
-var listCmd = &cobra.Command{
+var list = &cobra.Command{
 	Use:     "list",
 	Aliases: []string{"ls"},
 	Short:   "List the downloaded versions.",

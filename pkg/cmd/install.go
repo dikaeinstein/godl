@@ -25,11 +25,11 @@ import (
 )
 
 func init() {
-	rootCmd.AddCommand(installCmd)
+	rootCmd.AddCommand(install)
 }
 
 // installCmd represents the install command
-var installCmd = &cobra.Command{
+var install = &cobra.Command{
 	Use:   "install [version]",
 	Short: "Installs the specified go binary archive version or path into /usr/local.",
 	RunE: func(cmd *cobra.Command, args []string) error {
