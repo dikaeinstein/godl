@@ -14,5 +14,6 @@ before_install:
 install: true
 script:
   - make fetch
-  - goveralls -service=travis-ci
+  - make test-cover
+  - goveralls -coverprofile=cover.out -service=travis-ci
   - make build
