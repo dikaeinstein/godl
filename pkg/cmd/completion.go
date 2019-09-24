@@ -36,26 +36,20 @@ var completionCmd = &cobra.Command{
 
 # godl completion <bash|zsh>
 
-To configure your bash shell to load completions run this command:
+To configure your bash shell to load completions for each session add to your bashrc
 
-cp ~/.godl/autocomplete/bash/godl /usr/local/etc/bash_completion.d/godl
-
-Then add to your .bashrc or .bash_profile
+# ~/.bashrc or ~/.bash_profile
 . "/usr/local/etc/profile.d/bash_completion.sh"
-
-
-To configure your zsh shell to load completions for each session add to .zshrc
-
-fpath=(~/.godl/autocomplete/zsh $fpath)
-autoload -U compinit && compinit
 `,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		home, err := homedir.Dir()
 		if err != nil {
 			return err
 		}
-
-		return completion(args[0], home)
+		bashSymDir := path.Join("/usr", "local", "etc", "bash_completion.d")
+		zshSymDir := path.Join("/usr", "local", "share", "zsh", "site-functions")
+		fl := fsLinker{}
+		return completion(args[0], home, bashSymDir, zshSymDir, fl)
 	},
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
@@ -65,7 +59,7 @@ autoload -U compinit && compinit
 	},
 }
 
-func completion(shell, home string) error {
+func completion(shell, home, bashSymDir, zshSymDir string, fl fileLinker) error {
 	autocompleteDir := path.Join(home, ".godl", "autocomplete")
 	bashDir := path.Join(autocompleteDir, "bash")
 	zshDir := path.Join(autocompleteDir, "zsh")
@@ -74,10 +68,31 @@ func completion(shell, home string) error {
 
 	switch shell {
 	case "bash":
-		return rootCmd.GenBashCompletionFile(filepath.Join(bashDir, "godl"))
+		bashTarget := filepath.Join(bashDir, "godl")
+		err := rootCmd.GenBashCompletionFile(bashTarget)
+		if err != nil {
+			return err
+		}
+		return fl.Symlink(bashTarget, filepath.Join(bashSymDir, "godl"))
 	case "zsh":
-		return rootCmd.GenZshCompletionFile(filepath.Join(zshDir, "_godl"))
+		zshTarget := filepath.Join(zshDir, "_godl")
+		err := rootCmd.GenZshCompletionFile(zshTarget)
+		if err != nil {
+			return err
+		}
+		return fl.Symlink(zshTarget, filepath.Join(zshSymDir, "_godl"))
 	default:
 		return errors.New("unknown shell passed")
 	}
+}
+
+type fileLinker interface {
+	Symlink(oldName, newName string) error
+}
+
+// fsLinker is a filesystem implementation of fileLinker
+type fsLinker struct{}
+
+func (fsLinker) Symlink(oldName, newName string) error {
+	return os.Symlink(oldName, newName)
 }

@@ -7,6 +7,12 @@ import (
 	"testing"
 )
 
+type fakeSymLinker struct{}
+
+func (fakeSymLinker) Symlink(oldName, newName string) error {
+	return nil
+}
+
 func TestCompletion(t *testing.T) {
 	testCases := map[string]struct {
 		shell string
@@ -18,19 +24,26 @@ func TestCompletion(t *testing.T) {
 			"unknown", errors.New("unknown shell passed")},
 	}
 
-	tmpDir, err := ioutil.TempDir(".", "_tmpHome")
+	tmpHome, err := ioutil.TempDir(".", "_tmpHome")
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer os.RemoveAll(tmpDir)
+	defer os.RemoveAll(tmpHome)
 
+	tmpSymDir, err := ioutil.TempDir(".", "_symDir")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(tmpSymDir)
+
+	fl := fakeSymLinker{}
 	for name, tC := range testCases {
 		t.Run(name, func(t *testing.T) {
-			err := completion(tC.shell, tmpDir)
+			err := completion(tC.shell, tmpHome, tmpSymDir, tmpSymDir, fl)
 			if err != nil {
 				if err.Error() != tC.err.Error() {
 					t.Errorf("expected completion(%#v, %#v) => %#v, got %v",
-						tC.shell, tmpDir, tC.err, err)
+						tC.shell, tmpHome, tC.err, err)
 				}
 			}
 		})
