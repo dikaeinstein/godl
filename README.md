@@ -21,6 +21,9 @@ Run `godl help` to get help and see available options
 
 ## Subcommands
 
+*godl supports autocomplete for all subcommands*
+
+* `completion` — Generates completion scripts for bash or zsh
 * `download` — Download go binary archive
 * `help` — Help about any command
 * `install` — Installs the specified go binary release version
@@ -49,8 +52,6 @@ output: go version go1.13 darwin/amd64 // or something similar
 ```
 
 ### Improvements / Coming features
-
-* auto-completion (bash & zsh)
 
 ### Contributing
 
