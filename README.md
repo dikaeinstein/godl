@@ -5,11 +5,20 @@ Godl is a CLI tool used to download and install go binary releases on mac.
 [![Build Status](https://travis-ci.com/dikaeinstein/godl.svg?branch=master)](https://travis-ci.com/dikaeinstein/godl)
 [![Coverage Status](https://coveralls.io/repos/github/dikaeinstein/godl/badge.svg?branch=master)](https://coveralls.io/github/dikaeinstein/godl?branch=master)
 
-## Installation
+## Standalone
 
-```go get -u https://github.com/dikaeinstein/godl```
+godl can be easily installed as an executable. Download the latest [compiled binaries](https://github.com/dikaeinstein/godl/releases) and put it anywhere in your executable path.
 
-```cd path/installed```
+## Build From Source
+
+Prerequisites for building from source are:
+
+- make
+- Go 1.10+
+
+```git clone https://github.com/dikaeinstein/godl```
+
+```cd godl```
 
 Then run: ```make install```
 

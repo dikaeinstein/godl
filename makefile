@@ -22,11 +22,11 @@ test-cover:
 
 ## Build binary
 build:
-	GO111MODULE=on go build -a $(LD_FLAGS) -o godl cmd/main.go
+	GO111MODULE=on GOOS=darwin GOARCH=amd64 go build -a $(LD_FLAGS) -o godl cmd/main.go
 
 ## Simulate installing the binary to $GOBIN path using `go build`
 install:
-	GO111MODULE=on go build -a $(LD_FLAGS) -o $(GOBIN)/godl cmd/main.go
+	GO111MODULE=on GOOS=darwin GOARCH=amd64 go build -a $(LD_FLAGS) -o $(GOBIN)/godl cmd/main.go
 
 ## Execute binary
 run:
