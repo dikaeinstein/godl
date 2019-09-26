@@ -47,7 +47,7 @@ To download and install go1.13:
 ```bash
 godl download 1.13
 
-godl install 1.13
+sudo godl install 1.13
 ```
 
 Then run
