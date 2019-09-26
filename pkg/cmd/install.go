@@ -121,7 +121,7 @@ func (gi goInstaller) install(archiveVersion string) error {
 	}
 	fmt.Println("old installation removed")
 
-	fmt.Printf("unpacking %v ...", archiveVersion)
+	fmt.Printf("unpacking %v ...\n", archiveVersion)
 	target := path.Join("/usr", "local")
 	if err := gi.ua.Unarchive(downloadPath, target); err != nil {
 		return err
