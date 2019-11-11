@@ -114,6 +114,7 @@ func (gi goInstaller) install(archiveVersion string) error {
 
 	// clean install - remove existing go installation before installing
 	// new version
+	fmt.Println()
 	fmt.Println("removing old installation...")
 	err = removeGo(gi.dr)
 	if err != nil {

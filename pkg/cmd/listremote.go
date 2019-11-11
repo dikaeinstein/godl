@@ -10,9 +10,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/tj/go-spin"
-
 	"github.com/spf13/cobra"
+	"github.com/tj/go-spin"
 )
 
 func init() {
@@ -85,7 +84,7 @@ func listRemoteVersions(c *http.Client) error {
 
 	for _, c := range sortedContents {
 		v := strings.Split(c.Key, ".darwin-amd64")
-		fmt.Println(v[0])
+		fmt.Println(strings.TrimPrefix(v[0], "go"))
 	}
 
 	return nil
