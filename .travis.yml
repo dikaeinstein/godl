@@ -1,13 +1,9 @@
 language: go
 go:
 - 1.13.x
-- master
 os:
 - osx
-osx_image: xcode10.1
-dist: trusty
-env:
-- GO111MODULE=on
+osx_image: xcode11.2
 before_install:
 - go get github.com/mattn/goveralls
 install: true
