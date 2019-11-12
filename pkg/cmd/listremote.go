@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/xml"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"sort"
 	"strings"
@@ -42,9 +41,9 @@ type Content struct {
 	LastModified time.Time
 }
 
-func listRemoteVersions(c *http.Client) error {
-	u := "https://storage.googleapis.com/golang/?prefix=go1"
-	w := u
+func listRemoteVersions(client *http.Client) error {
+	url := "https://storage.googleapis.com/golang/?prefix=go1"
+	w := url
 	ctx, cancelFunc := context.WithCancel(context.Background())
 	defer cancelFunc()
 
@@ -58,25 +57,34 @@ func listRemoteVersions(c *http.Client) error {
 				break Loop
 			default:
 				fmt.Printf("\rfetching remote versions... %s", s.Next())
+				// Pause current goroutine to reduce cpu workload
+				time.Sleep(50 * time.Millisecond)
 			}
 		}
 	}(ctx)
 
-	for true {
-		l, err := getBinaryReleases(u, c)
+	for {
+		listBucketResult, err := getBinaryReleases(url, client)
 		if err != nil {
 			return fmt.Errorf("\nerror fetching list: %v", err)
 		}
-		fl := filterArchive(l)
+
+		fl := filterBucketList(listBucketResult)
 		sortedContents = append(sortedContents, fl.Contents...)
-		if !l.IsTruncated {
+
+		// if there's nothing left to fetch
+		if !listBucketResult.IsTruncated {
 			break
 		}
-		u = w + "&marker=" + l.NextMarker
+
+		// update url with marker to fetch next list
+		url = w + "&marker=" + listBucketResult.NextMarker
 	}
 
+	// sort in-place using the LastModified timestamp
 	sort.Slice(sortedContents, func(i, j int) bool {
-		return sortedContents[i].LastModified.Before(sortedContents[j].LastModified)
+		return sortedContents[i].LastModified.
+			Before(sortedContents[j].LastModified)
 	})
 
 	cancelFunc()
@@ -101,21 +109,16 @@ func getBinaryReleases(url string, c *http.Client) (*ListBucketResult, error) {
 		return nil, fmt.Errorf("%s: %v", url, res.Status)
 	}
 
-	xmlData, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		return nil, fmt.Errorf("error reading xml data: %v", err)
-	}
-
 	var l ListBucketResult
-	err = xml.Unmarshal(xmlData, &l)
+	err = xml.NewDecoder(res.Body).Decode(&l)
 	if err != nil {
-		return nil, fmt.Errorf("error unmarshalling xml: %v", err)
+		return nil, fmt.Errorf("Error decoding xml: %v", err)
 	}
 
 	return &l, nil
 }
 
-func filterArchive(l *ListBucketResult) ListBucketResult {
+func filterBucketList(l *ListBucketResult) ListBucketResult {
 	var archiveList ListBucketResult
 
 	for _, r := range l.Contents {

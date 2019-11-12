@@ -3,3 +3,4 @@ godl
 vendor
 .vscode
 *.out
+.pprof
