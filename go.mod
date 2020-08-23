@@ -4,7 +4,7 @@ require (
 	github.com/BurntSushi/toml v0.3.1 // indirect
 	github.com/dsnet/compress v0.0.1 // indirect
 	github.com/golang/snappy v0.0.1 // indirect
-	github.com/google/go-cmp v0.3.1
+	github.com/google/go-cmp v0.5.1
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/mholt/archiver v3.1.1+incompatible
 	github.com/mitchellh/go-homedir v1.0.0
@@ -17,4 +17,4 @@ require (
 	golang.org/x/sys v0.0.0-20190215142949-d0b11bdaac8a // indirect
 )
 
-go 1.14
+go 1.15
