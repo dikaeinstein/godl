@@ -4,21 +4,12 @@ import (
 	"bytes"
 	"compress/gzip"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
 
 	"github.com/spf13/cobra"
 )
-
-func createTempGodlDownloadDir() (string, error) {
-	tmpDir, err := ioutil.TempDir(".", "_godlDownloadDir")
-	if err != nil {
-		return "", fmt.Errorf("create godlDownloadDir tempdir: %s", err)
-	}
-	return tmpDir, nil
-}
 
 func createTempGoBinaryArchive(tmpDir, archiveVersion string) (*os.File, error) {
 	const (
@@ -41,12 +32,7 @@ func createTempGoBinaryArchive(tmpDir, archiveVersion string) (*os.File, error) 
 }
 
 func TestListDownloadedBinaryArchives(t *testing.T) {
-	tmpDir, err := createTempGodlDownloadDir()
-	if err != nil {
-		t.Errorf("ListDownloadedBinaryArchives failed: %v", err)
-	}
-	defer os.RemoveAll(tmpDir)
-
+	tmpDir := t.TempDir()
 	tmpFile, err := createTempGoBinaryArchive(tmpDir, "1.13")
 	defer tmpFile.Close()
 

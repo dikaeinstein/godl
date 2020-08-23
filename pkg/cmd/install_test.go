@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"io/ioutil"
 	"net/http"
-	"os"
 	"testing"
 )
 
@@ -49,11 +48,7 @@ func TestInstallRelease(t *testing.T) {
 		},
 	}
 
-	tmpDir, err := createTempGodlDownloadDir()
-	if err != nil {
-		t.Fatalf("TestInstallRelease failed: %v", err)
-	}
-	defer os.RemoveAll(tmpDir)
+	tmpDir := t.TempDir()
 
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {

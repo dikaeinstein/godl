@@ -2,8 +2,6 @@ package cmd
 
 import (
 	"errors"
-	"io/ioutil"
-	"os"
 	"testing"
 )
 
@@ -24,17 +22,8 @@ func TestCompletion(t *testing.T) {
 			"unknown", errors.New("unknown shell passed")},
 	}
 
-	tmpHome, err := ioutil.TempDir(".", "_tmpHome")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer os.RemoveAll(tmpHome)
-
-	tmpSymDir, err := ioutil.TempDir(".", "_symDir")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer os.RemoveAll(tmpSymDir)
+	tmpHome := t.TempDir()
+	tmpSymDir := t.TempDir()
 
 	fl := fakeSymLinker{}
 	for name, tC := range testCases {
