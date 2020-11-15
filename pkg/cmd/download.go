@@ -148,9 +148,12 @@ func (g *goBinaryDownloader) download(version string) error {
 		return err
 	}
 
-	if err = g.verifyHash(tmpFile.Name(), wantHex); err != nil {
-		return fmt.Errorf("error verifying SHA256 of %v: %v", tmpFile, err)
+	fmt.Println("\nverifying checksum")
+	err = g.verifyHash(tmpFile.Name(), wantHex)
+	if err != nil {
+		return fmt.Errorf("error verifying SHA256 checksum of %v: %v", tmpFile, err)
 	}
+	fmt.Println("checksums matched!")
 
 	// Rename the temporary file once fully downloaded
 	return g.fCR.Rename(downloadPath+".tmp", downloadPath)
