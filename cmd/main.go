@@ -14,8 +14,36 @@
 
 package main
 
-import "github.com/dikaeinstein/godl/pkg/cmd"
+import (
+	"github.com/dikaeinstein/godl/internal/godl"
+	"github.com/dikaeinstein/godl/internal/godl/completion"
+	"github.com/dikaeinstein/godl/internal/godl/download"
+	"github.com/dikaeinstein/godl/internal/godl/install"
+	"github.com/dikaeinstein/godl/internal/godl/list"
+	"github.com/dikaeinstein/godl/internal/godl/listremote"
+	"github.com/dikaeinstein/godl/internal/godl/version"
+	"github.com/spf13/cobra"
+)
 
 func main() {
-	cmd.Execute()
+	// root command
+	godl := godl.New()
+	// subcommands
+	completion := completion.New(godl)
+	download := download.New()
+	install := install.New()
+	list := list.New()
+	listRemote := listremote.New()
+	version := version.New()
+
+	godl.RegisterSubCommands([]*cobra.Command{
+		completion,
+		download,
+		install,
+		list,
+		listRemote,
+		version,
+	})
+
+	godl.Execute()
 }

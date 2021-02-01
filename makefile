@@ -1,12 +1,12 @@
 BINARY_NAME=godl
-PACKAGE=github.com/dikaeinstein/godl
+PACKAGE=github.com/dikaeinstein/godl/internal/godl
 BUILD_DATE=$(shell date +%Y-%m-%d\ %H:%M)
 GIT_COMMIT_HASH=$(shell git rev-parse --short HEAD)
 VERSION=$(shell git describe --tags)
 GO_VERSION=$(shell go version)
 
 # setup -ldflags for go build
-LD_FLAGS=-ldflags '-s -w -X "$(PACKAGE)/pkg/cmd.godlVersion=$(VERSION)" -X "$(PACKAGE)/pkg/cmd.buildDate=$(BUILD_DATE)" -X "$(PACKAGE)/pkg/cmd.goVersion=$(GO_VERSION)" -X "$(PACKAGE)/pkg/cmd.gitHash=$(GIT_COMMIT_HASH)"'
+LD_FLAGS=-ldflags '-s -w -X "$(PACKAGE)/version.godlVersion=$(VERSION)" -X "$(PACKAGE)/version.buildDate=$(BUILD_DATE)" -X "$(PACKAGE)/version.goVersion=$(GO_VERSION)" -X "$(PACKAGE)/version.gitHash=$(GIT_COMMIT_HASH)"'
 
 ## Fetch dependencies
 fetch:
@@ -32,7 +32,7 @@ install:
 run:
 	GO111MODULE=on go run -a $(LD_FLAGS) cmd/main.go
 
-.PHONY: clean
+.PHONY: clean test
 ## Remove binary
 clean:
 	if [ -f $(BINARY_NAME) ]; then rm -f $(BINARY_NAME); fi
