@@ -61,6 +61,9 @@ func TestInstallRelease(t *testing.T) {
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
 			tmpFile, err := test.CreateTempGoBinaryArchive(tmpDir, tc.downloadedVersion)
+			if err != nil {
+				t.Errorf("create temp binary archive failed: %v", err)
+			}
 			defer tmpFile.Close()
 
 			dl := &downloader.Downloader{

@@ -11,9 +11,12 @@ import (
 func TestListDownloadedBinaryArchives(t *testing.T) {
 	tmpDir := t.TempDir()
 	tmpFile, err := test.CreateTempGoBinaryArchive(tmpDir, "1.13")
+	if err != nil {
+		t.Errorf("create temp binary archive failed: %v", err)
+	}
 	defer tmpFile.Close()
 
-	if listDownloadedBinaryArchives(tmpDir); err != nil {
+	if err := listDownloadedBinaryArchives(tmpDir); err != nil {
 		t.Errorf("Error listing downloaded archive versions: %v", err)
 	}
 }

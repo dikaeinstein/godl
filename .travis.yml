@@ -6,9 +6,12 @@ os:
 osx_image: xcode11.2
 before_install:
 - go get github.com/mattn/goveralls
+- curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v1.35.2
+- golangci-lint --version
 install: true
 script:
 - make fetch
+- make lint
 - make test-cover
 - goveralls -coverprofile=cover.out -service=travis-ci
 - make build

@@ -12,6 +12,9 @@ LD_FLAGS=-ldflags '-s -w -X "$(PACKAGE)/version.godlVersion=$(VERSION)" -X "$(PA
 fetch:
 	GO111MODULE=on go get -v ./...
 
+lint:
+	GO111MODULE=on golangci-lint run ./...
+
 ## Run tests
 test:
 	GO111MODULE=on go test -race -v ./...
