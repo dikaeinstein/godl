@@ -57,7 +57,7 @@ func New() *cobra.Command {
 					DownloadDir:   dlDir,
 					Fsys:          os.FS{},
 					ForceDownload: forceDownload,
-					Hasher:        hash.RemoteHasher{},
+					Hasher:        hash.NewRemoteHasher(http.DefaultClient),
 					HashVerifier:  godlutil.VerifyHash,
 				},
 			}

@@ -31,6 +31,11 @@ func (r RemoteHasher) Hash(url string) (string, error) {
 	return string(urlHash), nil
 }
 
+// NewRemoteHasher returns an initialized RemoteHasher
+func NewRemoteHasher(client *http.Client) RemoteHasher {
+	return RemoteHasher{client}
+}
+
 type FakeHasher struct{}
 
 func (FakeHasher) Hash(path string) (string, error) {
