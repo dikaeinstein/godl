@@ -27,7 +27,7 @@ type GodlCmd struct {
 }
 
 // Execute adds all child commands to the base `godl` command and sets flags appropriately.
-// This is called by main. It only needs to happen once to the rootCmd.
+// This is called by main. It only needs to happen once.
 func (godl *GodlCmd) Execute() {
 	if err := godl.cobraCmd.Execute(); err != nil {
 		fmt.Println(err)
