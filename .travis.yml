@@ -6,7 +6,8 @@ os:
 osx_image: xcode11.2
 before_install:
 - go get github.com/mattn/goveralls
-- curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v1.35.2
+# binary will be $(go env GOPATH)/bin/golangci-lint
+- curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.36.0
 - golangci-lint --version
 install: true
 script:
