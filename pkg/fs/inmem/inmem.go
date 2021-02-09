@@ -2,6 +2,7 @@ package inmem
 
 import (
 	"bytes"
+	"os"
 
 	"github.com/dikaeinstein/godl/pkg/fs"
 )
@@ -45,3 +46,9 @@ func (inmem *FS) Content() *bytes.Buffer {
 }
 
 func (*FS) RemoveAll(path string) error { return nil }
+
+func (inmem *FS) WriteFile(filename string, data []byte, perm os.FileMode) error {
+	inmem.Reset()
+	_, err := inmem.Write(data)
+	return err
+}

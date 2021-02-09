@@ -9,6 +9,8 @@ Godl is a CLI tool used to download and install go binary releases on mac.
 
 godl can be easily installed as an executable. Download the latest [compiled binaries](https://github.com/dikaeinstein/godl/releases) and put it anywhere in your executable path.
 
+*You might need to run `chmod +x ${path_to/godl}` to make it an executable.*
+
 ## Install with Go 1.16.x
 
 From Go 1.16, the `go install` command can be used to install `godl` directly. The binary is placed in $GOPATH/bin, or in $GOBIN if set:

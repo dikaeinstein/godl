@@ -23,7 +23,7 @@ import (
 	"github.com/dikaeinstein/godl/internal/pkg/downloader"
 	"github.com/dikaeinstein/godl/internal/pkg/godlutil"
 	"github.com/dikaeinstein/godl/pkg/fs"
-	"github.com/dikaeinstein/godl/pkg/fs/os"
+	osFS "github.com/dikaeinstein/godl/pkg/fs/os"
 	"github.com/dikaeinstein/godl/pkg/hash"
 	"github.com/mholt/archiver"
 	"github.com/spf13/cobra"
@@ -55,7 +55,7 @@ func New() *cobra.Command {
 					BaseURL:       "https://storage.googleapis.com/golang/",
 					Client:        &http.Client{},
 					DownloadDir:   dlDir,
-					Fsys:          os.FS{},
+					Fsys:          osFS.FS{},
 					ForceDownload: forceDownload,
 					Hasher:        hash.NewRemoteHasher(http.DefaultClient),
 					HashVerifier:  godlutil.VerifyHash,
@@ -119,6 +119,13 @@ func (i *installCmd) Run(archiveVersion string) error {
 	fmt.Printf("unpacking %v ...\n", archiveVersion)
 	target := path.Join("/usr", "local")
 	if err := i.archiver.Unarchive(downloadPath, target); err != nil {
+		return err
+	}
+
+	fmt.Println("adding to $PATH...")
+	pathsD := path.Join("/etc", "paths.d", "go")
+	err = fs.WriteFile(i.dl.Fsys, pathsD, []byte("/usr/local/go/bin\n"), 0644)
+	if err != nil {
 		return err
 	}
 

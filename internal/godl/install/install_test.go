@@ -46,13 +46,16 @@ func TestInstallRelease(t *testing.T) {
 		downloadedVersion string
 		installVersion    string
 		success           bool
+		pathsD            string
 	}{
 		"installRelease downloads from remote when version not found locally": {
-			testClient, "1.10.1", "1.11.7", true,
+			testClient, "1.10.1", "1.11.7", true, "/usr/local/go/bin\n",
 		},
-		"installRelease installs local downloaded version": {testClient, "1.10.6", "1.10.6", true},
+		"installRelease installs local downloaded version": {
+			testClient, "1.10.6", "1.10.6", true, "/usr/local/go/bin\n",
+		},
 		"installRelease handle error when fetching binary from remote": {
-			failingTestClient, "1.10.1", "1.11.9", false,
+			failingTestClient, "1.10.1", "1.11.9", false, "",
 		},
 	}
 
@@ -66,11 +69,12 @@ func TestInstallRelease(t *testing.T) {
 			}
 			defer tmpFile.Close()
 
+			storage := new(bytes.Buffer)
 			dl := &downloader.Downloader{
 				BaseURL:      "https://storage.googleapis.com/golang/",
 				Client:       tc.c,
 				DownloadDir:  ".",
-				Fsys:         inmem.NewFS(new(bytes.Buffer)),
+				Fsys:         inmem.NewFS(storage),
 				Hasher:       hash.FakeHasher{},
 				HashVerifier: fakeHashVerifier,
 			}
@@ -84,6 +88,10 @@ func TestInstallRelease(t *testing.T) {
 				got = false
 			} else {
 				got = true
+			}
+
+			if storage.String() != tc.pathsD {
+				t.Errorf("Error adding to $PATH")
 			}
 
 			if got != tc.success {

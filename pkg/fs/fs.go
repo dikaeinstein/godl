@@ -1,6 +1,9 @@
 package fs
 
-import "fmt"
+import (
+	"fmt"
+	"os"
+)
 
 // File represents a filesystem file.
 type File interface {
@@ -34,12 +37,20 @@ type RenameFS interface {
 
 // SymlinkFS is a filesystem that can symlink a file.
 type SymlinkFS interface {
+	FS
 	Symlink(oldName, newName string) error
 }
 
 // RemoveAllFS is a filesystem that remove path and it's children that it may contain.
 type RemoveAllFS interface {
+	FS
 	RemoveAll(path string) error
+}
+
+// WriteFileFS is a filesystem that can write data to a file.
+type WriteFileFS interface {
+	FS
+	WriteFile(filename string, data []byte, perm os.FileMode) error
 }
 
 // Create a new file using the given filesystem.
@@ -76,4 +87,12 @@ func RemoveAll(fsys FS, path string) error {
 	}
 
 	return fmt.Errorf("removeAll %s: operation not supported", path)
+}
+
+func WriteFile(fsys FS, filename string, data []byte, perm os.FileMode) error {
+	if fsys, ok := fsys.(WriteFileFS); ok {
+		return fsys.WriteFile(filename, data, perm)
+	}
+
+	return fmt.Errorf("writeFile %s %s %s: operation not supported", filename, data, perm)
 }

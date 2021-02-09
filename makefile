@@ -4,6 +4,7 @@ BUILD_DATE=$(shell date +%Y-%m-%d\ %H:%M)
 GIT_COMMIT_HASH=$(shell git rev-parse --short HEAD)
 VERSION=$(shell git describe --tags)
 GO_VERSION=$(shell go version)
+GOBIN="$(shell go env GOPATH)/bin"
 
 # setup -ldflags for go build
 LD_FLAGS=-ldflags '-s -w -X "$(PACKAGE)/version.godlVersion=$(VERSION)" -X "$(PACKAGE)/version.buildDate=$(BUILD_DATE)" -X "$(PACKAGE)/version.goVersion=$(GO_VERSION)" -X "$(PACKAGE)/version.gitHash=$(GIT_COMMIT_HASH)"'

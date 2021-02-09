@@ -16,6 +16,7 @@ script:
 - make test-cover
 - goveralls -coverprofile=cover.out -service=travis-ci
 - make build
+- chmod +x ./godl
 before_deploy:
   - export tag=$(git describe --tag) && prefix="v" && tag=${tag#$prefix}
   - export RELEASE_NAME="godl $tag"
