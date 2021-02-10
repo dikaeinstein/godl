@@ -25,7 +25,7 @@ deploy:
   token:
     secure: EIxfVaGwikhKLNwpA4fXYb4tlkM5OtJzgjoUkT5WuQ1FoKubwIUwTkzTqJPpq3oF0kbeb+ooRwaCRm2uhKb5+U4w5SNEOwAnA5qLg0t5OvBmG0VqNgydlmQFEVsTvUWbWZJmuISdOG3Ek/X8GGLTHuchHwAArvGqcn7VI3HWvnsL2W1T2J7Kmod/ypgztDdH+p81iGPBPb7kquVcZzYrGMzgV1/6CfgjNRcGUMy4gwera4q08RamF3UTzDYUNMnisQ0aHbscnYtn2/B3auOgdGCB87V12mVR6XezbckpHhV4Hzo8x/xhYWYw+6h5LbdlSzVLvxwgD5i0NYav2CFuInrhx5V3rP3KXteHKNcW+Wncz+bzqOQ7nZRqVTxEVB0qHffOVaFG5fld2p85FI9yLsHrQqiVLqw8M7dIkNv7R5y/UBKGry5oHdbTCfXjPeFK2nJbAtxMnM50gXBGyAjl8wm0PTz3X2oEm/F73GWN9YcIxfzUYLQzM5ezJPcBzWqzB8Z4KUZjFDSzUSuXJFPEmiwl2zwMs9ZWA+oq61R/XBhYWg3j+jzII52L3l/W3YifsuV0RRf4A5oz2oVD0ok0rgr98spmM5pId7mr5N9yJr93DdH55o2dpEfbCyH+GCkh30SPT1u/snT8Cdb3B9HA23Kiof+uPGy6/LOLp5MeoU0=
   file: "godl"
-  cleanup: true
+  cleanup: false
   name: $RELEASE_NAME
   on:
     repo: dikaeinstein/godl
