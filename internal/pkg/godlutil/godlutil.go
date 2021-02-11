@@ -7,7 +7,9 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 
+	"github.com/hashicorp/go-version"
 	"github.com/mitchellh/go-homedir"
 )
 
@@ -59,4 +61,13 @@ func VerifyHash(input io.Reader, hex string) error {
 	}
 
 	return nil
+}
+
+// GetVersion returns the version from the given string.
+// 		go1.11.4.darwin-amd64.tar.gz => 1.11.4
+func GetVersion(s string) *version.Version {
+	v := strings.Split(s, ".darwin-amd64")
+	vv, err := version.NewVersion(strings.TrimPrefix(v[0], "go"))
+	Must(err)
+	return vv
 }

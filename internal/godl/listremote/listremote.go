@@ -9,7 +9,8 @@ import (
 	"strings"
 	"time"
 
-	go_version "github.com/hashicorp/go-version"
+	"github.com/dikaeinstein/godl/internal/pkg/godlutil"
+	"github.com/hashicorp/go-version"
 	"github.com/spf13/cobra"
 	"github.com/tj/go-spin"
 )
@@ -82,9 +83,8 @@ func listRemoteVersions(client *http.Client) error {
 	}
 
 	versions := mapToVersion(contents)
-
 	// sort in-place comparing version numbers
-	sort.Sort(go_version.Collection(versions))
+	sort.Sort(version.Collection(versions))
 
 	cancelFunc()
 	fmt.Println()
@@ -128,13 +128,10 @@ func selectDarwin(l *ListBucketResult) ListBucketResult {
 	return archiveList
 }
 
-func mapToVersion(contents []Content) []*go_version.Version {
-	versions := make([]*go_version.Version, len(contents))
+func mapToVersion(contents []Content) []*version.Version {
+	versions := make([]*version.Version, len(contents))
 	for i, c := range contents {
-		v := strings.Split(c.Key, ".darwin-amd64")
-
-		vv, _ := go_version.NewVersion(strings.TrimPrefix(v[0], "go"))
-		versions[i] = vv
+		versions[i] = godlutil.GetVersion(c.Key)
 	}
 	return versions
 }

@@ -18,9 +18,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"sort"
 	"strings"
 
 	"github.com/dikaeinstein/godl/internal/pkg/godlutil"
+	"github.com/hashicorp/go-version"
 	"github.com/spf13/cobra"
 )
 
@@ -42,11 +44,6 @@ func New() *cobra.Command {
 }
 
 func listDownloadedBinaryArchives(downloadDir string) error {
-	const (
-		archiveSuffix = ".darwin-amd64.tar.gz"
-		archivePrefix = "go"
-	)
-
 	// Create download directory and its parent
 	godlutil.Must(os.MkdirAll(downloadDir, os.ModePerm))
 
@@ -55,16 +52,24 @@ func listDownloadedBinaryArchives(downloadDir string) error {
 		return err
 	}
 
-	for _, file := range files {
-		name := file.Name()
-		if strings.HasSuffix(name, archiveSuffix) {
-			archiveVersion := strings.TrimSuffix(
-				strings.TrimPrefix(name, archivePrefix),
-				archiveSuffix,
-			)
-			fmt.Println(archiveVersion)
-		}
+	versions := mapToVersion(files)
+	// sort in-place comparing version numbers
+	sort.Sort(version.Collection(versions))
+
+	for _, v := range versions {
+		fmt.Println(v.Original())
 	}
 
 	return nil
+}
+
+func mapToVersion(files []os.FileInfo) []*version.Version {
+	versions := []*version.Version{}
+	for _, file := range files {
+		name := file.Name()
+		if strings.HasSuffix(name, ".darwin-amd64.tar.gz") {
+			versions = append(versions, godlutil.GetVersion(name))
+		}
+	}
+	return versions
 }
