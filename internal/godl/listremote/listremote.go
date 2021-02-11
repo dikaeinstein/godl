@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	go_version "github.com/hashicorp/go-version"
 	"github.com/spf13/cobra"
 	"github.com/tj/go-spin"
 )
@@ -46,7 +47,7 @@ func listRemoteVersions(client *http.Client) error {
 	ctx, cancelFunc := context.WithCancel(context.Background())
 	defer cancelFunc()
 
-	var sortedContents []Content
+	var contents []Content
 	go func(ctx context.Context) {
 		s := spin.New()
 	Loop:
@@ -68,8 +69,8 @@ func listRemoteVersions(client *http.Client) error {
 			return fmt.Errorf("\nerror fetching list: %v", err)
 		}
 
-		fl := filterBucketList(listBucketResult)
-		sortedContents = append(sortedContents, fl.Contents...)
+		fl := selectDarwin(listBucketResult)
+		contents = append(contents, fl.Contents...)
 
 		// if there's nothing left to fetch
 		if !listBucketResult.IsTruncated {
@@ -80,18 +81,16 @@ func listRemoteVersions(client *http.Client) error {
 		url = w + "&marker=" + listBucketResult.NextMarker
 	}
 
-	// sort in-place using the LastModified timestamp
-	sort.Slice(sortedContents, func(i, j int) bool {
-		return sortedContents[i].LastModified.
-			Before(sortedContents[j].LastModified)
-	})
+	versions := mapToVersion(contents)
+
+	// sort in-place comparing version numbers
+	sort.Sort(go_version.Collection(versions))
 
 	cancelFunc()
 	fmt.Println()
 
-	for _, c := range sortedContents {
-		v := strings.Split(c.Key, ".darwin-amd64")
-		fmt.Println(strings.TrimPrefix(v[0], "go"))
+	for _, v := range versions {
+		fmt.Println(v.Original())
 	}
 
 	return nil
@@ -117,7 +116,7 @@ func getBinaryReleases(url string, c *http.Client) (*ListBucketResult, error) {
 	return &l, nil
 }
 
-func filterBucketList(l *ListBucketResult) ListBucketResult {
+func selectDarwin(l *ListBucketResult) ListBucketResult {
 	var archiveList ListBucketResult
 
 	for _, r := range l.Contents {
@@ -127,4 +126,15 @@ func filterBucketList(l *ListBucketResult) ListBucketResult {
 	}
 
 	return archiveList
+}
+
+func mapToVersion(contents []Content) []*go_version.Version {
+	versions := make([]*go_version.Version, len(contents))
+	for i, c := range contents {
+		v := strings.Split(c.Key, ".darwin-amd64")
+
+		vv, _ := go_version.NewVersion(strings.TrimPrefix(v[0], "go"))
+		versions[i] = vv
+	}
+	return versions
 }
