@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 
 	"github.com/dikaeinstein/godl/internal/pkg/godlutil"
+	"github.com/dikaeinstein/godl/internal/pkg/gv"
 	"github.com/dikaeinstein/godl/pkg/fs"
 )
 
@@ -42,7 +43,7 @@ func (d *Downloader) Download(version string) error {
 	// Create download directory and its parent
 	godlutil.Must(os.MkdirAll(d.DownloadDir, os.ModePerm))
 
-	exists, err := godlutil.VersionExists(version, d.DownloadDir)
+	exists, err := gv.VersionExists(version, d.DownloadDir)
 	// handle stat errors even when file exists
 	if err != nil {
 		return err

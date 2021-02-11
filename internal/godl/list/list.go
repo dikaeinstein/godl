@@ -22,16 +22,23 @@ import (
 	"strings"
 
 	"github.com/dikaeinstein/godl/internal/pkg/godlutil"
+	"github.com/dikaeinstein/godl/internal/pkg/gv"
 	"github.com/hashicorp/go-version"
 	"github.com/spf13/cobra"
 )
 
+var sortDirection string
+
 // New returns the list command
 func New() *cobra.Command {
-	return &cobra.Command{
+	lsExAsc := "ls -s asc or ls -s=asc"
+	lsExDesc := "ls -s desc or ls -s=desc"
+
+	list := &cobra.Command{
 		Use:     "list",
 		Aliases: []string{"ls"},
 		Short:   "List the downloaded versions.",
+		Example: fmt.Sprintf("%4s\n%24s\n%26s", "ls", lsExAsc, lsExDesc),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			d, err := godlutil.GetDownloadDir()
 			if err != nil {
@@ -41,6 +48,11 @@ func New() *cobra.Command {
 			return listDownloadedBinaryArchives(d)
 		},
 	}
+
+	list.Flags().StringVarP(&sortDirection, "sortDirection", "s", string(gv.Asc),
+		"Specify the sort direction of the output of `list`. It sorts in ascending order by default.")
+
+	return list
 }
 
 func listDownloadedBinaryArchives(downloadDir string) error {
@@ -54,7 +66,9 @@ func listDownloadedBinaryArchives(downloadDir string) error {
 
 	versions := mapToVersion(files)
 	// sort in-place comparing version numbers
-	sort.Sort(version.Collection(versions))
+	sort.Slice(versions, func(i, j int) bool {
+		return gv.CompareVersions(versions[i], versions[j], gv.SortDirection(sortDirection))
+	})
 
 	for _, v := range versions {
 		fmt.Println(v.Original())
@@ -68,7 +82,7 @@ func mapToVersion(files []os.FileInfo) []*version.Version {
 	for _, file := range files {
 		name := file.Name()
 		if strings.HasSuffix(name, ".darwin-amd64.tar.gz") {
-			versions = append(versions, godlutil.GetVersion(name))
+			versions = append(versions, gv.GetVersion(name))
 		}
 	}
 	return versions

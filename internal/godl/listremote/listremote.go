@@ -9,22 +9,33 @@ import (
 	"strings"
 	"time"
 
-	"github.com/dikaeinstein/godl/internal/pkg/godlutil"
+	"github.com/dikaeinstein/godl/internal/pkg/gv"
 	"github.com/hashicorp/go-version"
 	"github.com/spf13/cobra"
 	"github.com/tj/go-spin"
 )
 
+var sortDirection string
+
 // New returns the list-remote command
 func New() *cobra.Command {
-	return &cobra.Command{
+	lsRemoteExAsc := "ls-remote -s asc or ls-remote -s=asc"
+	lsRemoteExDesc := "ls-remote -s desc or ls-remote -s=desc"
+
+	listRemote := &cobra.Command{
 		Use:     "list-remote",
 		Aliases: []string{"ls-remote"},
+		Example: fmt.Sprintf("%11s\n%38s\n%40s", "ls-remote", lsRemoteExAsc, lsRemoteExDesc),
 		Short:   "List the available remote versions.",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return listRemoteVersions(&http.Client{})
 		},
 	}
+
+	listRemote.Flags().StringVarP(&sortDirection, "sortDirection", "s", string(gv.Asc),
+		"Specify the sort direction of the output of `list-remote`. It sorts in ascending order by default.")
+
+	return listRemote
 }
 
 // ListBucketResult represents the list of objects result
@@ -84,7 +95,9 @@ func listRemoteVersions(client *http.Client) error {
 
 	versions := mapToVersion(contents)
 	// sort in-place comparing version numbers
-	sort.Sort(version.Collection(versions))
+	sort.Slice(versions, func(i, j int) bool {
+		return gv.CompareVersions(versions[i], versions[j], gv.SortDirection(sortDirection))
+	})
 
 	cancelFunc()
 	fmt.Println()
@@ -131,7 +144,7 @@ func selectDarwin(l *ListBucketResult) ListBucketResult {
 func mapToVersion(contents []Content) []*version.Version {
 	versions := make([]*version.Version, len(contents))
 	for i, c := range contents {
-		versions[i] = godlutil.GetVersion(c.Key)
+		versions[i] = gv.GetVersion(c.Key)
 	}
 	return versions
 }

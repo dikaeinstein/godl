@@ -4,12 +4,8 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"io"
-	"os"
 	"path"
-	"path/filepath"
-	"strings"
 
-	"github.com/hashicorp/go-version"
 	"github.com/mitchellh/go-homedir"
 )
 
@@ -29,26 +25,6 @@ func Must(err error) {
 	}
 }
 
-// VersionExists checks if given archive version exists in the specified download directory.
-func VersionExists(archiveVersion, downloadDir string) (bool, error) {
-	const (
-		archivePostfix = "darwin-amd64.tar.gz"
-		archivePrefix  = "go"
-	)
-
-	archiveName := fmt.Sprintf("%s%s.%s", archivePrefix, archiveVersion, archivePostfix)
-	downloadPath := filepath.Join(filepath.Join(downloadDir, archiveName))
-
-	if _, err := os.Stat(downloadPath); err != nil {
-		if os.IsNotExist(err) {
-			return false, nil
-		}
-		return true, err // Assuming that other forms of errors are not due to non-existence
-	}
-
-	return true, nil
-}
-
 // VerifyHash reports whether the named file has contents with
 // SHA-256 of the given hex value.
 func VerifyHash(input io.Reader, hex string) error {
@@ -61,13 +37,4 @@ func VerifyHash(input io.Reader, hex string) error {
 	}
 
 	return nil
-}
-
-// GetVersion returns the version from the given string.
-// 		go1.11.4.darwin-amd64.tar.gz => 1.11.4
-func GetVersion(s string) *version.Version {
-	v := strings.Split(s, ".darwin-amd64")
-	vv, err := version.NewVersion(strings.TrimPrefix(v[0], "go"))
-	Must(err)
-	return vv
 }

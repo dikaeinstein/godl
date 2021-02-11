@@ -22,6 +22,7 @@ import (
 
 	"github.com/dikaeinstein/godl/internal/pkg/downloader"
 	"github.com/dikaeinstein/godl/internal/pkg/godlutil"
+	"github.com/dikaeinstein/godl/internal/pkg/gv"
 	"github.com/dikaeinstein/godl/pkg/fs"
 	osFS "github.com/dikaeinstein/godl/pkg/fs/os"
 	"github.com/dikaeinstein/godl/pkg/hash"
@@ -92,7 +93,7 @@ func (i *installCmd) Run(archiveVersion string) error {
 	archiveName := fmt.Sprintf("%s%s.%s", downloader.Prefix(), archiveVersion, downloader.Postfix())
 	downloadPath := path.Join(i.dl.DownloadDir, archiveName)
 
-	exists, err := godlutil.VersionExists(archiveVersion, i.dl.DownloadDir)
+	exists, err := gv.VersionExists(archiveVersion, i.dl.DownloadDir)
 	if err != nil {
 		return err
 	}
