@@ -59,10 +59,9 @@ func TestCompletionCmdCalledWithNoArgs(t *testing.T) {
 	completion := New(godlCmd)
 	godlCmd.RegisterSubCommands([]*cobra.Command{completion})
 
-	_, _, err := test.ExecuteCommand(godlCmd, "completion")
-	expected := "provide shell to configure e.g bash or zsh"
-	got := err.Error()
-	if got != expected {
-		t.Errorf("godl completion: %v", err)
+	_, errOutput := test.ExecuteCommand(t, true, godlCmd, "completion")
+	expected := "Error: provide shell to configure e.g bash or zsh\n"
+	if errOutput != expected {
+		t.Errorf("godl completion failed: expected: %s; got: %s", expected, errOutput)
 	}
 }

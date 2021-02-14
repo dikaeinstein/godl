@@ -2,6 +2,7 @@ package listremote
 
 import (
 	"bytes"
+	"context"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -13,7 +14,7 @@ import (
 )
 
 func TestListRemoteVersions(t *testing.T) {
-	testClient := test.NewTestClient(func(req *http.Request) *http.Response {
+	testClient := test.NewTestClient(test.RoundTripFunc(func(req *http.Request) *http.Response {
 		f, err := os.Open(path.Join("..", "..", "..", "test", "testdata", "listbucketresult.xml"))
 		if err != nil {
 			panic(err)
@@ -23,14 +24,14 @@ func TestListRemoteVersions(t *testing.T) {
 			StatusCode: http.StatusOK,
 			Body:       f,
 		}
-	})
+	}))
 
-	failingTestClient := test.NewTestClient(func(req *http.Request) *http.Response {
+	failingTestClient := test.NewTestClient(test.RoundTripFunc(func(req *http.Request) *http.Response {
 		return &http.Response{
 			StatusCode: http.StatusNotFound,
 			Body:       ioutil.NopCloser(bytes.NewBufferString("")),
 		}
-	})
+	}))
 
 	tests := map[string]struct {
 		input *http.Client
@@ -45,7 +46,8 @@ func TestListRemoteVersions(t *testing.T) {
 
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
-			err := listRemoteVersions(tc.input)
+			lsRemote := listRemoteCmd{tc.input}
+			err := lsRemote.Run(context.Background())
 			if err != nil {
 				diff := cmp.Diff(tc.want, err.Error())
 				if diff != "" {

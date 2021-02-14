@@ -15,9 +15,11 @@
 package download
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/dikaeinstein/godl/internal/pkg/downloader"
 	"github.com/dikaeinstein/godl/internal/pkg/godlutil"
@@ -27,6 +29,7 @@ import (
 )
 
 var forceDownload bool
+var timeout int64
 
 // New returns the download command
 func New() *cobra.Command {
@@ -53,7 +56,8 @@ func New() *cobra.Command {
 				HashVerifier:  godlutil.VerifyHash,
 			}
 
-			return downloadRelease(args[0], dl)
+			d := downloadCmd{dl}
+			return d.Run(cmd.Context(), args[0])
 		},
 		Args: func(cmd *cobra.Command, args []string) error {
 			if len(args) < 1 {
@@ -65,13 +69,21 @@ func New() *cobra.Command {
 
 	download.Flags().BoolVarP(&forceDownload, "force", "f", false,
 		"Force download instead of using local version")
+	download.Flags().Int64VarP(&timeout, "timeout", "t", 60000, "Set the download timeout.")
 
 	return download
 }
 
-func downloadRelease(archiveVersion string, dl *downloader.Downloader) error {
+type downloadCmd struct {
+	dl *downloader.Downloader
+}
+
+func (d *downloadCmd) Run(ctx context.Context, archiveVersion string) error {
 	fmt.Printf("Downloading go binary %v\n", archiveVersion)
-	err := dl.Download(archiveVersion)
+
+	ctx, cancel := context.WithTimeout(ctx, time.Duration(timeout*int64(time.Millisecond)))
+	defer cancel()
+	err := d.dl.Download(ctx, archiveVersion)
 	if err != nil {
 		return fmt.Errorf("error downloading %v: %v", archiveVersion, err)
 	}

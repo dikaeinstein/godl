@@ -13,8 +13,5 @@ func TestVersion(t *testing.T) {
 	version := New()
 	godlCmd.RegisterSubCommands([]*cobra.Command{version})
 
-	_, _, err := test.ExecuteCommand(godlCmd, "version")
-	if err != nil {
-		t.Errorf("godl version failed: %v", err)
-	}
+	test.ExecuteCommand(t, false, godlCmd, "version")
 }

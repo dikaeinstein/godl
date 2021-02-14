@@ -18,11 +18,11 @@ lint:
 
 ## Run tests
 test:
-	GO111MODULE=on go test -race -v ./...
+	GO111MODULE=on go test -race ./...
 
 ## Run tests with coverage
 test-cover:
-	GO111MODULE=on go test -coverprofile=cover.out -race -v ./...
+	GO111MODULE=on go test -coverprofile=cover.out -race ./...
 
 ## Build binary
 build:

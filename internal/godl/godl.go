@@ -11,10 +11,10 @@ import (
 )
 
 // New returns the base command when called without any subcommands
-func New() *GodlCmd {
+func New() *Cmd {
 	cobra.OnInitialize(initConfig)
 
-	return &GodlCmd{
+	return &Cmd{
 		cobraCmd: &cobra.Command{
 			Use:   "godl [command]",
 			Short: "Godl is a CLI tool used to download and install go binary releases on mac.",
@@ -22,50 +22,50 @@ func New() *GodlCmd {
 	}
 }
 
-type GodlCmd struct {
+type Cmd struct {
 	cobraCmd *cobra.Command
 }
 
 // Execute adds all child commands to the base `godl` command and sets flags appropriately.
 // This is called by main. It only needs to happen once.
-func (godl *GodlCmd) Execute() {
+func (godl *Cmd) Execute() {
 	if err := godl.cobraCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
 }
 
-func (godl *GodlCmd) ExecuteC() (*cobra.Command, error) {
+func (godl *Cmd) ExecuteC() (*cobra.Command, error) {
 	return godl.cobraCmd.ExecuteC()
 }
 
-func (godl *GodlCmd) GenerateBashCompletionFile(bashTarget string) error {
+func (godl *Cmd) GenerateBashCompletionFile(bashTarget string) error {
 	return godl.cobraCmd.GenBashCompletionFile(bashTarget)
 }
 
-func (godl *GodlCmd) GenerateZshCompletionFile(zshTarget string) error {
+func (godl *Cmd) GenerateZshCompletionFile(zshTarget string) error {
 	return godl.cobraCmd.GenZshCompletionFile(zshTarget)
 }
 
-func (godl *GodlCmd) RegisterSubCommands(subCommands []*cobra.Command) {
+func (godl *Cmd) RegisterSubCommands(subCommands []*cobra.Command) {
 	for _, subCmd := range subCommands {
 		godl.cobraCmd.AddCommand(subCmd)
 	}
 }
 
-func (godl *GodlCmd) SetArgs(args []string) {
+func (godl *Cmd) SetArgs(args []string) {
 	godl.cobraCmd.SetArgs(args)
 }
 
-func (godl *GodlCmd) SetErr(newErr io.Writer) {
+func (godl *Cmd) SetErr(newErr io.Writer) {
 	godl.cobraCmd.SetErr(newErr)
 }
 
-func (godl *GodlCmd) SetOut(output io.Writer) {
+func (godl *Cmd) SetOut(output io.Writer) {
 	godl.cobraCmd.SetOut(output)
 }
 
-func (godl *GodlCmd) SetOutput(output io.Writer) {
+func (godl *Cmd) SetOutput(output io.Writer) {
 	godl.cobraCmd.SetOutput(output)
 }
 

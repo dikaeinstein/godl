@@ -7,12 +7,16 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"testing"
 
 	"github.com/dikaeinstein/godl/internal/godl"
 	"github.com/spf13/cobra"
 )
 
-func CreateTempGoBinaryArchive(tmpDir, archiveVersion string) (*os.File, error) {
+// CreateTempGoBinaryArchive is test helper function used to create a fake golang binary archive.
+func CreateTempGoBinaryArchive(t *testing.T, archiveVersion string) (tmpArchive *os.File, tmpDir string) {
+	t.Helper()
+	tmpDir = t.TempDir()
 	const (
 		archivePostfix = "darwin-amd64.tar.gz"
 		archivePrefix  = "go"
@@ -21,29 +25,36 @@ func CreateTempGoBinaryArchive(tmpDir, archiveVersion string) (*os.File, error) 
 	archiveName := fmt.Sprintf("%s%s.%s", archivePrefix, archiveVersion, archivePostfix)
 	downloadPath := filepath.Join(tmpDir, archiveName)
 
-	file, err := os.Create(downloadPath)
+	tmpArchive, err := os.Create(downloadPath)
 	if err != nil {
-		return nil, err
+		t.Fatalf("CreateTempGoBinaryArchive: failed to create temp binary archive: %v", err)
 	}
 
-	archive := gzip.NewWriter(file)
-	_, err = archive.Write([]byte("This is test data"))
+	gzWriter := gzip.NewWriter(tmpArchive)
+	_, err = gzWriter.Write([]byte("This is test data"))
+	if err != nil {
+		t.Fatalf("CreateTempGoBinaryArchive: failed to write content to temp binary archive: %v", err)
+	}
 
-	return file, err
+	return tmpArchive, tmpDir
 }
 
-func ExecuteCommand(root *godl.GodlCmd, args ...string) (output, errOutput string, err error) {
-	_, output, errOutput, err = executeCommandC(root, args)
-	return output, errOutput, err
+// ExecuteCommand is a test helper that executes the specified `godl` sub command
+func ExecuteCommand(t *testing.T, ignoreCmdError bool, root *godl.Cmd, args ...string) (output, errOutput string) {
+	t.Helper()
+	_, output, errOutput, err := executeCommandC(root, args)
+	if err != nil && !ignoreCmdError {
+		t.Errorf("godl %s failed: %v", args[0], err)
+	}
+	return output, errOutput
 }
 
-func executeCommandC(root *godl.GodlCmd, args []string) (c *cobra.Command, output, errOutput string, err error) {
+func executeCommandC(root *godl.Cmd, args []string) (c *cobra.Command, output, errOutput string, err error) {
 	outputBuf := new(bytes.Buffer)
 	errBuf := new(bytes.Buffer)
 
-	// root.SetOut(outputBuf)
-	// root.SetErr(errBuf)
-	root.SetOutput(outputBuf)
+	root.SetOut(outputBuf)
+	root.SetErr(errBuf)
 	root.SetArgs(args)
 
 	c, err = root.ExecuteC()
@@ -51,7 +62,10 @@ func executeCommandC(root *godl.GodlCmd, args []string) (c *cobra.Command, outpu
 	return c, outputBuf.String(), errBuf.String(), err
 }
 
-// RoundTripFunc
+// The RoundTripFunc type is an adapter to allow the use of
+// ordinary functions as  net/http.RoundTripper. If f is a function
+// with the appropriate signature, RoundTripFunc(f) is a
+// RoundTripper that calls f.
 type RoundTripFunc func(req *http.Request) *http.Response
 
 // RoundTrip
@@ -60,8 +74,6 @@ func (f RoundTripFunc) RoundTrip(req *http.Request) (*http.Response, error) {
 }
 
 // NewTestClient returns *http.Client with a Fake Transport
-func NewTestClient(fn RoundTripFunc) *http.Client {
-	return &http.Client{
-		Transport: RoundTripFunc(fn),
-	}
+func NewTestClient(fn http.RoundTripper) *http.Client {
+	return &http.Client{Transport: fn}
 }

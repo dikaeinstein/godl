@@ -11,22 +11,21 @@ import (
 
 func TestGodlCmd(t *testing.T) {
 	godlCmd := godl.New()
-	_, _, err := test.ExecuteCommand(godlCmd)
-	if err != nil {
-		t.Errorf("Calling command without subcommands should not have error: %v", err)
+	_, errOutput := test.ExecuteCommand(t, true, godlCmd)
+	if errOutput != "" {
+		t.Errorf("calling command without subcommands should not have error: %v", errOutput)
 	}
 }
 
 func TestGodlExecuteUnknownCommand(t *testing.T) {
 	godlCmd := godl.New()
 	// Register version subcommand so there's a list to filter an unknown command against.
-	version := version.New()
-	godlCmd.RegisterSubCommands([]*cobra.Command{version})
+	godlCmd.RegisterSubCommands([]*cobra.Command{version.New()})
 
-	output, errOutput, _ := test.ExecuteCommand(godlCmd, "unknown")
+	_, errOutput := test.ExecuteCommand(t, true, godlCmd, "unknown")
 	expected := "Error: unknown command \"unknown\" for \"godl\"\nRun 'godl --help' for usage.\n"
 
-	if output != expected {
-		t.Errorf("Expected:\n %q\nGot:\n %q\n %q", expected, output, errOutput)
+	if errOutput != expected {
+		t.Errorf("expected: %q\ngot:\n %q", expected, errOutput)
 	}
 }

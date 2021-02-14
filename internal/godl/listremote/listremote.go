@@ -28,7 +28,8 @@ func New() *cobra.Command {
 		Example: fmt.Sprintf("%11s\n%38s\n%40s", "ls-remote", lsRemoteExAsc, lsRemoteExDesc),
 		Short:   "List the available remote versions.",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return listRemoteVersions(&http.Client{})
+			lsRemote := listRemoteCmd{http.DefaultClient}
+			return lsRemote.Run(cmd.Context())
 		},
 	}
 
@@ -53,14 +54,19 @@ type Content struct {
 	LastModified time.Time
 }
 
-func listRemoteVersions(client *http.Client) error {
+type listRemoteCmd struct {
+	c *http.Client
+}
+
+func (lsRemote *listRemoteCmd) Run(ctx context.Context) error {
 	url := "https://storage.googleapis.com/golang/?prefix=go1"
 	w := url
-	ctx, cancelFunc := context.WithCancel(context.Background())
-	defer cancelFunc()
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
 
 	var contents []Content
 	go func(ctx context.Context) {
+		duration := 50 * time.Millisecond
 		s := spin.New()
 	Loop:
 		for {
@@ -70,13 +76,13 @@ func listRemoteVersions(client *http.Client) error {
 			default:
 				fmt.Printf("\rfetching remote versions... %s", s.Next())
 				// Pause current goroutine to reduce cpu workload
-				time.Sleep(50 * time.Millisecond)
+				time.Sleep(duration)
 			}
 		}
 	}(ctx)
 
 	for {
-		listBucketResult, err := getBinaryReleases(url, client)
+		listBucketResult, err := lsRemote.getBinaryReleases(url)
 		if err != nil {
 			return fmt.Errorf("\nerror fetching list: %v", err)
 		}
@@ -99,7 +105,7 @@ func listRemoteVersions(client *http.Client) error {
 		return gv.CompareVersions(versions[i], versions[j], gv.SortDirection(sortDirection))
 	})
 
-	cancelFunc()
+	cancel()
 	fmt.Println()
 
 	for _, v := range versions {
@@ -109,8 +115,17 @@ func listRemoteVersions(client *http.Client) error {
 	return nil
 }
 
-func getBinaryReleases(url string, c *http.Client) (*ListBucketResult, error) {
-	res, err := c.Get(url)
+func (lsRemote *listRemoteCmd) getBinaryReleases(url string) (*ListBucketResult, error) {
+	var timeout time.Duration
+	if lsRemote.c.Timeout != 0 {
+		timeout = lsRemote.c.Timeout
+	} else {
+		timeout = 5000 * time.Millisecond
+	}
+	ctx, cancelFunc := context.WithTimeout(context.Background(), timeout)
+	defer cancelFunc()
+	req, _ := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	res, err := lsRemote.c.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -123,7 +138,7 @@ func getBinaryReleases(url string, c *http.Client) (*ListBucketResult, error) {
 	var l ListBucketResult
 	err = xml.NewDecoder(res.Body).Decode(&l)
 	if err != nil {
-		return nil, fmt.Errorf("Error decoding xml: %v", err)
+		return nil, fmt.Errorf("error decoding xml: %v", err)
 	}
 
 	return &l, nil

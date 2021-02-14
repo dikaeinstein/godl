@@ -1,6 +1,7 @@
 package hash
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -12,8 +13,13 @@ type RemoteHasher struct {
 }
 
 // Hash fetches the hash of the given URL and returns it as a string.
-func (r RemoteHasher) Hash(url string) (string, error) {
-	res, err := r.client.Get(url)
+func (r RemoteHasher) Hash(ctx context.Context, url string) (string, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return "", err
+	}
+
+	res, err := r.client.Do(req)
 	if err != nil {
 		return "", err
 	}
@@ -38,6 +44,6 @@ func NewRemoteHasher(client *http.Client) RemoteHasher {
 
 type FakeHasher struct{}
 
-func (FakeHasher) Hash(path string) (string, error) {
+func (FakeHasher) Hash(ctx context.Context, path string) (string, error) {
 	return "fakehash", nil
 }

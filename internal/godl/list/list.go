@@ -45,7 +45,8 @@ func New() *cobra.Command {
 				return err
 			}
 
-			return listDownloadedBinaryArchives(d)
+			ls := listCmd{}
+			return ls.Run(d)
 		},
 	}
 
@@ -55,7 +56,9 @@ func New() *cobra.Command {
 	return list
 }
 
-func listDownloadedBinaryArchives(downloadDir string) error {
+type listCmd struct{}
+
+func (listCmd) Run(downloadDir string) error {
 	// Create download directory and its parent
 	godlutil.Must(os.MkdirAll(downloadDir, os.ModePerm))
 

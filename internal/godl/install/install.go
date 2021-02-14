@@ -15,10 +15,12 @@
 package install
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
 	"path"
+	"time"
 
 	"github.com/dikaeinstein/godl/internal/pkg/downloader"
 	"github.com/dikaeinstein/godl/internal/pkg/godlutil"
@@ -31,6 +33,7 @@ import (
 )
 
 var forceDownload bool
+var timeout int64
 
 // New returns the install command
 func New() *cobra.Command {
@@ -64,7 +67,7 @@ func New() *cobra.Command {
 			}
 
 			fmt.Println("Installing binary into /usr/local")
-			return install.Run(args[0])
+			return install.Run(cmd.Context(), args[0])
 		},
 		Args: func(cmd *cobra.Command, args []string) error {
 			if len(args) < 1 {
@@ -76,6 +79,7 @@ func New() *cobra.Command {
 
 	install.Flags().BoolVarP(&forceDownload, "force", "f", false,
 		"Force download instead of using local version")
+	install.Flags().Int64VarP(&timeout, "timeout", "t", 60000, "Set the download timeout.")
 
 	return install
 }
@@ -89,7 +93,7 @@ type installCmd struct {
 	dl       *downloader.Downloader
 }
 
-func (i *installCmd) Run(archiveVersion string) error {
+func (i *installCmd) Run(ctx context.Context, archiveVersion string) error {
 	archiveName := fmt.Sprintf("%s%s.%s", downloader.Prefix(), archiveVersion, downloader.Postfix())
 	downloadPath := path.Join(i.dl.DownloadDir, archiveName)
 
@@ -102,7 +106,11 @@ func (i *installCmd) Run(archiveVersion string) error {
 	if !exists || i.dl.ForceDownload {
 		fmt.Printf("%v not found locally.\n", archiveVersion)
 		fmt.Println("fetching from remote...")
-		if err := i.dl.Download(archiveVersion); err != nil {
+
+		ctx, cancel := context.WithTimeout(ctx, time.Duration(timeout*int64(time.Millisecond)))
+		defer cancel()
+		err = i.dl.Download(ctx, archiveVersion)
+		if err != nil {
 			return fmt.Errorf("error downloading %v: %v", archiveVersion, err)
 		}
 	}
@@ -119,7 +127,8 @@ func (i *installCmd) Run(archiveVersion string) error {
 
 	fmt.Printf("unpacking %v ...\n", archiveVersion)
 	target := path.Join("/usr", "local")
-	if err := i.archiver.Unarchive(downloadPath, target); err != nil {
+	err = i.archiver.Unarchive(downloadPath, target)
+	if err != nil {
 		return err
 	}
 

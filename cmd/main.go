@@ -27,23 +27,16 @@ import (
 
 func main() {
 	// root command
-	godl := godl.New()
+	g := godl.New()
 	// subcommands
-	completion := completion.New(godl)
-	download := download.New()
-	install := install.New()
-	list := list.New()
-	listRemote := listremote.New()
-	version := version.New()
+	c := completion.New(g)
+	d := download.New()
+	i := install.New()
+	ls := list.New()
+	lsr := listremote.New()
+	v := version.New()
 
-	godl.RegisterSubCommands([]*cobra.Command{
-		completion,
-		download,
-		install,
-		list,
-		listRemote,
-		version,
-	})
+	g.RegisterSubCommands([]*cobra.Command{c, d, i, ls, lsr, v})
 
-	godl.Execute()
+	g.Execute()
 }

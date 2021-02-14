@@ -9,14 +9,11 @@ import (
 )
 
 func TestListDownloadedBinaryArchives(t *testing.T) {
-	tmpDir := t.TempDir()
-	tmpFile, err := test.CreateTempGoBinaryArchive(tmpDir, "1.13")
-	if err != nil {
-		t.Errorf("create temp binary archive failed: %v", err)
-	}
+	tmpFile, tmpDir := test.CreateTempGoBinaryArchive(t, "1.13")
 	defer tmpFile.Close()
 
-	if err := listDownloadedBinaryArchives(tmpDir); err != nil {
+	ls := listCmd{}
+	if err := ls.Run(tmpDir); err != nil {
 		t.Errorf("Error listing downloaded archive versions: %v", err)
 	}
 }
@@ -26,8 +23,5 @@ func TestListCommand(t *testing.T) {
 	godlCmd := godl.New()
 	godlCmd.RegisterSubCommands([]*cobra.Command{list})
 
-	_, _, err := test.ExecuteCommand(godlCmd, "list")
-	if err != nil {
-		t.Errorf("godl list failed: %v", err)
-	}
+	test.ExecuteCommand(t, false, godlCmd, "list")
 }

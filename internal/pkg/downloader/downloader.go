@@ -1,6 +1,7 @@
 package downloader
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -23,7 +24,7 @@ const (
 //
 // Hash returns the hash of the file at the given path.
 type Hasher interface {
-	Hash(path string) (string, error)
+	Hash(ctx context.Context, path string) (string, error)
 }
 
 // HashVerifier verifies an input io.Reader content against wantHash
@@ -39,7 +40,7 @@ type Downloader struct {
 	HashVerifier  HashVerifier
 }
 
-func (d *Downloader) Download(version string) error {
+func (d *Downloader) Download(ctx context.Context, version string) error {
 	// Create download directory and its parent
 	godlutil.Must(os.MkdirAll(d.DownloadDir, os.ModePerm))
 
@@ -54,7 +55,8 @@ func (d *Downloader) Download(version string) error {
 		return nil
 	}
 
-	if err = d.CheckIfExistsRemote(version); err != nil {
+	err = d.CheckIfExistsRemote(ctx, version)
+	if err != nil {
 		return err
 	}
 
@@ -70,7 +72,8 @@ func (d *Downloader) Download(version string) error {
 	defer tmpFile.Close()
 
 	goURL := d.VersionURL(version)
-	res, err := d.Client.Get(goURL)
+	req, _ := http.NewRequestWithContext(ctx, http.MethodGet, goURL, nil)
+	res, err := d.Client.Do(req)
 	if err != nil {
 		return err
 	}
@@ -91,7 +94,7 @@ func (d *Downloader) Download(version string) error {
 		return fmt.Errorf("copied %v bytes; expected %v", n, res.ContentLength)
 	}
 
-	wantHex, err := d.Hasher.Hash(goURL + ".sha256")
+	wantHex, err := d.Hasher.Hash(ctx, goURL+".sha256")
 	if err != nil {
 		return err
 	}
@@ -114,9 +117,10 @@ func (d *Downloader) Download(version string) error {
 	return fs.Rename(d.Fsys, downloadPath+".tmp", downloadPath)
 }
 
-func (d *Downloader) CheckIfExistsRemote(version string) error {
+func (d *Downloader) CheckIfExistsRemote(ctx context.Context, version string) error {
 	u := d.VersionURL(version)
-	res, err := d.Client.Head(u)
+	req, _ := http.NewRequestWithContext(ctx, http.MethodHead, u, nil)
+	res, err := d.Client.Do(req)
 	if err != nil {
 		return err
 	}
@@ -133,7 +137,7 @@ func (d *Downloader) CheckIfExistsRemote(version string) error {
 	return nil
 }
 
-func (d Downloader) VersionURL(version string) string {
+func (d *Downloader) VersionURL(version string) string {
 	return d.BaseURL + prefix + version + "." + postfix
 }
 

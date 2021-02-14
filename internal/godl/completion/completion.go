@@ -28,7 +28,7 @@ import (
 )
 
 // New returns the completion command
-func New(godl *godl.GodlCmd) *cobra.Command {
+func New(g *godl.Cmd) *cobra.Command {
 	return &cobra.Command{
 		Use:   "completion <bash|zsh>",
 		Short: "Generates completion scripts for bash or zsh.",
@@ -50,15 +50,14 @@ func New(godl *godl.GodlCmd) *cobra.Command {
 			zshSymlinkDir := path.Join("/usr", "local", "share", "zsh", "site-functions")
 			fsys := osLinkerFS{}
 
-			completion := completionCmd{
+			c := completionCmd{
 				bashSymlinkDir: bashSymlinkDir,
 				fsys:           fsys,
 				homeDir:        home,
-				rootCmd:        godl,
+				rootCmd:        g,
 				zshSymlinkDir:  zshSymlinkDir,
 			}
-
-			return completion.Run(args[0])
+			return c.Run(args[0])
 		},
 		Args: func(cmd *cobra.Command, args []string) error {
 			if len(args) < 1 {
@@ -84,7 +83,7 @@ type completionCmd struct {
 	bashSymlinkDir string
 	fsys           fs.FS
 	homeDir        string
-	rootCmd        *godl.GodlCmd
+	rootCmd        *godl.Cmd
 	zshSymlinkDir  string
 }
 

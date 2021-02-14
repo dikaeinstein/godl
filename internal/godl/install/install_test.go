@@ -2,6 +2,7 @@ package install
 
 import (
 	"bytes"
+	"context"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -24,7 +25,7 @@ func fakeHashVerifier(input io.Reader, hex string) error {
 }
 
 func TestInstallRelease(t *testing.T) {
-	testClient := test.NewTestClient(func(req *http.Request) *http.Response {
+	testClient := test.NewTestClient(test.RoundTripFunc(func(req *http.Request) *http.Response {
 		testData := bytes.NewBufferString("This is test data")
 
 		return &http.Response{
@@ -32,14 +33,14 @@ func TestInstallRelease(t *testing.T) {
 			Body:          ioutil.NopCloser(testData),
 			ContentLength: int64(len(testData.Bytes())),
 		}
-	})
+	}))
 
-	failingTestClient := test.NewTestClient(func(req *http.Request) *http.Response {
+	failingTestClient := test.NewTestClient(test.RoundTripFunc(func(req *http.Request) *http.Response {
 		return &http.Response{
 			StatusCode: http.StatusNotFound,
 			Body:       ioutil.NopCloser(bytes.NewBufferString("")),
 		}
-	})
+	}))
 
 	tests := map[string]struct {
 		c                 *http.Client
@@ -59,14 +60,9 @@ func TestInstallRelease(t *testing.T) {
 		},
 	}
 
-	tmpDir := t.TempDir()
-
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
-			tmpFile, err := test.CreateTempGoBinaryArchive(tmpDir, tc.downloadedVersion)
-			if err != nil {
-				t.Errorf("create temp binary archive failed: %v", err)
-			}
+			tmpFile, _ := test.CreateTempGoBinaryArchive(t, tc.downloadedVersion)
 			defer tmpFile.Close()
 
 			storage := new(bytes.Buffer)
@@ -82,7 +78,7 @@ func TestInstallRelease(t *testing.T) {
 				archiver: testGzUnArchiver{},
 				dl:       dl,
 			}
-			err = install.Run(tc.installVersion)
+			err := install.Run(context.Background(), tc.installVersion)
 			var got bool
 			if err != nil {
 				got = false
@@ -106,11 +102,10 @@ func TestInstallCmdCalledWithNoArgs(t *testing.T) {
 	install := New()
 	godlCmd.RegisterSubCommands([]*cobra.Command{install})
 
-	_, _, err := test.ExecuteCommand(godlCmd, "install")
-	expected := "provide binary archive version to install"
-	got := err.Error()
-	if got != expected {
-		t.Errorf("godl install Unknown error: %v", err)
+	_, errOutput := test.ExecuteCommand(t, true, godlCmd, "install")
+	expected := "Error: provide binary archive version to install\n"
+	if errOutput != expected {
+		t.Errorf("godl install failed: expected: %s; got: %s", expected, errOutput)
 	}
 }
 
@@ -119,8 +114,8 @@ func TestInstallCommandHelp(t *testing.T) {
 	install := New()
 	godlCmd.RegisterSubCommands([]*cobra.Command{install})
 
-	_, _, err := test.ExecuteCommand(godlCmd, "install", "-h")
-	if err != nil {
-		t.Errorf("godl install failed: %v", err)
+	_, errOutput := test.ExecuteCommand(t, true, godlCmd, "install", "-h")
+	if errOutput != "" {
+		t.Errorf("godl install failed: %v", errOutput)
 	}
 }

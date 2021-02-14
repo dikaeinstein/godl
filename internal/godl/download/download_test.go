@@ -2,6 +2,7 @@ package download
 
 import (
 	"bytes"
+	"context"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -20,7 +21,7 @@ func fakeHashVerifier(input io.Reader, hex string) error {
 }
 
 func TestDownloadRelease(t *testing.T) {
-	testClient := test.NewTestClient(func(req *http.Request) *http.Response {
+	fakeRoundTripper := func(req *http.Request) *http.Response {
 		testData := bytes.NewBufferString("This is test data")
 
 		return &http.Response{
@@ -28,7 +29,8 @@ func TestDownloadRelease(t *testing.T) {
 			Body:          ioutil.NopCloser(testData),
 			ContentLength: int64(len(testData.Bytes())),
 		}
-	})
+	}
+	testClient := test.NewTestClient(test.RoundTripFunc(fakeRoundTripper))
 
 	imFS := inmem.NewFS(new(bytes.Buffer))
 	dl := &downloader.Downloader{
@@ -40,7 +42,8 @@ func TestDownloadRelease(t *testing.T) {
 		HashVerifier: fakeHashVerifier,
 	}
 
-	err := downloadRelease("1.12", dl)
+	d := downloadCmd{dl}
+	err := d.Run(context.Background(), "1.12")
 	if err != nil {
 		t.Fatalf("Error downloading go binary: %v", err)
 	}
@@ -57,11 +60,10 @@ func TestDownloadCmdCalledWithNoArgs(t *testing.T) {
 	download := New()
 	godlCmd.RegisterSubCommands([]*cobra.Command{download})
 
-	_, _, err := test.ExecuteCommand(godlCmd, "download")
-	expected := "provide binary archive version to download"
-	got := err.Error()
-	if got != expected {
-		t.Errorf("godl download Unknown error: %v", err)
+	_, errOutput := test.ExecuteCommand(t, true, godlCmd, "download")
+	expected := "Error: provide binary archive version to download\n"
+	if errOutput != expected {
+		t.Errorf("godl download failed: expected: %s; got: %s", expected, errOutput)
 	}
 }
 
@@ -70,8 +72,8 @@ func TestDownloadCmdHelp(t *testing.T) {
 	download := New()
 	godlCmd.RegisterSubCommands([]*cobra.Command{download})
 
-	_, _, err := test.ExecuteCommand(godlCmd, "download", "-h")
-	if err != nil {
-		t.Errorf("godl download failed: %v", err)
+	_, errOutput := test.ExecuteCommand(t, true, godlCmd, "download", "-h")
+	if errOutput != "" {
+		t.Errorf("godl download failed: %v", errOutput)
 	}
 }
