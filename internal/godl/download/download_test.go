@@ -7,13 +7,12 @@ import (
 	"io/ioutil"
 	"net/http"
 	"testing"
+	"time"
 
-	"github.com/dikaeinstein/godl/internal/godl"
 	"github.com/dikaeinstein/godl/internal/pkg/downloader"
 	"github.com/dikaeinstein/godl/pkg/fs/inmem"
 	"github.com/dikaeinstein/godl/pkg/hash"
 	"github.com/dikaeinstein/godl/test"
-	"github.com/spf13/cobra"
 )
 
 func fakeHashVerifier(input io.Reader, hex string) error {
@@ -42,7 +41,7 @@ func TestDownloadRelease(t *testing.T) {
 		HashVerifier: fakeHashVerifier,
 	}
 
-	d := downloadCmd{dl}
+	d := Download{dl, 5 * time.Second}
 	err := d.Run(context.Background(), "1.12")
 	if err != nil {
 		t.Fatalf("Error downloading go binary: %v", err)
@@ -53,27 +52,4 @@ func TestDownloadRelease(t *testing.T) {
 	}
 
 	imFS.Content().Reset()
-}
-
-func TestDownloadCmdCalledWithNoArgs(t *testing.T) {
-	godlCmd := godl.New()
-	download := New()
-	godlCmd.RegisterSubCommands([]*cobra.Command{download})
-
-	_, errOutput := test.ExecuteCommand(t, true, godlCmd, "download")
-	expected := "Error: provide binary archive version to download\n"
-	if errOutput != expected {
-		t.Errorf("godl download failed: expected: %s; got: %s", expected, errOutput)
-	}
-}
-
-func TestDownloadCmdHelp(t *testing.T) {
-	godlCmd := godl.New()
-	download := New()
-	godlCmd.RegisterSubCommands([]*cobra.Command{download})
-
-	_, errOutput := test.ExecuteCommand(t, true, godlCmd, "download", "-h")
-	if errOutput != "" {
-		t.Errorf("godl download failed: %v", errOutput)
-	}
 }

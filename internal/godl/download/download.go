@@ -16,76 +16,27 @@ package download
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"net/http"
 	"time"
 
 	"github.com/dikaeinstein/godl/internal/pkg/downloader"
-	"github.com/dikaeinstein/godl/internal/pkg/godlutil"
-	"github.com/dikaeinstein/godl/pkg/fs/os"
-	"github.com/dikaeinstein/godl/pkg/hash"
-	"github.com/spf13/cobra"
 )
 
-var forceDownload bool
-var timeout int64
-
-// New returns the download command
-func New() *cobra.Command {
-	download := &cobra.Command{
-		Use:   "download version",
-		Short: "Download go binary archive.",
-		Long: `Download the archive version from https://golang.org/dl/ and save to $HOME/godl/downloads.
-
-	By default, if archive version already exists locally, godl doesn't attempt to download it again.
-	To force it to download the version again pass the --force flag.`,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			dlDir, err := godlutil.GetDownloadDir()
-			if err != nil {
-				return err
-			}
-
-			dl := &downloader.Downloader{
-				BaseURL:       "https://storage.googleapis.com/golang/",
-				Client:        &http.Client{},
-				DownloadDir:   dlDir,
-				Fsys:          os.FS{},
-				ForceDownload: forceDownload,
-				Hasher:        hash.NewRemoteHasher(http.DefaultClient),
-				HashVerifier:  godlutil.VerifyHash,
-			}
-
-			d := downloadCmd{dl}
-			return d.Run(cmd.Context(), args[0])
-		},
-		Args: func(cmd *cobra.Command, args []string) error {
-			if len(args) < 1 {
-				return errors.New("provide binary archive version to download")
-			}
-			return nil
-		},
-	}
-
-	download.Flags().BoolVarP(&forceDownload, "force", "f", false,
-		"Force download instead of using local version")
-	download.Flags().Int64VarP(&timeout, "timeout", "t", 60000, "Set the download timeout.")
-
-	return download
+// Download downloads go binaries
+type Download struct {
+	Dl      *downloader.Downloader
+	Timeout time.Duration
 }
 
-type downloadCmd struct {
-	dl *downloader.Downloader
-}
+// Run downloads the specified go version
+func (d *Download) Run(ctx context.Context, version string) error {
+	fmt.Printf("Downloading go archive %v\n", version)
 
-func (d *downloadCmd) Run(ctx context.Context, archiveVersion string) error {
-	fmt.Printf("Downloading go binary %v\n", archiveVersion)
-
-	ctx, cancel := context.WithTimeout(ctx, time.Duration(timeout*int64(time.Millisecond)))
+	ctx, cancel := context.WithTimeout(ctx, d.Timeout)
 	defer cancel()
-	err := d.dl.Download(ctx, archiveVersion)
+	err := d.Dl.Download(ctx, version)
 	if err != nil {
-		return fmt.Errorf("error downloading %v: %v", archiveVersion, err)
+		return fmt.Errorf("error downloading %v: %v", version, err)
 	}
 
 	fmt.Println("\nDownload complete")

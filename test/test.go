@@ -9,7 +9,6 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/dikaeinstein/godl/internal/godl"
 	"github.com/spf13/cobra"
 )
 
@@ -40,7 +39,7 @@ func CreateTempGoBinaryArchive(t *testing.T, archiveVersion string) (tmpArchive 
 }
 
 // ExecuteCommand is a test helper that executes the specified `godl` sub command
-func ExecuteCommand(t *testing.T, ignoreCmdError bool, root *godl.Cmd, args ...string) (output, errOutput string) {
+func ExecuteCommand(t *testing.T, ignoreCmdError bool, root *cobra.Command, args ...string) (output, errOutput string) {
 	t.Helper()
 	_, output, errOutput, err := executeCommandC(root, args)
 	if err != nil && !ignoreCmdError {
@@ -49,7 +48,7 @@ func ExecuteCommand(t *testing.T, ignoreCmdError bool, root *godl.Cmd, args ...s
 	return output, errOutput
 }
 
-func executeCommandC(root *godl.Cmd, args []string) (c *cobra.Command, output, errOutput string, err error) {
+func executeCommandC(root *cobra.Command, args []string) (c *cobra.Command, output, errOutput string, err error) {
 	outputBuf := new(bytes.Buffer)
 	errBuf := new(bytes.Buffer)
 

@@ -7,13 +7,12 @@ import (
 	"io/ioutil"
 	"net/http"
 	"testing"
+	"time"
 
-	"github.com/dikaeinstein/godl/internal/godl"
 	"github.com/dikaeinstein/godl/internal/pkg/downloader"
 	"github.com/dikaeinstein/godl/pkg/fs/inmem"
 	"github.com/dikaeinstein/godl/pkg/hash"
 	"github.com/dikaeinstein/godl/test"
-	"github.com/spf13/cobra"
 )
 
 type testGzUnArchiver struct{}
@@ -74,9 +73,10 @@ func TestInstallRelease(t *testing.T) {
 				Hasher:       hash.FakeHasher{},
 				HashVerifier: fakeHashVerifier,
 			}
-			install := installCmd{
-				archiver: testGzUnArchiver{},
-				dl:       dl,
+			install := Install{
+				Archiver: testGzUnArchiver{},
+				Dl:       dl,
+				Timeout:  5 * time.Second,
 			}
 			err := install.Run(context.Background(), tc.installVersion)
 			var got bool
@@ -94,28 +94,5 @@ func TestInstallRelease(t *testing.T) {
 				t.Errorf("Error installing go binary: %v", err)
 			}
 		})
-	}
-}
-
-func TestInstallCmdCalledWithNoArgs(t *testing.T) {
-	godlCmd := godl.New()
-	install := New()
-	godlCmd.RegisterSubCommands([]*cobra.Command{install})
-
-	_, errOutput := test.ExecuteCommand(t, true, godlCmd, "install")
-	expected := "Error: provide binary archive version to install\n"
-	if errOutput != expected {
-		t.Errorf("godl install failed: expected: %s; got: %s", expected, errOutput)
-	}
-}
-
-func TestInstallCommandHelp(t *testing.T) {
-	godlCmd := godl.New()
-	install := New()
-	godlCmd.RegisterSubCommands([]*cobra.Command{install})
-
-	_, errOutput := test.ExecuteCommand(t, true, godlCmd, "install", "-h")
-	if errOutput != "" {
-		t.Errorf("godl install failed: %v", errOutput)
 	}
 }

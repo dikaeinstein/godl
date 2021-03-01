@@ -24,41 +24,12 @@ import (
 	"github.com/dikaeinstein/godl/internal/pkg/godlutil"
 	"github.com/dikaeinstein/godl/internal/pkg/gv"
 	"github.com/hashicorp/go-version"
-	"github.com/spf13/cobra"
 )
 
-var sortDirection string
+// List lists the downloaded go versions
+type List struct{}
 
-// New returns the list command
-func New() *cobra.Command {
-	lsExAsc := "ls -s asc or ls -s=asc"
-	lsExDesc := "ls -s desc or ls -s=desc"
-
-	list := &cobra.Command{
-		Use:     "list",
-		Aliases: []string{"ls"},
-		Short:   "List the downloaded versions.",
-		Example: fmt.Sprintf("%4s\n%24s\n%26s", "ls", lsExAsc, lsExDesc),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			d, err := godlutil.GetDownloadDir()
-			if err != nil {
-				return err
-			}
-
-			ls := listCmd{}
-			return ls.Run(d)
-		},
-	}
-
-	list.Flags().StringVarP(&sortDirection, "sortDirection", "s", string(gv.Asc),
-		"Specify the sort direction of the output of `list`. It sorts in ascending order by default.")
-
-	return list
-}
-
-type listCmd struct{}
-
-func (listCmd) Run(downloadDir string) error {
+func (l List) Run(downloadDir string, sortDirection gv.SortDirection) error {
 	// Create download directory and its parent
 	godlutil.Must(os.MkdirAll(downloadDir, os.ModePerm))
 
@@ -70,7 +41,7 @@ func (listCmd) Run(downloadDir string) error {
 	versions := mapToVersion(files)
 	// sort in-place comparing version numbers
 	sort.Slice(versions, func(i, j int) bool {
-		return gv.CompareVersions(versions[i], versions[j], gv.SortDirection(sortDirection))
+		return gv.CompareVersions(versions[i], versions[j], sortDirection)
 	})
 
 	for _, v := range versions {

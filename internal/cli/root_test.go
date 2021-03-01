@@ -1,28 +1,26 @@
-package godl_test
+package cli
 
 import (
 	"testing"
 
-	"github.com/dikaeinstein/godl/internal/godl"
-	"github.com/dikaeinstein/godl/internal/godl/version"
 	"github.com/dikaeinstein/godl/test"
 	"github.com/spf13/cobra"
 )
 
 func TestGodlCmd(t *testing.T) {
-	godlCmd := godl.New()
-	_, errOutput := test.ExecuteCommand(t, true, godlCmd)
+	godlCmd := NewRootCmd()
+	_, errOutput := test.ExecuteCommand(t, true, godlCmd.CobraCmd)
 	if errOutput != "" {
 		t.Errorf("calling command without subcommands should not have error: %v", errOutput)
 	}
 }
 
 func TestGodlExecuteUnknownCommand(t *testing.T) {
-	godlCmd := godl.New()
+	godlCmd := NewRootCmd()
 	// Register version subcommand so there's a list to filter an unknown command against.
-	godlCmd.RegisterSubCommands([]*cobra.Command{version.New()})
+	godlCmd.RegisterSubCommands([]*cobra.Command{NewVersionCmd()})
 
-	_, errOutput := test.ExecuteCommand(t, true, godlCmd, "unknown")
+	_, errOutput := test.ExecuteCommand(t, true, godlCmd.CobraCmd, "unknown")
 	expected := "Error: unknown command \"unknown\" for \"godl\"\nRun 'godl --help' for usage.\n"
 
 	if errOutput != expected {

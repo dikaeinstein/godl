@@ -4,10 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/dikaeinstein/godl/internal/godl"
 	"github.com/dikaeinstein/godl/pkg/fs"
-	"github.com/dikaeinstein/godl/test"
-	"github.com/spf13/cobra"
 )
 
 type fakeSymLinkerFS struct{}
@@ -19,6 +16,11 @@ func (fakeSymLinkerFS) Open(name string) (fs.File, error) {
 func (fakeSymLinkerFS) Symlink(oldName, newName string) error {
 	return nil
 }
+
+type fakeCompletionGenerator struct{}
+
+func (fakeCompletionGenerator) GenerateBashCompletionFile(string) error { return nil }
+func (fakeCompletionGenerator) GenerateZshCompletionFile(string) error  { return nil }
 
 func TestCompletion(t *testing.T) {
 	testCases := map[string]struct {
@@ -34,12 +36,12 @@ func TestCompletion(t *testing.T) {
 	tmpHome := t.TempDir()
 	tmpSymDir := t.TempDir()
 
-	completion := &completionCmd{
-		bashSymlinkDir: tmpSymDir,
-		fsys:           fakeSymLinkerFS{},
-		homeDir:        tmpHome,
-		rootCmd:        godl.New(),
-		zshSymlinkDir:  tmpSymDir,
+	completion := &Completion{
+		BashSymlinkDir: tmpSymDir,
+		FSys:           fakeSymLinkerFS{},
+		HomeDir:        tmpHome,
+		Generator:      fakeCompletionGenerator{},
+		ZshSymlinkDir:  tmpSymDir,
 	}
 	for name, tC := range testCases {
 		t.Run(name, func(t *testing.T) {
@@ -51,17 +53,5 @@ func TestCompletion(t *testing.T) {
 				}
 			}
 		})
-	}
-}
-
-func TestCompletionCmdCalledWithNoArgs(t *testing.T) {
-	godlCmd := godl.New()
-	completion := New(godlCmd)
-	godlCmd.RegisterSubCommands([]*cobra.Command{completion})
-
-	_, errOutput := test.ExecuteCommand(t, true, godlCmd, "completion")
-	expected := "Error: provide shell to configure e.g bash or zsh\n"
-	if errOutput != expected {
-		t.Errorf("godl completion failed: expected: %s; got: %s", expected, errOutput)
 	}
 }

@@ -9,6 +9,7 @@ import (
 	"path"
 	"testing"
 
+	"github.com/dikaeinstein/godl/internal/pkg/gv"
 	"github.com/dikaeinstein/godl/test"
 	"github.com/google/go-cmp/cmp"
 )
@@ -46,8 +47,8 @@ func TestListRemoteVersions(t *testing.T) {
 
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
-			lsRemote := listRemoteCmd{tc.input}
-			err := lsRemote.Run(context.Background())
+			lsRemote := ListRemote{tc.input}
+			err := lsRemote.Run(context.Background(), gv.Asc)
 			if err != nil {
 				diff := cmp.Diff(tc.want, err.Error())
 				if diff != "" {
