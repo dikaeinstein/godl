@@ -2,6 +2,7 @@ package completion
 
 import (
 	"errors"
+	"io"
 	"testing"
 
 	"github.com/dikaeinstein/godl/pkg/fs"
@@ -19,33 +20,38 @@ func (fakeSymLinkerFS) Symlink(oldName, newName string) error {
 
 type fakeCompletionGenerator struct{}
 
-func (fakeCompletionGenerator) GenerateBashCompletionFile(string) error { return nil }
-func (fakeCompletionGenerator) GenerateZshCompletionFile(string) error  { return nil }
+func (fakeCompletionGenerator) GenerateBashCompletion(io.Writer) error       { return nil }
+func (fakeCompletionGenerator) GenerateFishCompletion(io.Writer, bool) error { return nil }
+func (fakeCompletionGenerator) GenerateZshCompletion(io.Writer) error        { return nil }
 
 func TestCompletion(t *testing.T) {
 	testCases := map[string]struct {
-		shell string
-		err   error
+		shell      string
+		useDefault bool
+		err        error
 	}{
-		"creates godl file when bash is passed": {"bash", nil},
-		"creates _godl file when zsh is passed": {"zsh", nil},
+		"creates completion file when bash is passed": {"bash", true, nil},
+		"creates completion file when zsh is passed":  {"zsh", true, nil},
+		"creates completion file when fish is passed": {"fish", true, nil},
 		"returns an error when unknown shell name is passed": {
-			"unknown", errors.New("unknown shell passed")},
+			"unknown", true, errors.New("unknown shell passed")},
 	}
 
 	tmpHome := t.TempDir()
 	tmpSymDir := t.TempDir()
 
 	completion := &Completion{
-		BashSymlinkDir: tmpSymDir,
-		FSys:           fakeSymLinkerFS{},
-		HomeDir:        tmpHome,
-		Generator:      fakeCompletionGenerator{},
-		ZshSymlinkDir:  tmpSymDir,
+		AutocompleteDir: t.TempDir(),
+		BashSymlinkDir:  tmpSymDir,
+		FishSymlinkDir:  tmpSymDir,
+		FSys:            fakeSymLinkerFS{},
+		HomeDir:         tmpHome,
+		Generator:       fakeCompletionGenerator{},
+		ZshSymlinkDir:   tmpSymDir,
 	}
 	for name, tC := range testCases {
 		t.Run(name, func(t *testing.T) {
-			err := completion.Run(tC.shell)
+			err := completion.Run(tC.shell, io.Discard, tC.useDefault)
 			if err != nil {
 				if err.Error() != tC.err.Error() {
 					t.Errorf("expected completion(%#v, %#v) => %#v, got %v",

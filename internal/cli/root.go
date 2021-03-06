@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"io"
 	"os"
 
 	"github.com/mitchellh/go-homedir"
@@ -28,12 +29,16 @@ func (godl *RootCmd) Execute() error {
 	return godl.CobraCmd.Execute()
 }
 
-func (godl *RootCmd) GenerateBashCompletionFile(bashTarget string) error {
-	return godl.CobraCmd.GenBashCompletionFile(bashTarget)
+func (godl *RootCmd) GenerateBashCompletion(out io.Writer) error {
+	return godl.CobraCmd.GenBashCompletion(out)
 }
 
-func (godl *RootCmd) GenerateZshCompletionFile(zshTarget string) error {
-	return godl.CobraCmd.GenZshCompletionFile(zshTarget)
+func (godl *RootCmd) GenerateFishCompletion(out io.Writer, includeDesc bool) error {
+	return godl.CobraCmd.GenFishCompletion(out, includeDesc)
+}
+
+func (godl *RootCmd) GenerateZshCompletion(out io.Writer) error {
+	return godl.CobraCmd.GenZshCompletion(out)
 }
 
 // RegisterSubCommands adds all child commands to the root `godl` command

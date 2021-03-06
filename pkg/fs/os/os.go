@@ -1,7 +1,6 @@
 package os
 
 import (
-	"io/ioutil"
 	"os"
 
 	"github.com/dikaeinstein/godl/pkg/fs"
@@ -23,12 +22,12 @@ func (FS) RemoveAll(path string) error {
 	return os.RemoveAll(path)
 }
 
-// Rename renames file from
+// Rename renames file from oldPath to newPath
 func (FS) Rename(oldPath, newPath string) error {
 	return os.Rename(oldPath, newPath)
 }
 
+// WriteFile writes data to file with filename
 func (FS) WriteFile(filename string, data []byte, perm os.FileMode) error {
-	// Todo: use os.WriteFile from go1.16
-	return ioutil.WriteFile(filename, data, perm)
+	return os.WriteFile(filename, data, perm)
 }

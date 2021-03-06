@@ -16,8 +16,8 @@ package completion
 
 import (
 	"errors"
+	"io"
 	"os"
-	"path"
 	"path/filepath"
 
 	"github.com/dikaeinstein/godl/internal/pkg/godlutil"
@@ -26,43 +26,63 @@ import (
 
 // Generator controls how the completion files should be generated
 type Generator interface {
-	GenerateBashCompletionFile(string) error
-	GenerateZshCompletionFile(string) error
+	GenerateBashCompletion(io.Writer) error
+	GenerateFishCompletion(out io.Writer, includeDesc bool) error
+	GenerateZshCompletion(io.Writer) error
 }
 
 // Completion generates completion files for zsh/bash shell.
 type Completion struct {
-	BashSymlinkDir string
+	AutocompleteDir string
+	BashSymlinkDir  string
+	FishSymlinkDir  string
+	FSys            fs.FS
 	Generator
-	FSys          fs.FS
 	HomeDir       string
 	ZshSymlinkDir string
 }
 
 // Run generates completion file for specified shell
-func (c *Completion) Run(shell string) error {
-	autocompleteDir := path.Join(c.HomeDir, ".godl", "autocomplete")
-	bashDir := path.Join(autocompleteDir, "bash")
-	zshDir := path.Join(autocompleteDir, "zsh")
-	godlutil.Must(os.MkdirAll(bashDir, os.ModePerm))
-	godlutil.Must(os.MkdirAll(zshDir, os.ModePerm))
-
+func (c *Completion) Run(shell string, out io.Writer, useDefault bool) error {
 	switch shell {
 	case "bash":
-		bashTarget := filepath.Join(bashDir, "godl")
-		err := c.GenerateBashCompletionFile(bashTarget)
-		if err != nil {
+		if err := c.GenerateBashCompletion(out); err != nil {
 			return err
 		}
-		return fs.Symlink(c.FSys, bashTarget, filepath.Join(c.BashSymlinkDir, "godl"))
+
+		if useDefault {
+			bashTarget := MakeTarget(shell, c.AutocompleteDir)
+			return fs.Symlink(c.FSys, bashTarget, filepath.Join(c.BashSymlinkDir, "godl"))
+		}
+
+		return nil
 	case "zsh":
-		zshTarget := filepath.Join(zshDir, "_godl")
-		err := c.GenerateZshCompletionFile(zshTarget)
-		if err != nil {
+		if err := c.GenerateZshCompletion(out); err != nil {
 			return err
 		}
-		return fs.Symlink(c.FSys, zshTarget, filepath.Join(c.ZshSymlinkDir, "_godl"))
+
+		if useDefault {
+			zshTarget := MakeTarget(shell, c.AutocompleteDir)
+			return fs.Symlink(c.FSys, zshTarget, filepath.Join(c.ZshSymlinkDir, "_godl"))
+		}
+		return nil
+	case "fish":
+		if err := c.GenerateFishCompletion(out, true); err != nil {
+			return err
+		}
+
+		if useDefault {
+			zshTarget := MakeTarget(shell, c.AutocompleteDir)
+			return fs.Symlink(c.FSys, zshTarget, filepath.Join(c.FishSymlinkDir, "godl.fish"))
+		}
+		return nil
 	default:
 		return errors.New("unknown shell passed")
 	}
+}
+
+func MakeTarget(shell, autocompleteDir string) string {
+	bashDir := filepath.Join(autocompleteDir, shell)
+	godlutil.Must(os.MkdirAll(bashDir, os.ModePerm))
+	return filepath.Join(bashDir, "godl")
 }
