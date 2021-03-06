@@ -46,7 +46,7 @@ Zsh:
   $ echo "autoload -U compinit; compinit" >> ~/.zshrc
 
   # To load completions for each session, execute once:
-  $ godl completion zsh > "${fpath[1]}/_yourprogram"
+  $ godl completion zsh > "/usr/local/share/zsh/site-functions/_godl"
 
   # You will need to start a new shell for this setup to take effect.
 
