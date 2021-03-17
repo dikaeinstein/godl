@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -25,8 +26,8 @@ type RootCmd struct {
 	CobraCmd *cobra.Command
 }
 
-func (godl *RootCmd) Execute() error {
-	return godl.CobraCmd.Execute()
+func (godl *RootCmd) Execute(ctx context.Context) error {
+	return godl.CobraCmd.ExecuteContext(ctx)
 }
 
 func (godl *RootCmd) GenerateBashCompletion(out io.Writer) error {

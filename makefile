@@ -7,7 +7,7 @@ GO_VERSION=$(shell go version)
 GOBIN="$(shell go env GOPATH)/bin"
 
 # setup -ldflags for go build
-LD_FLAGS=-ldflags '-s -w -X "$(PACKAGE).godlVersion=$(VERSION)" -X "$(PACKAGE).buildDate=$(BUILD_DATE)" -X "$(PACKAGE).goVersion=$(GO_VERSION)" -X "$(PACKAGE).gitHash=$(GIT_COMMIT_HASH)"'
+LDFLAGS=-ldflags '-s -w -X "$(PACKAGE).godlVersion=$(VERSION)" -X "$(PACKAGE).buildDate=$(BUILD_DATE)" -X "$(PACKAGE).goVersion=$(GO_VERSION)" -X "$(PACKAGE).gitHash=$(GIT_COMMIT_HASH)"'
 
 ## Fetch dependencies
 fetch:
@@ -18,23 +18,23 @@ lint:
 
 ## Run tests
 test:
-	go test -race ./...
+	go test -race $(TESTFLAGS) ./...
 
 ## Run tests with coverage
 test-cover:
-	go test -coverprofile=cover.out -race ./...
+	go test -coverprofile=cover.out -race $(TESTFLAGS) ./...
 
 ## Build binary
 build:
-	GOOS=darwin GOARCH=amd64 go build -a $(LD_FLAGS) -o godl cmd/main.go
+	GOOS=darwin GOARCH=amd64 go build -a $(LDFLAGS) -o godl cmd/main.go
 
 ## Simulate installing the binary to $GOBIN path using `go build`
 install:
-	GOOS=darwin GOARCH=amd64 go build -a $(LD_FLAGS) -o $(GOBIN)/godl cmd/main.go
+	GOOS=darwin GOARCH=amd64 go build -a $(LDFLAGS) -o $(GOBIN)/godl cmd/main.go
 
 ## Execute binary
 run:
-	go run -a $(LD_FLAGS) cmd/main.go
+	go run -a $(LDFLAGS) cmd/main.go
 
 .PHONY: clean test
 ## Remove binary

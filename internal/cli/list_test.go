@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func TestListCommand(t *testing.T) {
+func TestListCmd(t *testing.T) {
 	ls := NewListCmd()
 	godl := NewRootCmd()
 	godl.RegisterSubCommands([]*cobra.Command{ls})

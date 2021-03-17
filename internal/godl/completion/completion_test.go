@@ -52,11 +52,9 @@ func TestCompletion(t *testing.T) {
 	for name, tC := range testCases {
 		t.Run(name, func(t *testing.T) {
 			err := completion.Run(tC.shell, io.Discard, tC.useDefault)
-			if err != nil {
-				if err.Error() != tC.err.Error() {
-					t.Errorf("expected completion(%#v, %#v) => %#v, got %v",
-						tC.shell, tmpHome, tC.err, err)
-				}
+			if err != nil && err.Error() != tC.err.Error() {
+				t.Errorf("expected completion(%#v, %#v) => %#v, got %v",
+					tC.shell, tmpHome, tC.err, err)
 			}
 		})
 	}

@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func TestListRemoteCommand(t *testing.T) {
+func TestListRemoteCmd(t *testing.T) {
 	lsRemote := NewListRemoteCmd()
 	godl := NewRootCmd()
 	godl.RegisterSubCommands([]*cobra.Command{lsRemote})

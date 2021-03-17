@@ -19,7 +19,7 @@ func NewVersionCmd() *cobra.Command {
 		Use:   "version",
 		Short: "Show the godl version information.",
 		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Printf("Version: %s\nGo version: %s\nGit hash: %s\nBuilt: %s\n",
+			fmt.Fprintf(cmd.OutOrStdout(), "Version: %s\nGo version: %s\nGit hash: %s\nBuilt: %s\n",
 				godlVersion, goVersion, gitHash, buildDate)
 		},
 	}
