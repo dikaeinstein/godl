@@ -3,7 +3,8 @@ package update
 import (
 	"bytes"
 	"context"
-	"errors"
+	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -26,10 +27,19 @@ func TestCheckForUpdate(t *testing.T) {
 		}
 	}))
 
+	const errMsg = "Maximum number of login attempts exceeded. Please try again later."
 	failingTestClient := test.NewTestClient(test.RoundTripFunc(func(req *http.Request) *http.Response {
+		errResp := ListReleasesErrorResp{
+			Message:          errMsg,
+			DocumentationURL: "https://docs.github.com/rest",
+		}
+		b, err := json.Marshal(errResp)
+		if err != nil {
+			t.Fatal(err)
+		}
 		return &http.Response{
 			StatusCode: http.StatusBadGateway,
-			Body:       ioutil.NopCloser(bytes.NewBufferString("")),
+			Body:       ioutil.NopCloser(bytes.NewReader(b)),
 		}
 	}))
 
@@ -55,7 +65,7 @@ func TestCheckForUpdate(t *testing.T) {
 			client:         failingTestClient,
 			currentVersion: "0.11.5",
 			want:           false,
-			err:            errors.New("https://api.github.com/repos/dikaeinstein/godl/releases?per_page=10: 502 "),
+			err:            fmt.Errorf("https://api.github.com/repos/dikaeinstein/godl/releases?per_page=10: 502 %s", errMsg),
 		},
 	}
 

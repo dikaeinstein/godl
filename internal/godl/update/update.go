@@ -18,6 +18,10 @@ type Release struct {
 	TagName string  `json:"tag_name"`
 }
 type ListReleasesResult []Release
+type ListReleasesErrorResp struct {
+	Message          string `json:"message"`
+	DocumentationURL string `json:"documentation_url"`
+}
 
 // Update checks for if there are updates available for Godl
 type Update struct {
@@ -58,7 +62,17 @@ func (u *Update) CheckForUpdate(ctx context.Context, currentVersion string) (boo
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK && res.StatusCode != http.StatusNotFound {
-		return false, nil, fmt.Errorf("%s: %v %v", url, res.StatusCode, res.Status)
+		var errResp ListReleasesErrorResp
+		// using io.ReadAll because res.Body is very small
+		data, err := io.ReadAll(res.Body)
+		if err != nil {
+			return false, nil, err
+		}
+		err = json.Unmarshal(data, &errResp)
+		if err != nil {
+			return false, nil, err
+		}
+		return false, nil, fmt.Errorf("%s: %v %v", url, res.StatusCode, errResp.Message)
 	}
 
 	var releases ListReleasesResult
