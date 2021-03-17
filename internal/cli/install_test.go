@@ -8,6 +8,10 @@ import (
 )
 
 func TestInstallCmd(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping TestDownloadCmd in short mode.")
+	}
+
 	testCases := map[string]struct {
 		expected string
 		flags    string

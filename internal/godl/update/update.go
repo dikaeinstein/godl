@@ -48,6 +48,8 @@ func (u *Update) CheckForUpdate(ctx context.Context, currentVersion string) (boo
 	if err != nil {
 		return false, nil, err
 	}
+	req.Header.Set("Accept", "application/vnd.github.v3+json")
+	req.Header.Set("User-Agent", "godl")
 
 	res, err := u.Client.Do(req)
 	if err != nil {

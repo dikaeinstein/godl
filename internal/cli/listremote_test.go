@@ -8,6 +8,10 @@ import (
 )
 
 func TestListRemoteCmd(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping TestListRemoteCmd in short mode.")
+	}
+
 	lsRemote := NewListRemoteCmd()
 	godl := NewRootCmd()
 	godl.RegisterSubCommands([]*cobra.Command{lsRemote})

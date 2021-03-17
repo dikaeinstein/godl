@@ -8,6 +8,10 @@ import (
 )
 
 func TestUpdateCmd(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping TestUpdateCmd in short mode.")
+	}
+
 	testCases := []struct {
 		desc        string
 		errOutput   string
