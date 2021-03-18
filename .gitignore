@@ -5,3 +5,4 @@ vendor
 .vscode
 *.out
 .pprof
+.env

@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"os"
+	"path"
 
 	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
@@ -12,14 +12,16 @@ import (
 )
 
 func NewRootCmd() *RootCmd {
-	cobra.OnInitialize(initConfig)
-
-	return &RootCmd{
+	godl := &RootCmd{
 		CobraCmd: &cobra.Command{
 			Use:   "godl [command]",
 			Short: "Godl is a CLI tool used to download and install go binary releases on mac.",
 		},
 	}
+	debug := godl.CobraCmd.PersistentFlags().Bool("debug", false, "Used to turn on debug mode.")
+	cobra.OnInitialize(func() { initConfig(*debug) })
+
+	return godl
 }
 
 type RootCmd struct {
@@ -52,27 +54,25 @@ func (godl *RootCmd) RegisterSubCommands(subCommands []*cobra.Command) {
 var cfgFile string
 
 // initConfig reads in config file and ENV variables if set.
-func initConfig() {
+func initConfig(debug bool) {
 	if cfgFile != "" {
 		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)
 	} else {
 		// Find home directory.
 		home, err := homedir.Dir()
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
+		cobra.CheckErr(err)
 
-		// Search config in home directory with name ".godl" (without extension).
-		viper.AddConfigPath(home)
-		viper.SetConfigName(".godl")
+		// Search and set config `/home/.godl/config`.
+		viper.AddConfigPath(path.Join(home, ".godl"))
+		viper.SetConfigName("config")
 	}
 
+	viper.SetEnvPrefix("godl")
 	viper.AutomaticEnv() // read in environment variables that match
 
 	// If a config file is found, read it in.
-	if err := viper.ReadInConfig(); err == nil {
+	if err := viper.ReadInConfig(); err == nil && debug {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
 	}
 }

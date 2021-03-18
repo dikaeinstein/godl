@@ -13,6 +13,13 @@ func NewUpdateCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "update",
 		Short: "Check for updates.",
+		Long: `If you run into 403 Forbidden errors from Github release API,
+ you need to create a config file at ~/.godl/config.json.
+ Paste this into the file and replace 'yourGithubPersonalAccessToken' with your own token:
+{
+    "gh_token": "yourGithubPersonalAccessToken"
+}
+ `,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			u := update.Update{Client: http.DefaultClient, Output: cmd.OutOrStdout()}
 

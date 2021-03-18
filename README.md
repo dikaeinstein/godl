@@ -50,6 +50,7 @@ Run `godl help` to get help and see available options
 - `install` — Installs the specified go binary release version
 - `list|ls` — List the downloaded versions
 - `list-remote|ls-remote` — List available remote versions
+- `update` - Checks for updates.
 - `version` — Show the godl version information
 
 ## Typical Usage (example)

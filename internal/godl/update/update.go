@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/hashicorp/go-version"
+	"github.com/spf13/viper"
 )
 
 type Asset struct {
@@ -54,6 +55,11 @@ func (u *Update) CheckForUpdate(ctx context.Context, currentVersion string) (boo
 	}
 	req.Header.Set("Accept", "application/vnd.github.v3+json")
 	req.Header.Set("User-Agent", "godl")
+
+	ghToken := viper.GetString("gh_token")
+	if ghToken != "" {
+		req.Header.Set("Authorization", fmt.Sprintf("token %s", ghToken))
+	}
 
 	res, err := u.Client.Do(req)
 	if err != nil {
