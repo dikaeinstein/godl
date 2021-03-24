@@ -22,10 +22,10 @@ import (
 
 // injected as ldflags during go build
 var (
-	buildDate   = "unknown build date"
-	gitHash     = "unknown commit"
-	godlVersion = "unknown version"
-	goVersion   = "unknown go version"
+	buildDate   = "unknown"
+	gitHash     = "none"
+	godlVersion = "dev"
+	goVersion   = "unknown"
 )
 
 func main() {

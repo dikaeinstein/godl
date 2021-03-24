@@ -1,0 +1,33 @@
+# This is an example .goreleaser.yml file with some sane defaults.
+# Make sure to check the documentation at http://goreleaser.com
+env:
+  - GO_VERSION=$(go version)
+before:
+  hooks:
+    # You may remove this if you don't use go modules.
+    - go mod tidy
+builds:
+  - env:
+      - CGO_ENABLED=0
+    gobinary: "go1.16.2"
+    goos:
+      - darwin
+    goarch:
+      - 386
+      - amd64
+    ldflags:
+      - -s -w -X main.godlVersion={{.Tag}} -X main.buildDate={{.Date}} -X main.goVersion={{.Env.GO_VERSION}} -X main.gitHash={{.ShortCommit}}
+    main: ./cmd/main.go
+archives:
+  - replacements:
+      darwin: Darwin
+      386: i386
+      amd64: x86_64
+checksum:
+  name_template: '{{ .ProjectName }}_checksums.txt'
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'

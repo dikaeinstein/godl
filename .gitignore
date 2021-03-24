@@ -6,3 +6,4 @@ vendor
 *.out
 .pprof
 .env
+dist/
