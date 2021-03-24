@@ -14,7 +14,7 @@ import (
 )
 
 // New returns a new instance of the download command
-func NewDownloadCmd() *cobra.Command {
+func NewDownloadCmd(client *http.Client) *cobra.Command {
 	downloadCmd := &cobra.Command{
 		Use:   "download version",
 		Short: "Download go binary archive.",
@@ -42,7 +42,7 @@ func NewDownloadCmd() *cobra.Command {
 
 		dl := &downloader.Downloader{
 			BaseURL:       "https://storage.googleapis.com/golang/",
-			Client:        &http.Client{},
+			Client:        client,
 			DownloadDir:   dlDir,
 			Fsys:          os.FS{},
 			ForceDownload: *forceDownload,

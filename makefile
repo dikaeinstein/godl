@@ -14,7 +14,7 @@ fetch:
 	go mod download
 
 lint:
-	golangci-lint run -v
+	golangci-lint run
 
 ## Run tests
 test:

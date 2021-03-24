@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewUpdateCmd() *cobra.Command {
+func NewUpdateCmd(client *http.Client) *cobra.Command {
 	return &cobra.Command{
 		Use:   "update",
 		Short: "Check for updates.",
@@ -21,7 +21,7 @@ func NewUpdateCmd() *cobra.Command {
 }
  `,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			u := update.Update{Client: http.DefaultClient, Output: cmd.OutOrStdout()}
+			u := update.Update{Client: client, Output: cmd.OutOrStdout()}
 
 			const timeout = 15
 			ctx, cancel := context.WithTimeout(cmd.Context(), timeout*time.Second)

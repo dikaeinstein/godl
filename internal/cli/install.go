@@ -16,7 +16,7 @@ import (
 )
 
 // New returns the install command
-func NewInstallCmd() *cobra.Command {
+func NewInstallCmd(client *http.Client) *cobra.Command {
 	installCmd := &cobra.Command{
 		Use:   "install version",
 		Short: "Installs the specified go binary version from local or remote.",
@@ -49,7 +49,7 @@ func NewInstallCmd() *cobra.Command {
 			},
 			Dl: &downloader.Downloader{
 				BaseURL:       "https://storage.googleapis.com/golang/",
-				Client:        &http.Client{},
+				Client:        client,
 				DownloadDir:   dlDir,
 				Fsys:          os.FS{},
 				ForceDownload: *forceDownload,

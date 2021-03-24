@@ -10,7 +10,7 @@ import (
 )
 
 // New returns the list-remote command
-func NewListRemoteCmd() *cobra.Command {
+func NewListRemoteCmd(client *http.Client) *cobra.Command {
 	lsRemoteExAsc := "ls-remote -s asc or ls-remote -s=asc"
 	lsRemoteExDesc := "ls-remote -s desc or ls-remote -s=desc"
 
@@ -25,7 +25,7 @@ func NewListRemoteCmd() *cobra.Command {
 		"Specify the sort direction of the output of `list-remote`. It sorts in ascending order by default.")
 
 	listRemoteCmd.RunE = func(cmd *cobra.Command, args []string) error {
-		lsRemote := listremote.ListRemote{Client: http.DefaultClient}
+		lsRemote := listremote.ListRemote{Client: client}
 		return lsRemote.Run(cmd.Context(), gv.SortDirection(*sd))
 	}
 

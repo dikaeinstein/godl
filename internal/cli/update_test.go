@@ -1,6 +1,9 @@
 package cli
 
 import (
+	"net/http"
+	"os"
+	"path"
 	"testing"
 
 	"github.com/dikaeinstein/godl/test"
@@ -34,19 +37,31 @@ func TestUpdateCmd(t *testing.T) {
 		},
 	}
 
+	testClient := test.NewTestClient(test.RoundTripFunc(func(req *http.Request) *http.Response {
+		f, err := os.Open(path.Join("..", "..", "test", "testdata", "releases.json"))
+		if err != nil {
+			panic(err)
+		}
+
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       f,
+		}
+	}))
+
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
-			update := NewUpdateCmd()
+			update := NewUpdateCmd(testClient)
 			godl := NewRootCmd()
 			godl.RegisterSubCommands([]*cobra.Command{update})
 
 			godlVersion = tC.godlVersion
 			output, errOutput := test.ExecuteCommand(t, false, godl.CobraCmd, "update")
 			if errOutput != tC.errOutput {
-				t.Errorf("godl update failed: expected errOutput %s; got %s", tC.errOutput, errOutput)
+				t.Errorf("godl update failed: expected errOutput: %s; got: %s", tC.errOutput, errOutput)
 			}
 			if output != tC.output {
-				t.Errorf("godl update failed: expected output %s; got %s", tC.output, output)
+				t.Errorf("godl update failed: expected output: %s; got: %s", tC.output, output)
 			}
 		})
 	}

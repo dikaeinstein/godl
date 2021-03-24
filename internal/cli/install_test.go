@@ -1,6 +1,9 @@
 package cli
 
 import (
+	"net/http"
+	"os"
+	"path"
 	"testing"
 
 	"github.com/dikaeinstein/godl/test"
@@ -29,10 +32,22 @@ func TestInstallCmd(t *testing.T) {
 		},
 	}
 
+	testClient := test.NewTestClient(test.RoundTripFunc(func(req *http.Request) *http.Response {
+		f, err := os.Open(path.Join("..", "..", "test", "testdata", "listbucketresult.xml"))
+		if err != nil {
+			panic(err)
+		}
+
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       f,
+		}
+	}))
+
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
 			godl := NewRootCmd()
-			install := NewInstallCmd()
+			install := NewInstallCmd(testClient)
 			godl.RegisterSubCommands([]*cobra.Command{install})
 
 			var errOutput string
