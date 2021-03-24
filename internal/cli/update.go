@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewUpdateCmd(client *http.Client) *cobra.Command {
+func NewUpdateCmd(client *http.Client, v VersionOption) *cobra.Command {
 	return &cobra.Command{
 		Use:   "update",
 		Short: "Check for updates.",
@@ -27,7 +27,7 @@ func NewUpdateCmd(client *http.Client) *cobra.Command {
 			ctx, cancel := context.WithTimeout(cmd.Context(), timeout*time.Second)
 			defer cancel()
 
-			return u.Run(ctx, godlVersion)
+			return u.Run(ctx, v.GodlVersion)
 		},
 	}
 }

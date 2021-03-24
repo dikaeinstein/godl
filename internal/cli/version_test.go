@@ -9,20 +9,22 @@ import (
 )
 
 func TestVersionCmd(t *testing.T) {
-	godl := NewRootCmd()
-	version := NewVersionCmd()
-	godl.RegisterSubCommands([]*cobra.Command{version})
+	v := VersionOption{
+		BuildDate:   "2021-03-14 00:28",
+		GitHash:     "02cb593",
+		GodlVersion: "v0.11.6",
+		GoVersion:   "go version go1.16.2 darwin/amd64",
+	}
 
-	godlVersion = "v0.11.6"
-	goVersion = "go version go1.16.2 darwin/amd64"
-	gitHash = "02cb593"
-	buildDate = "2021-03-14 00:28"
+	godl := NewRootCmd()
+	version := NewVersionCmd(v)
+	godl.RegisterSubCommands([]*cobra.Command{version})
 
 	expectedOutput := fmt.Sprintf(`Version: %s
 Go version: %s
 Git hash: %s
 Built: %s
-`, godlVersion, goVersion, gitHash, buildDate)
+`, v.GodlVersion, v.GoVersion, v.GitHash, v.BuildDate)
 
 	output, errOutput := test.ExecuteCommand(t, false, godl.CobraCmd, "version")
 	if errOutput != "" {

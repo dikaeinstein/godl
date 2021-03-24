@@ -17,8 +17,8 @@ func TestGodlCmd(t *testing.T) {
 
 func TestGodlExecuteUnknownCommand(t *testing.T) {
 	godlCmd := NewRootCmd()
-	// Register version subcommand so there's a list to filter an unknown command against.
-	godlCmd.RegisterSubCommands([]*cobra.Command{NewVersionCmd()})
+	// Register list subcommand so there's a list to filter an unknown command against.
+	godlCmd.RegisterSubCommands([]*cobra.Command{NewListCmd()})
 
 	_, errOutput := test.ExecuteCommand(t, true, godlCmd.CobraCmd, "unknown")
 	expected := "Error: unknown command \"unknown\" for \"godl\"\nRun 'godl --help' for usage.\n"

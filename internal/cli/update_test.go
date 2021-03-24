@@ -51,11 +51,11 @@ func TestUpdateCmd(t *testing.T) {
 
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
-			update := NewUpdateCmd(testClient)
+			v := VersionOption{GodlVersion: tC.godlVersion}
+			update := NewUpdateCmd(testClient, v)
 			godl := NewRootCmd()
 			godl.RegisterSubCommands([]*cobra.Command{update})
 
-			godlVersion = tC.godlVersion
 			output, errOutput := test.ExecuteCommand(t, false, godl.CobraCmd, "update")
 			if errOutput != tC.errOutput {
 				t.Errorf("godl update failed: expected errOutput: %s; got: %s", tC.errOutput, errOutput)
