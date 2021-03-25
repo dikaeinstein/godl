@@ -1,3 +1,4 @@
+# moved to Github Actions
 language: go
 go:
 - 1.16.x

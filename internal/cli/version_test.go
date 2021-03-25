@@ -13,7 +13,7 @@ func TestVersionCmd(t *testing.T) {
 		BuildDate:   "2021-03-14 00:28",
 		GitHash:     "02cb593",
 		GodlVersion: "v0.11.6",
-		GoVersion:   "go version go1.16.2 darwin/amd64",
+		GoVersion:   "go1.16.2",
 	}
 
 	godl := NewRootCmd()
