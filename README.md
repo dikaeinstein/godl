@@ -2,14 +2,16 @@
 
 Godl is a CLI tool used to download and install go binary releases on mac.
 
-[![Build Status](https://travis-ci.com/dikaeinstein/godl.svg?branch=master)](https://travis-ci.com/dikaeinstein/godl)
+[![Build Status](https://github.com/dikaeinstein/godl/actions/workflows/ci-cd.yml/badge.svg?branch=master)](https://github.com/dikaeinstein/godl/actions)
 [![Coverage Status](https://coveralls.io/repos/github/dikaeinstein/godl/badge.svg?branch=master)](https://coveralls.io/github/dikaeinstein/godl?branch=master)
 
-## Standalone
+## Download and Install
 
-godl can be easily installed as an executable. Download the latest [compiled binaries](https://github.com/dikaeinstein/godl/releases) and put it anywhere in your executable path.
+To download and install a specific version of godl, copy and paste the installation command:
 
-*You might need to run `chmod +x ${path_to/godl}` to make it an executable.*
+```bash
+curl https://raw.githubusercontent.com/dikaeinstein/godl/master/get.sh | bash -s v0.12.7
+```
 
 ## Install with Go 1.16.x
 
@@ -24,11 +26,12 @@ go install github.com/dikaeinstein/godl
 Prerequisites for building from source are:
 
 - make
-- Go 1.13+
+- Go 1.15+
 
 ```bash
 git clone https://github.com/dikaeinstein/godl
 cd godl
+make fetch
 make install
 ```
 
@@ -55,12 +58,12 @@ Run `godl help` to get help and see available options
 
 ## Typical Usage (example)
 
-To download and install go1.15:
+To download and install go1.16:
 
 ```bash
-godl download 1.15
+godl download 1.16
 
-sudo godl install 1.15
+sudo godl install 1.16
 ```
 
 Then run
@@ -70,7 +73,7 @@ go version
 ```
 
 ```bash
-output: go version go1.15 darwin/amd64 // or something similar
+output: go version go1.16 darwin/amd64 // or something similar
 ```
 
 ### Improvements / Coming features
