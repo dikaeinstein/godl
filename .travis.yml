@@ -19,7 +19,7 @@ script:
 deploy:
 - provider: script
   skip_cleanup: true
-  script: export GO_VERSION=$(go version) && curl -sL https://git.io/goreleaser | bash
+  script: env GO_VERSION=$(go version) curl -sL https://git.io/goreleaser | bash
   on:
     tags: true
 env:
