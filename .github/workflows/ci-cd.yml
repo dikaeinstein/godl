@@ -38,6 +38,7 @@ jobs:
           version: v1.38.0
 
   goreleaser:
+    name: Make Release
     needs: [golangci, test]
     runs-on: macos-10.15
     if: startsWith(github.ref, 'refs/tags/')
@@ -58,5 +59,5 @@ jobs:
           version: latest
           args: release --rm-dist
         env:
-          GITHUB_TOKEN: ${{ secrets.GORELEASER_GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GO_VERSION: ${{ env.GO_VERSION }}
