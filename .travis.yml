@@ -16,10 +16,11 @@ script:
 - make lint
 - make test-cover
 - goveralls -coverprofile=cover.out -service=travis-ci
+- export GO_VERSION=$(go version)
 deploy:
 - provider: script
   skip_cleanup: true
-  script: env GO_VERSION=$(go version) curl -sL https://git.io/goreleaser | bash
+  script: curl -sL https://git.io/goreleaser | bash
   on:
     tags: true
 env:
