@@ -24,11 +24,11 @@ jobs:
         run: go get github.com/mattn/goveralls
       - name: Send coverage
         env:
-          COVERALLS_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
+          COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: goveralls -coverprofile=cover.out -service=github
 
   golangci:
-    name: lint
+    name: Linting
     runs-on: macos-10.15
     steps:
       - uses: actions/checkout@v2
