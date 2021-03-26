@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
-	"github.com/dikaeinstein/godl/internal/pkg/godlutil"
 	"github.com/hashicorp/go-version"
 )
 
@@ -30,8 +30,7 @@ func CompareVersions(left, right *version.Version, d SortDirection) bool {
 // 		go1.11.4.darwin-amd64.tar.gz => 1.11.4
 func GetVersion(s string) *version.Version {
 	v := strings.Split(s, ".darwin-amd64")
-	vv, err := version.NewVersion(strings.TrimPrefix(v[0], "go"))
-	godlutil.Must(err)
+	vv := version.Must(version.NewVersion(strings.TrimPrefix(v[0], "go")))
 	return vv
 }
 
@@ -53,4 +52,19 @@ func VersionExists(archiveVersion, downloadDir string) (bool, error) {
 	}
 
 	return true, nil
+}
+
+// Segments returns a new version which is just the numeric segments of v.
+func Segments(v *version.Version) *version.Version {
+	segStr := intSliceToString(v.Segments())
+	return version.Must(version.NewSemver(segStr))
+}
+
+func intSliceToString(segments []int) string {
+	b := make([]string, len(segments))
+	for i, v := range segments {
+		b[i] = strconv.Itoa(v)
+	}
+
+	return strings.Join(b, ".")
 }
