@@ -7,10 +7,11 @@ import (
 	"io/ioutil"
 	"net/http"
 	"testing"
+	"testing/fstest"
 	"time"
 
 	"github.com/dikaeinstein/godl/internal/pkg/downloader"
-	"github.com/dikaeinstein/godl/pkg/fs/inmem"
+	"github.com/dikaeinstein/godl/pkg/fsys"
 	"github.com/dikaeinstein/godl/pkg/hash"
 	"github.com/dikaeinstein/godl/test"
 )
@@ -31,12 +32,12 @@ func TestDownloadRelease(t *testing.T) {
 	}
 	testClient := test.NewTestClient(test.RoundTripFunc(fakeRoundTripper))
 
-	imFS := inmem.NewFS(new(bytes.Buffer))
+	imFS := fsys.NewInMemFS(make(fstest.MapFS))
 	dl := &downloader.Downloader{
 		BaseURL:      "https://storage.googleapis.com/golang/",
 		Client:       testClient,
 		DownloadDir:  ".",
-		Fsys:         imFS,
+		FS:           imFS,
 		Hasher:       hash.FakeHasher{},
 		HashVerifier: fakeHashVerifier,
 	}
@@ -47,9 +48,14 @@ func TestDownloadRelease(t *testing.T) {
 		t.Fatalf("Error downloading go binary: %v", err)
 	}
 
-	if imFS.Content().String() != "This is test data" {
-		t.Errorf("Data downloaded does not match data written to archive")
+	entries, err := imFS.ReadDir(".")
+	if err != nil {
+		t.Error(err)
 	}
 
-	imFS.Content().Reset()
+	expected := "go1.12.darwin-amd64.tar.gz"
+	if entries[0].Name() != expected {
+		t.Errorf("downloaded filename does not match. want %s; got: %s",
+			expected, entries[0].Name())
+	}
 }

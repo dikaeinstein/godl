@@ -8,21 +8,10 @@ import (
 
 	"github.com/dikaeinstein/godl/internal/godl/completion"
 	"github.com/dikaeinstein/godl/pkg/exitcode"
-	"github.com/dikaeinstein/godl/pkg/fs"
+	"github.com/dikaeinstein/godl/pkg/fsys"
 	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 )
-
-// osLinker is an os based filesystem that can symlink files
-type osLinkerFS struct{}
-
-func (osLinkerFS) Open(name string) (fs.File, error) {
-	return os.Open(name)
-}
-
-func (osLinkerFS) Symlink(oldName, newName string) error {
-	return os.Symlink(oldName, newName)
-}
 
 // New returns the a new instance of the completion command
 func NewCompletionCmd(godl completion.Generator) *cobra.Command {
@@ -93,11 +82,10 @@ If you want 'godl' to generate and load the completion, just pass the --default(
 		bashSymlinkDir := path.Join("/usr", "local", "etc", "bash_completion.d")
 		zshSymlinkDir := path.Join("/usr", "local", "share", "zsh", "site-functions")
 		fishSymlinkDir := path.Join(home, ".config", "fish", "completions")
-		fsys := osLinkerFS{}
 
 		c := completion.Completion{
 			BashSymlinkDir:  bashSymlinkDir,
-			FSys:            fsys,
+			FS:              fsys.OsFS{},
 			FishSymlinkDir:  fishSymlinkDir,
 			HomeDir:         home,
 			Generator:       godl,

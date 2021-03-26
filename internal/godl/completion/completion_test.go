@@ -4,15 +4,10 @@ import (
 	"errors"
 	"io"
 	"testing"
-
-	"github.com/dikaeinstein/godl/pkg/fs"
+	"testing/fstest"
 )
 
-type fakeSymLinkerFS struct{}
-
-func (fakeSymLinkerFS) Open(name string) (fs.File, error) {
-	return nil, nil
-}
+type fakeSymLinkerFS struct{ fstest.MapFS }
 
 func (fakeSymLinkerFS) Symlink(oldName, newName string) error {
 	return nil
@@ -44,7 +39,7 @@ func TestCompletion(t *testing.T) {
 		AutocompleteDir: t.TempDir(),
 		BashSymlinkDir:  tmpSymDir,
 		FishSymlinkDir:  tmpSymDir,
-		FSys:            fakeSymLinkerFS{},
+		FS:              fakeSymLinkerFS{},
 		HomeDir:         tmpHome,
 		Generator:       fakeCompletionGenerator{},
 		ZshSymlinkDir:   tmpSymDir,

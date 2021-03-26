@@ -7,10 +7,11 @@ import (
 	"io/ioutil"
 	"net/http"
 	"testing"
+	"testing/fstest"
 	"time"
 
 	"github.com/dikaeinstein/godl/internal/pkg/downloader"
-	"github.com/dikaeinstein/godl/pkg/fs/inmem"
+	"github.com/dikaeinstein/godl/pkg/fsys"
 	"github.com/dikaeinstein/godl/pkg/hash"
 	"github.com/dikaeinstein/godl/test"
 )
@@ -45,17 +46,18 @@ func TestInstallRelease(t *testing.T) {
 		c                 *http.Client
 		downloadedVersion string
 		installVersion    string
-		success           bool
-		pathsD            string
+		errMsg            string
+		goPathsD          string
 	}{
 		"installRelease downloads from remote when version not found locally": {
-			testClient, "1.10.1", "1.11.7", true, "/usr/local/go/bin\n",
+			testClient, "1.10.1", "1.11.7", "", "/usr/local/go/bin\n",
 		},
 		"installRelease installs local downloaded version": {
-			testClient, "1.10.6", "1.10.6", true, "/usr/local/go/bin\n",
+			testClient, "1.10.6", "1.10.6", "", "/usr/local/go/bin\n",
 		},
 		"installRelease handle error when fetching binary from remote": {
-			failingTestClient, "1.10.1", "1.11.9", false, "",
+			failingTestClient, "1.10.1", "1.11.9",
+			"error downloading 1.11.9: no binary release of 1.11.9", "",
 		},
 	}
 
@@ -64,12 +66,12 @@ func TestInstallRelease(t *testing.T) {
 			tmpFile, _ := test.CreateTempGoBinaryArchive(t, tc.downloadedVersion)
 			defer tmpFile.Close()
 
-			storage := new(bytes.Buffer)
+			imFS := fsys.NewInMemFS(fstest.MapFS{})
 			dl := &downloader.Downloader{
 				BaseURL:      "https://storage.googleapis.com/golang/",
 				Client:       tc.c,
 				DownloadDir:  ".",
-				Fsys:         inmem.NewFS(storage),
+				FS:           imFS,
 				Hasher:       hash.FakeHasher{},
 				HashVerifier: fakeHashVerifier,
 			}
@@ -79,19 +81,13 @@ func TestInstallRelease(t *testing.T) {
 				Timeout:  5 * time.Second,
 			}
 			err := install.Run(context.Background(), tc.installVersion)
-			var got bool
-			if err != nil {
-				got = false
-			} else {
-				got = true
+			if err != nil && err.Error() != tc.errMsg {
+				t.Error(err)
 			}
 
-			if storage.String() != tc.pathsD {
-				t.Errorf("Error adding to $PATH")
-			}
-
-			if got != tc.success {
-				t.Errorf("Error installing go binary: %v", err)
+			f, ok := imFS.MapFS["/etc/paths.d/go"]
+			if ok && string(f.Data) != tc.goPathsD {
+				t.Errorf("not matching want: %s, got: %s", tc.goPathsD, string(f.Data))
 			}
 		})
 	}

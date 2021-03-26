@@ -8,7 +8,7 @@ import (
 	"github.com/dikaeinstein/godl/internal/godl/download"
 	"github.com/dikaeinstein/godl/internal/pkg/downloader"
 	"github.com/dikaeinstein/godl/internal/pkg/godlutil"
-	"github.com/dikaeinstein/godl/pkg/fs/os"
+	"github.com/dikaeinstein/godl/pkg/fsys"
 	"github.com/dikaeinstein/godl/pkg/hash"
 	"github.com/spf13/cobra"
 )
@@ -44,7 +44,7 @@ func NewDownloadCmd(client *http.Client) *cobra.Command {
 			BaseURL:       "https://storage.googleapis.com/golang/",
 			Client:        client,
 			DownloadDir:   dlDir,
-			Fsys:          os.FS{},
+			FS:            fsys.OsFS{},
 			ForceDownload: *forceDownload,
 			Hasher:        hash.NewRemoteHasher(http.DefaultClient),
 			HashVerifier:  godlutil.VerifyHash,

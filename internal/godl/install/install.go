@@ -22,7 +22,7 @@ import (
 
 	"github.com/dikaeinstein/godl/internal/pkg/downloader"
 	"github.com/dikaeinstein/godl/internal/pkg/gv"
-	"github.com/dikaeinstein/godl/pkg/fs"
+	"github.com/dikaeinstein/godl/pkg/fsys"
 )
 
 type Archiver interface {
@@ -61,7 +61,7 @@ func (i *Install) Run(ctx context.Context, version string) error {
 	// new version
 	fmt.Println()
 	fmt.Println("removing old installation...")
-	err = fs.RemoveAll(i.Dl.Fsys, path.Join("/usr", "local", "go"))
+	err = fsys.RemoveAll(i.Dl.FS, path.Join("/usr", "local", "go"))
 	if err != nil {
 		return fmt.Errorf("error removing old installation: %v", err)
 	}
@@ -76,7 +76,7 @@ func (i *Install) Run(ctx context.Context, version string) error {
 
 	fmt.Println("adding to $PATH...")
 	pathsD := path.Join("/etc", "paths.d", "go")
-	err = fs.WriteFile(i.Dl.Fsys, pathsD, []byte("/usr/local/go/bin\n"), 0644)
+	err = fsys.WriteFile(i.Dl.FS, pathsD, []byte("/usr/local/go/bin\n"), 0644)
 	if err != nil {
 		return err
 	}

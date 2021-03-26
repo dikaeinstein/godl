@@ -17,11 +17,12 @@ package completion
 import (
 	"errors"
 	"io"
+	"io/fs"
 	"os"
 	"path/filepath"
 
 	"github.com/dikaeinstein/godl/internal/pkg/godlutil"
-	"github.com/dikaeinstein/godl/pkg/fs"
+	"github.com/dikaeinstein/godl/pkg/fsys"
 )
 
 // Generator controls how the completion files should be generated
@@ -36,7 +37,7 @@ type Completion struct {
 	AutocompleteDir string
 	BashSymlinkDir  string
 	FishSymlinkDir  string
-	FSys            fs.FS
+	FS              fs.FS
 	Generator
 	HomeDir       string
 	ZshSymlinkDir string
@@ -52,7 +53,7 @@ func (c *Completion) Run(shell string, out io.Writer, useDefault bool) error {
 
 		if useDefault {
 			bashTarget := MakeTarget(shell, c.AutocompleteDir)
-			return fs.Symlink(c.FSys, bashTarget, filepath.Join(c.BashSymlinkDir, "godl"))
+			return fsys.Symlink(c.FS, bashTarget, filepath.Join(c.BashSymlinkDir, "godl"))
 		}
 
 		return nil
@@ -63,7 +64,7 @@ func (c *Completion) Run(shell string, out io.Writer, useDefault bool) error {
 
 		if useDefault {
 			zshTarget := MakeTarget(shell, c.AutocompleteDir)
-			return fs.Symlink(c.FSys, zshTarget, filepath.Join(c.ZshSymlinkDir, "_godl"))
+			return fsys.Symlink(c.FS, zshTarget, filepath.Join(c.ZshSymlinkDir, "_godl"))
 		}
 		return nil
 	case "fish":
@@ -73,7 +74,7 @@ func (c *Completion) Run(shell string, out io.Writer, useDefault bool) error {
 
 		if useDefault {
 			zshTarget := MakeTarget(shell, c.AutocompleteDir)
-			return fs.Symlink(c.FSys, zshTarget, filepath.Join(c.FishSymlinkDir, "godl.fish"))
+			return fsys.Symlink(c.FS, zshTarget, filepath.Join(c.FishSymlinkDir, "godl.fish"))
 		}
 		return nil
 	default:

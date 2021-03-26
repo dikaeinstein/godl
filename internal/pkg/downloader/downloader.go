@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"math"
 	"net/http"
 	"os"
@@ -12,7 +13,7 @@ import (
 
 	"github.com/dikaeinstein/godl/internal/pkg/godlutil"
 	"github.com/dikaeinstein/godl/internal/pkg/gv"
-	"github.com/dikaeinstein/godl/pkg/fs"
+	"github.com/dikaeinstein/godl/pkg/fsys"
 )
 
 const (
@@ -34,7 +35,7 @@ type Downloader struct {
 	BaseURL       string
 	Client        *http.Client
 	DownloadDir   string
-	Fsys          fs.FS
+	FS            fs.FS
 	ForceDownload bool
 	Hasher        Hasher
 	HashVerifier  HashVerifier
@@ -65,11 +66,11 @@ func (d *Downloader) Download(ctx context.Context, version string) error {
 
 	// Create the file with tmp extension. So we don't overwrite until
 	// the file is completely downloaded.
-	tmpFile, err := fs.Create(d.Fsys, downloadPath+".tmp")
+	tmp, err := fsys.Create(d.FS, downloadPath+".tmp")
 	if err != nil {
 		return err
 	}
-	defer tmpFile.Close()
+	defer tmp.Close()
 
 	goURL := d.VersionURL(version)
 	req, _ := http.NewRequestWithContext(ctx, http.MethodGet, goURL, nil)
@@ -86,6 +87,11 @@ func (d *Downloader) Download(ctx context.Context, version string) error {
 	// Create the countWriter used for counting response bytes
 	cw := &countWriter{TotalExpectedBytes: res.ContentLength}
 
+	tmpFile, ok := tmp.(io.Writer)
+	if !ok {
+		return fmt.Errorf("invalid writer: %T", tmp)
+	}
+
 	n, err := io.Copy(tmpFile, io.TeeReader(res.Body, cw))
 	if err != nil {
 		return err
@@ -100,7 +106,7 @@ func (d *Downloader) Download(ctx context.Context, version string) error {
 	}
 
 	fmt.Println("\nverifying checksum")
-	f, err := d.Fsys.Open(tmpFile.(fs.NameFile).Name())
+	f, err := d.FS.Open(downloadPath + ".tmp")
 	if err != nil {
 		return err
 	}
@@ -114,7 +120,7 @@ func (d *Downloader) Download(ctx context.Context, version string) error {
 	fmt.Println("checksums matched!")
 
 	// Rename the temporary file once fully downloaded
-	return fs.Rename(d.Fsys, downloadPath+".tmp", downloadPath)
+	return fsys.Rename(d.FS, downloadPath+".tmp", downloadPath)
 }
 
 func (d *Downloader) CheckIfExistsRemote(ctx context.Context, version string) error {
