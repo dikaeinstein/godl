@@ -15,13 +15,9 @@ jobs:
         with:
           go-version: 1.16
       - name: Install dependencies
-        run: make fetch
+        run: make install-tools
       - name: Run tests
         run: make test-cover
-      - name: Install goveralls
-        env:
-          GO111MODULE: off
-        run: go get github.com/mattn/goveralls
       - name: Send coverage
         env:
           COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
