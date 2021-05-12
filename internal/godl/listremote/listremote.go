@@ -31,7 +31,8 @@ type Content struct {
 
 // ListRemote lists remote versions available for install
 type ListRemote struct {
-	Client *http.Client
+	Client  *http.Client
+	Timeout time.Duration
 }
 
 func (lsRemote *ListRemote) Run(ctx context.Context, sortDirection gv.SortDirection) error {
@@ -92,15 +93,14 @@ func (lsRemote *ListRemote) Run(ctx context.Context, sortDirection gv.SortDirect
 }
 
 func (lsRemote *ListRemote) getBinaryReleases(url string) (*ListBucketResult, error) {
-	var timeout time.Duration
-	if lsRemote.Client.Timeout != 0 {
-		timeout = lsRemote.Client.Timeout
-	} else {
-		timeout = 5000 * time.Millisecond
-	}
-	ctx, cancelFunc := context.WithTimeout(context.Background(), timeout)
+	ctx, cancelFunc := context.WithTimeout(context.Background(), lsRemote.Timeout)
 	defer cancelFunc()
-	req, _ := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return nil, err
+	}
+
 	res, err := lsRemote.Client.Do(req)
 	if err != nil {
 		return nil, err

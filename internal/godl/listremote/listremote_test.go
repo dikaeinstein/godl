@@ -8,6 +8,7 @@ import (
 	"os"
 	"path"
 	"testing"
+	"time"
 
 	"github.com/dikaeinstein/godl/internal/pkg/gv"
 	"github.com/dikaeinstein/godl/test"
@@ -47,7 +48,7 @@ func TestListRemoteVersions(t *testing.T) {
 
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
-			lsRemote := ListRemote{tc.client}
+			lsRemote := ListRemote{tc.client, 2 * time.Second}
 			err := lsRemote.Run(context.Background(), gv.Asc)
 			if err != nil {
 				diff := cmp.Diff(tc.want, err.Error())
