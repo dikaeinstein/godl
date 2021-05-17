@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// New returns a new instance of the list command
+// NewListCmd returns a new instance of the list command
 func NewListCmd() *cobra.Command {
 	listCmd := &cobra.Command{
 		Use:     "list",

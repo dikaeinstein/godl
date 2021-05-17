@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-// RemoteHash generates a hash from a remote source
+// RemoteHasher generates a hash from a remote source
 type RemoteHasher struct {
 	client *http.Client
 }

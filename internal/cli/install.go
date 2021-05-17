@@ -15,7 +15,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// New returns the install command
+// NewInstallCmd returns the install command
 func NewInstallCmd(client *http.Client) *cobra.Command {
 	installCmd := &cobra.Command{
 		Use:   "install version",

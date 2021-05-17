@@ -13,7 +13,7 @@ type VersionOption struct {
 	GoVersion   string
 }
 
-// New returns the version command
+// NewVersionCmd returns the version command
 func NewVersionCmd(v VersionOption) *cobra.Command {
 	return &cobra.Command{
 		Use:   "version",

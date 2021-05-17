@@ -67,7 +67,8 @@ func executeCommandC(root *cobra.Command, args []string) (c *cobra.Command, outp
 // RoundTripper that calls f.
 type RoundTripFunc func(req *http.Request) *http.Response
 
-// RoundTrip
+// RoundTrip executes a single HTTP transaction, returning
+// a Response for the provided Request.
 func (f RoundTripFunc) RoundTrip(req *http.Request) (*http.Response, error) {
 	return f(req), nil
 }

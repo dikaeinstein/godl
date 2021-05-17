@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// New returns the list-remote command
+// NewListRemoteCmd returns the list-remote command
 func NewListRemoteCmd(client *http.Client) *cobra.Command {
 	listRemoteCmd := &cobra.Command{
 		Use:     "list-remote",

@@ -7,7 +7,7 @@ import (
 	"testing/fstest"
 )
 
-// FS is an in-memory based filesystem t.
+// InMemFS is an in-memory based filesystem t.
 type InMemFS struct {
 	fstest.MapFS
 }
@@ -27,7 +27,7 @@ func (inMemFile *InMemFile) Write(p []byte) (int, error) {
 	return inMemFile.buf.Write(p)
 }
 
-// NewFS returns a pointer to a new in-memory FS
+// NewInMemFS returns a pointer to a new in-memory FS
 func NewInMemFS(mapFs fstest.MapFS) *InMemFS {
 	return &InMemFS{mapFs}
 }

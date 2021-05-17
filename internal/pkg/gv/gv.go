@@ -14,7 +14,9 @@ import (
 type SortDirection string
 
 const (
-	Asc  SortDirection = "asc"
+	// Asc sorts in the ascending direction
+	Asc SortDirection = "asc"
+	// Desc sorts in the descending direction
 	Desc SortDirection = "desc"
 )
 

@@ -14,7 +14,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// New returns a new instance of the download command
+// NewDownloadCmd returns a new instance of the download command
 func NewDownloadCmd(client *http.Client) *cobra.Command {
 	downloadCmd := &cobra.Command{
 		Use:   "download version",
