@@ -28,6 +28,7 @@ func NewCompletionCmd(godl completion.Generator) *cobra.Command {
 			}
 			return nil
 		},
+		ValidArgs: []string{"bash", "zsh", "fish"},
 	}
 
 	useDefault := completionCmd.Flags().BoolP("default", "d", false, "Generate and load completion into default path based on shell")
