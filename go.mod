@@ -1,8 +1,9 @@
 module github.com/dikaeinstein/godl
 
 require (
+	github.com/MakeNowJust/heredoc v1.0.0
 	github.com/dsnet/compress v0.0.1 // indirect
-	github.com/fatih/color v1.10.0 // indirect
+	github.com/fatih/color v1.11.0 // indirect
 	github.com/frankban/quicktest v1.11.3 // indirect
 	github.com/go-lintpack/lintpack v0.5.2 // indirect
 	github.com/golang/snappy v0.0.2 // indirect

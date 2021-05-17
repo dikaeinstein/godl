@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/dikaeinstein/godl/internal/pkg/gv"
+	"github.com/dikaeinstein/godl/pkg/text"
 	"github.com/hashicorp/go-version"
 	"github.com/tj/go-spin"
 )
@@ -51,7 +52,7 @@ func (lsRemote *ListRemote) Run(ctx context.Context, sortDirection gv.SortDirect
 			case <-ctx.Done():
 				break Loop
 			default:
-				fmt.Printf("\rfetching remote versions... %s", s.Next())
+				fmt.Printf("\r%s... %s", text.Green("fetching remote versions"), s.Next())
 				// Pause current goroutine to reduce cpu workload
 				time.Sleep(duration)
 			}

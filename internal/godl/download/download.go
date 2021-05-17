@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/dikaeinstein/godl/internal/pkg/downloader"
+	"github.com/dikaeinstein/godl/pkg/text"
 )
 
 // Download downloads go binaries
@@ -30,7 +31,7 @@ type Download struct {
 
 // Run downloads the specified go version
 func (d *Download) Run(ctx context.Context, version string) error {
-	fmt.Printf("Downloading go archive %v\n", version)
+	fmt.Println(text.GreenF("Downloading go archive %v", version))
 
 	ctx, cancel := context.WithTimeout(ctx, d.Timeout)
 	defer cancel()
@@ -39,6 +40,6 @@ func (d *Download) Run(ctx context.Context, version string) error {
 		return fmt.Errorf("error downloading %v: %v", version, err)
 	}
 
-	fmt.Println("\nDownload complete")
+	fmt.Println(text.Green("\nDownload complete"))
 	return nil
 }

@@ -6,6 +6,7 @@ import (
 	"path"
 	"testing"
 
+	"github.com/MakeNowJust/heredoc"
 	"github.com/dikaeinstein/godl/test"
 	"github.com/spf13/cobra"
 )
@@ -31,9 +32,12 @@ func TestUpdateCmd(t *testing.T) {
 			desc:        "Writes correct message to stdout when update is available",
 			errOutput:   "",
 			godlVersion: "v0.11.5",
-			output: `Your version of Godl is out of date! The latest version
- is v0.11.6. You can update by downloading from https://github.com/dikaeinstein/godl/releases
-`,
+			output: heredoc.Doc(`
+				Your version of Godl is out of date!
+
+				The latest version is v0.11.6.
+				You can update by downloading from https://github.com/dikaeinstein/godl/releases
+			`),
 		},
 	}
 

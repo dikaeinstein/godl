@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/MakeNowJust/heredoc"
 	"github.com/dikaeinstein/godl/internal/godl/download"
 	"github.com/dikaeinstein/godl/internal/pkg/downloader"
 	"github.com/dikaeinstein/godl/internal/pkg/godlutil"
@@ -18,10 +19,12 @@ func NewDownloadCmd(client *http.Client) *cobra.Command {
 	downloadCmd := &cobra.Command{
 		Use:   "download version",
 		Short: "Download go binary archive.",
-		Long: `Download the archive version from https://golang.org/dl/ and save to $HOME/godl/downloads.
+		Long: heredoc.Doc(`
+			Download the archive version from https://golang.org/dl/ and save to $HOME/godl/downloads.
 
-	By default, if archive version already exists locally, godl doesn't attempt to download it again.
-	To force it to download the version again pass the --force flag.`,
+			By default, if archive version already exists locally, godl doesn't attempt to download it again.
+			To force it to download the version again pass the --force flag.
+		`),
 		Args: func(cmd *cobra.Command, args []string) error {
 			if len(args) < 1 {
 				return errors.New("provide version to download")

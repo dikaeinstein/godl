@@ -11,6 +11,7 @@ import (
 	"path"
 	"testing"
 
+	"github.com/MakeNowJust/heredoc"
 	"github.com/dikaeinstein/godl/test"
 )
 
@@ -123,9 +124,12 @@ func TestRun(t *testing.T) {
 			client:         testClient,
 			currentVersion: "0.11.5",
 			err:            nil,
-			want: `Your version of Godl is out of date! The latest version
- is v0.11.6. You can update by downloading from https://github.com/dikaeinstein/godl/releases
-`,
+			want: heredoc.Doc(`
+				Your version of Godl is out of date!
+
+				The latest version is v0.11.6.
+				You can update by downloading from https://github.com/dikaeinstein/godl/releases
+			`),
 		},
 	}
 

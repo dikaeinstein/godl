@@ -23,6 +23,7 @@ import (
 	"github.com/dikaeinstein/godl/internal/pkg/downloader"
 	"github.com/dikaeinstein/godl/internal/pkg/gv"
 	"github.com/dikaeinstein/godl/pkg/fsys"
+	"github.com/dikaeinstein/godl/pkg/text"
 )
 
 type Archiver interface {
@@ -38,6 +39,8 @@ type Install struct {
 func (i *Install) Run(ctx context.Context, version string) error {
 	archiveName := fmt.Sprintf("%s%s.%s", downloader.Prefix(), version, downloader.Postfix())
 	downloadPath := path.Join(i.Dl.DownloadDir, archiveName)
+
+	fmt.Println(text.Green("Installing binary into /usr/local"))
 
 	exists, err := gv.VersionExists(version, i.Dl.DownloadDir)
 	if err != nil {
@@ -81,6 +84,6 @@ func (i *Install) Run(ctx context.Context, version string) error {
 		return err
 	}
 
-	fmt.Println("Installation successful. Type `go version` to check installation")
+	fmt.Println(text.Green("Installation successful. Type `go version` to check installation"))
 	return nil
 }

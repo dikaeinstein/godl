@@ -24,7 +24,7 @@ import (
 var (
 	buildDate   = "unknown"
 	gitHash     = "none"
-	godlVersion = "dev"
+	godlVersion = "v0.0.0"
 	goVersion   = "unknown"
 )
 

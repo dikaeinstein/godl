@@ -2,10 +2,10 @@ package cli
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 	"time"
 
+	"github.com/MakeNowJust/heredoc"
 	"github.com/dikaeinstein/godl/internal/godl/install"
 	"github.com/dikaeinstein/godl/internal/pkg/downloader"
 	"github.com/dikaeinstein/godl/internal/pkg/godlutil"
@@ -20,8 +20,10 @@ func NewInstallCmd(client *http.Client) *cobra.Command {
 	installCmd := &cobra.Command{
 		Use:   "install version",
 		Short: "Installs the specified go binary version from local or remote.",
-		Long: `Installs the specified go binary version from local or remote.
-	It fetches the version from the remote if not found locally before installing it.`,
+		Long: heredoc.Doc(`
+			Installs the specified go binary version from local or remote.
+			It fetches the version from the remote if not found locally before installing it.
+		`),
 		Args: func(cmd *cobra.Command, args []string) error {
 			if len(args) < 1 {
 				return errors.New("provide version to install")
@@ -59,7 +61,6 @@ func NewInstallCmd(client *http.Client) *cobra.Command {
 			Timeout: *timeout,
 		}
 
-		fmt.Println("Installing binary into /usr/local")
 		return install.Run(cmd.Context(), args[0])
 	}
 

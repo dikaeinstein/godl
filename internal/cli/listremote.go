@@ -1,26 +1,28 @@
 package cli
 
 import (
-	"fmt"
 	"net/http"
 	"time"
 
+	"github.com/MakeNowJust/heredoc"
 	"github.com/dikaeinstein/godl/internal/godl/listremote"
 	"github.com/dikaeinstein/godl/internal/pkg/gv"
+	"github.com/dikaeinstein/godl/pkg/text"
 	"github.com/spf13/cobra"
 )
 
 // New returns the list-remote command
 func NewListRemoteCmd(client *http.Client) *cobra.Command {
-	lsRemoteExAsc := "ls-remote -s asc or ls-remote -s=asc"
-	lsRemoteExDesc := "ls-remote -s desc or ls-remote -s=desc"
-	lsRemoteExTimeout := "ls-remote -t 15s or ls-remote --timeout=15s"
-
 	listRemoteCmd := &cobra.Command{
 		Use:     "list-remote",
 		Aliases: []string{"ls-remote"},
-		Example: fmt.Sprintf("%11s\n%38s\n%40s\n%45s", "ls-remote", lsRemoteExAsc, lsRemoteExDesc, lsRemoteExTimeout),
 		Short:   "List the available remote versions.",
+		Example: text.Indent(heredoc.Doc(`
+			$ ls-remote
+			$ ls-remote -s asc or ls-remote -s=asc
+			$ ls-remote -s desc or ls-remote -s=desc
+			$ ls-remote -t 15s or ls-remote --timeout=15s
+		`), "  "),
 	}
 
 	const defaultTimeout = 60 * time.Second

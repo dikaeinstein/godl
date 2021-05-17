@@ -7,7 +7,9 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/MakeNowJust/heredoc"
 	"github.com/dikaeinstein/godl/internal/pkg/gv"
+	"github.com/dikaeinstein/godl/pkg/text"
 	"github.com/hashicorp/go-version"
 	"github.com/spf13/viper"
 )
@@ -38,9 +40,13 @@ func (u *Update) Run(ctx context.Context, currentVersion string) error {
 	}
 
 	if exists {
-		fmt.Fprintf(u.Output, `Your version of Godl is out of date! The latest version
- is %s. You can update by downloading from https://github.com/dikaeinstein/godl/releases
-`, latest.TagName)
+		fmt.Fprint(u.Output, heredoc.Docf(`
+			%s
+
+			The latest version is %s.
+			You can update by downloading from https://github.com/dikaeinstein/godl/releases
+		`,
+			text.Red("Your version of Godl is out of date!"), latest.TagName))
 	} else {
 		fmt.Fprintln(u.Output, "No update available.")
 	}

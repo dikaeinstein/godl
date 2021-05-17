@@ -6,6 +6,8 @@ import (
 	"io"
 	"path"
 
+	"github.com/MakeNowJust/heredoc"
+	"github.com/dikaeinstein/godl/pkg/text"
 	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -14,12 +16,15 @@ import (
 func NewRootCmd() *RootCmd {
 	godl := &RootCmd{
 		CobraCmd: &cobra.Command{
-			Use:   "godl [command]",
-			Short: "Godl is a CLI tool used to download and install go binary releases on mac.",
+			Use:          "godl [command]",
+			Short:        "Godl is a CLI tool used to download and install go binary releases on mac.",
+			SilenceUsage: true,
 		},
 	}
 	debug := godl.CobraCmd.PersistentFlags().Bool("debug", false, "Used to turn on debug mode.")
 	cobra.OnInitialize(func() { initConfig(*debug) })
+
+	godl.CobraCmd.SetUsageTemplate(usageTemplate())
 
 	return godl
 }
@@ -75,4 +80,33 @@ func initConfig(debug bool) {
 	if err := viper.ReadInConfig(); err == nil && debug {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
 	}
+}
+
+func usageTemplate() string {
+	return heredoc.Docf(`%s:{{if .Runnable}}
+  {{.UseLine}}{{end}}{{if .HasAvailableSubCommands}}
+  {{.CommandPath}} [command]{{end}}{{if gt (len .Aliases) 0}}
+
+%s:
+  {{.NameAndAliases}}{{end}}{{if .HasExample}}
+
+%s:
+{{.Example}}{{end}}{{if .HasAvailableSubCommands}}
+
+%s:{{range .Commands}}{{if (or .IsAvailableCommand (eq .Name "help"))}}
+  {{rpad .Name .NamePadding }} {{.Short}}{{end}}{{end}}{{end}}{{if .HasAvailableLocalFlags}}
+
+%s:
+{{.LocalFlags.FlagUsages | trimTrailingWhitespaces}}{{end}}{{if .HasAvailableInheritedFlags}}
+
+%s:
+{{.InheritedFlags.FlagUsages | trimTrailingWhitespaces}}{{end}}{{if .HasHelpSubCommands}}
+
+%s:{{range .Commands}}{{if .IsAdditionalHelpTopicCommand}}
+  {{rpad .CommandPath .CommandPathPadding}} {{.Short}}{{end}}{{end}}{{end}}{{if .HasAvailableSubCommands}}
+
+Use "{{.CommandPath}} help [command]" or "{{.CommandPath}} [command] --help" for more information about a command.{{end}}
+`, text.Bold("USAGE"), text.Bold("ALIASES"), text.Bold("EXAMPLES"),
+		text.Bold("AVAILABLE COMMANDS"), text.Bold("FLAGS"),
+		text.Bold("INHERITED FLAGS"), text.Bold("ADDITIONAL HELP TOPICS"))
 }
