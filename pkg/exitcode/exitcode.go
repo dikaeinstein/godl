@@ -13,8 +13,6 @@ func NewError(err error, code int) error {
 	return exitcodeError{err, code}
 }
 
-var _ Error = exitcodeError{}
-
 type exitcodeError struct {
 	error
 	code int
