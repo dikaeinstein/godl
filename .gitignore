@@ -1,6 +1,5 @@
 .DS_Store
 godl
-!internal/godl
 vendor
 .vscode
 *.out

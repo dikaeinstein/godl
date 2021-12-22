@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/MakeNowJust/heredoc"
-	"github.com/dikaeinstein/godl/internal/godl/listremote"
+	"github.com/dikaeinstein/godl/internal/app/listremote"
 	"github.com/dikaeinstein/godl/internal/pkg/gv"
 	"github.com/dikaeinstein/godl/pkg/text"
 	"github.com/spf13/cobra"

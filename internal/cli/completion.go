@@ -7,7 +7,7 @@ import (
 	"path"
 
 	"github.com/MakeNowJust/heredoc"
-	"github.com/dikaeinstein/godl/internal/godl/completion"
+	"github.com/dikaeinstein/godl/internal/app/completion"
 	"github.com/dikaeinstein/godl/pkg/exitcode"
 	"github.com/dikaeinstein/godl/pkg/fsys"
 	"github.com/dikaeinstein/godl/pkg/text"

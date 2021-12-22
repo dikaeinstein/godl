@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/MakeNowJust/heredoc"
-	"github.com/dikaeinstein/godl/internal/godl/update"
+	"github.com/dikaeinstein/godl/internal/app/update"
 	"github.com/spf13/cobra"
 )
 

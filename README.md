@@ -13,7 +13,7 @@ To download and install a specific version of godl, copy and paste the installat
 curl -s https://raw.githubusercontent.com/dikaeinstein/godl/master/get.sh | bash -s -- v0.12.7
 ```
 
-## Install with Go 1.16.x
+## Install with Go 1.16+
 
 From Go 1.16, the `go install` command can be used to install `godl` directly. The binary is placed in $GOPATH/bin, or in $GOBIN if set:
 

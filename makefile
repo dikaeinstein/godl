@@ -40,7 +40,7 @@ install-tools: fetch
 run:
 	@go run -a $(LDFLAGS) cmd/main.go
 
-.PHONY: clean test
+.PHONY: build clean fetch install install-tools lint run test test-cover
 
 ## Remove binary
 clean:
