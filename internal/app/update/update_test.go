@@ -44,25 +44,29 @@ func TestCheckForUpdate(t *testing.T) {
 		}
 	}))
 
-	testCases := map[string]struct {
+	testCases := []struct {
+		name           string
 		client         *http.Client
 		currentVersion string
 		want           bool
 		err            error
 	}{
-		"Returns true if update is available": {
+		{
+			name:           "Returns true if update is available",
 			client:         testClient,
 			currentVersion: "0.11.5",
 			want:           true,
 			err:            nil,
 		},
-		"Returns false if no update": {
+		{
+			name:           "Returns false if no update",
 			client:         testClient,
 			currentVersion: "0.11.6",
 			want:           false,
 			err:            nil,
 		},
-		"Returns error encountered while checking for update": {
+		{
+			name:           "Returns error encountered while checking for update",
 			client:         failingTestClient,
 			currentVersion: "0.11.5",
 			want:           false,
@@ -70,17 +74,19 @@ func TestCheckForUpdate(t *testing.T) {
 		},
 	}
 
-	for name, tc := range testCases {
-		t.Run(name, func(t *testing.T) {
+	for i := range testCases {
+		tC := testCases[i]
+
+		t.Run(tC.name, func(t *testing.T) {
 			testWriter := &bytes.Buffer{}
 
-			u := Update{tc.client, testWriter}
-			exists, _, err := u.CheckForUpdate(context.Background(), tc.currentVersion)
-			if err != nil && tc.err != nil && err.Error() != tc.err.Error() {
-				t.Errorf("expected CheckForUpdate(ctx, %v) => %v, got %v", tc.currentVersion, tc.err, err)
+			u := Update{tC.client, testWriter}
+			exists, _, err := u.CheckForUpdate(context.Background(), tC.currentVersion)
+			if err != nil && tC.err != nil && err.Error() != tC.err.Error() {
+				t.Errorf("expected CheckForUpdate(ctx, %v) => %v, got %v", tC.currentVersion, tC.err, err)
 			}
-			if exists != tc.want {
-				t.Errorf("expected CheckForUpdate(ctx, %v) => %v, got %v", tc.currentVersion, tc.want, exists)
+			if exists != tC.want {
+				t.Errorf("expected CheckForUpdate(ctx, %v) => %v, got %v", tC.currentVersion, tC.want, exists)
 			}
 		})
 	}
@@ -101,26 +107,26 @@ func TestRun(t *testing.T) {
 	testCases := []struct {
 		client         *http.Client
 		currentVersion string
-		desc           string
+		name           string
 		err            error
 		want           string
 	}{
 		{
-			desc:           "Returns no error",
+			name:           "Returns no error",
 			client:         testClient,
 			currentVersion: "0.11.6",
 			err:            nil,
 			want:           "No update available.\n",
 		},
 		{
-			desc:           "Returns correct message when no update is available",
+			name:           "Returns correct message when no update is available",
 			client:         testClient,
 			currentVersion: "0.11.6",
 			err:            nil,
 			want:           "No update available.\n",
 		},
 		{
-			desc:           "Returns correct message when update is available",
+			name:           "Returns correct message when update is available",
 			client:         testClient,
 			currentVersion: "0.11.5",
 			err:            nil,
@@ -133,8 +139,10 @@ func TestRun(t *testing.T) {
 		},
 	}
 
-	for _, tC := range testCases {
-		t.Run(tC.desc, func(t *testing.T) {
+	for i := range testCases {
+		tC := testCases[i]
+
+		t.Run(tC.name, func(t *testing.T) {
 			testWriter := &bytes.Buffer{}
 
 			u := Update{tC.client, testWriter}

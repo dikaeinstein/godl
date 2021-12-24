@@ -20,16 +20,18 @@ func (fakeCompletionGenerator) GenerateFishCompletion(io.Writer, bool) error { r
 func (fakeCompletionGenerator) GenerateZshCompletion(io.Writer) error        { return nil }
 
 func TestCompletion(t *testing.T) {
-	testCases := map[string]struct {
+	testCases := []struct {
+		name       string
 		shell      string
 		useDefault bool
 		err        error
 	}{
-		"creates completion file when bash is passed": {"bash", true, nil},
-		"creates completion file when zsh is passed":  {"zsh", true, nil},
-		"creates completion file when fish is passed": {"fish", true, nil},
-		"returns an error when unknown shell name is passed": {
-			"unknown", true, errors.New("unknown shell passed")},
+		{"creates completion file when bash is passed", "bash", false, nil},
+		{"creates completion file when zsh is passed", "zsh", true, nil},
+		{"creates completion file when fish is passed", "fish", true, nil},
+		{
+			"returns an error when unknown shell name is passed", "unknown", true, errors.New("unknown shell passed"),
+		},
 	}
 
 	tmpHome := t.TempDir()
@@ -44,8 +46,9 @@ func TestCompletion(t *testing.T) {
 		Generator:       fakeCompletionGenerator{},
 		ZshSymlinkDir:   tmpSymDir,
 	}
-	for name, tC := range testCases {
-		t.Run(name, func(t *testing.T) {
+	for i := range testCases {
+		tC := testCases[i]
+		t.Run(tC.name, func(t *testing.T) {
 			err := completion.Run(tC.shell, io.Discard, tC.useDefault)
 			if err != nil && err.Error() != tC.err.Error() {
 				t.Errorf("expected completion(%#v, %#v) => %#v, got %v",

@@ -32,17 +32,20 @@ func TestCompletionCmdCalledWithInvalidArgs(t *testing.T) {
 }
 
 func TestCompletionCmd(t *testing.T) {
-	testCases := map[string]struct {
+	testCases := []struct {
+		name  string
 		shell string
-	}{"CalledWithBash": {"bash"}, "CalledWithZsh": {"zsh"}, "CalledWithFish": {"fish"}}
+	}{{"CalledWithBash", "bash"}, {"CalledWithZsh", "zsh"}, {"CalledWithFish", "fish"}}
 
-	for name, tc := range testCases {
-		t.Run(name, func(t *testing.T) {
+	for i := range testCases {
+		tC := testCases[i]
+
+		t.Run(tC.name, func(t *testing.T) {
 			godl := NewRootCmd()
 			completion := NewCompletionCmd(godl)
 			godl.RegisterSubCommands([]*cobra.Command{completion})
 
-			_, errOutput := test.ExecuteCommand(t, true, godl.CobraCmd, "completion", tc.shell)
+			_, errOutput := test.ExecuteCommand(t, true, godl.CobraCmd, "completion", tC.shell)
 			if errOutput != "" {
 				t.Errorf("godl completion failed to generate completion")
 			}

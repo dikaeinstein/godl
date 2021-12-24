@@ -17,19 +17,19 @@ func TestUpdateCmd(t *testing.T) {
 	}
 
 	testCases := []struct {
-		desc        string
+		name        string
 		errOutput   string
 		godlVersion string
 		output      string
 	}{
 		{
-			desc:        "Writes correct message to stdout when no update",
+			name:        "Writes correct message to stdout when no update",
 			errOutput:   "",
 			godlVersion: "v0.11.6",
 			output:      "No update available.\n",
 		},
 		{
-			desc:        "Writes correct message to stdout when update is available",
+			name:        "Writes correct message to stdout when update is available",
 			errOutput:   "",
 			godlVersion: "v0.11.5",
 			output: heredoc.Doc(`
@@ -54,7 +54,7 @@ func TestUpdateCmd(t *testing.T) {
 	}))
 
 	for _, tC := range testCases {
-		t.Run(tC.desc, func(t *testing.T) {
+		t.Run(tC.name, func(t *testing.T) {
 			v := VersionOption{GodlVersion: tC.godlVersion}
 			update := NewUpdateCmd(testClient, v)
 			godl := NewRootCmd()

@@ -15,17 +15,20 @@ func TestInstallCmd(t *testing.T) {
 		t.Skip("skipping TestDownloadCmd in short mode.")
 	}
 
-	testCases := map[string]struct {
+	testCases := []struct {
+		name     string
 		expected string
 		flags    string
 		useFlag  bool
 	}{
-		"CalledWithNoArgs": {
+		{
+			name:     "CalledWithNoArgs",
 			expected: "Error: provide version to install\n",
 			flags:    "",
 			useFlag:  false,
 		},
-		"Help": {
+		{
+			name:     "Help",
 			expected: "",
 			flags:    "-h",
 			useFlag:  true,
@@ -44,20 +47,22 @@ func TestInstallCmd(t *testing.T) {
 		}
 	}))
 
-	for name, tc := range testCases {
-		t.Run(name, func(t *testing.T) {
+	for i := range testCases {
+		tC := testCases[i]
+
+		t.Run(tC.name, func(t *testing.T) {
 			godl := NewRootCmd()
 			install := NewInstallCmd(testClient)
 			godl.RegisterSubCommands([]*cobra.Command{install})
 
 			var errOutput string
-			if tc.useFlag {
-				_, errOutput = test.ExecuteCommand(t, true, godl.CobraCmd, "install", tc.flags)
+			if tC.useFlag {
+				_, errOutput = test.ExecuteCommand(t, true, godl.CobraCmd, "install", tC.flags)
 			} else {
 				_, errOutput = test.ExecuteCommand(t, true, godl.CobraCmd, "install")
 			}
-			if errOutput != tc.expected {
-				t.Errorf("godl install failed: expected: %s; got: %s", tc.expected, errOutput)
+			if errOutput != tC.expected {
+				t.Errorf("godl install failed: expected: %s; got: %s", tC.expected, errOutput)
 			}
 		})
 	}

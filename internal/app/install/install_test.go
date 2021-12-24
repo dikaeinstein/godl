@@ -42,34 +42,40 @@ func TestInstallRelease(t *testing.T) {
 		}
 	}))
 
-	tests := map[string]struct {
+	testCases := []struct {
+		name              string
 		c                 *http.Client
 		downloadedVersion string
 		installVersion    string
 		errMsg            string
 		goPathsD          string
 	}{
-		"installRelease downloads from remote when version not found locally": {
+		{
+			"installRelease downloads from remote when version not found locally",
 			testClient, "1.10.1", "1.11.7", "", "/usr/local/go/bin\n",
 		},
-		"installRelease installs local downloaded version": {
+		{
+			"installRelease installs local downloaded version",
 			testClient, "1.10.6", "1.10.6", "", "/usr/local/go/bin\n",
 		},
-		"installRelease handle error when fetching binary from remote": {
+		{
+			"installRelease handle error when fetching binary from remote",
 			failingTestClient, "1.10.1", "1.11.9",
 			"error downloading 1.11.9: no binary release of 1.11.9", "",
 		},
 	}
 
-	for name, tc := range tests {
-		t.Run(name, func(t *testing.T) {
-			tmpFile, _ := test.CreateTempGoBinaryArchive(t, tc.downloadedVersion)
+	for i := range testCases {
+		tC := testCases[i]
+
+		t.Run(tC.name, func(t *testing.T) {
+			tmpFile, _ := test.CreateTempGoBinaryArchive(t, tC.downloadedVersion)
 			defer tmpFile.Close()
 
 			imFS := fsys.NewInMemFS(fstest.MapFS{})
 			dl := &downloader.Downloader{
 				BaseURL:      "https://storage.googleapis.com/golang/",
-				Client:       tc.c,
+				Client:       tC.c,
 				DownloadDir:  ".",
 				FS:           imFS,
 				Hasher:       hash.FakeHasher{},
@@ -80,14 +86,14 @@ func TestInstallRelease(t *testing.T) {
 				Dl:       dl,
 				Timeout:  5 * time.Second,
 			}
-			err := install.Run(context.Background(), tc.installVersion)
-			if err != nil && err.Error() != tc.errMsg {
+			err := install.Run(context.Background(), tC.installVersion)
+			if err != nil && err.Error() != tC.errMsg {
 				t.Error(err)
 			}
 
 			f, ok := imFS.MapFS["/etc/paths.d/go"]
-			if ok && string(f.Data) != tc.goPathsD {
-				t.Errorf("not matching want: %s, got: %s", tc.goPathsD, string(f.Data))
+			if ok && string(f.Data) != tC.goPathsD {
+				t.Errorf("not matching want: %s, got: %s", tC.goPathsD, string(f.Data))
 			}
 		})
 	}

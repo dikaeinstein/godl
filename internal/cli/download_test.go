@@ -15,17 +15,20 @@ func TestDownloadCmd(t *testing.T) {
 		t.Skip("skipping TestDownloadCmd in short mode.")
 	}
 
-	testCases := map[string]struct {
+	testCases := []struct {
+		name     string
 		flags    string
 		expected string
 		useFlag  bool
 	}{
-		"CalledWithNoArgs": {
+		{
+			name:     "CalledWithNoArgs",
 			flags:    "",
 			useFlag:  false,
 			expected: "Error: provide version to download\n",
 		},
-		"Help": {
+		{
+			name:     "Help",
 			flags:    "-h",
 			expected: "",
 			useFlag:  true,
@@ -44,20 +47,22 @@ func TestDownloadCmd(t *testing.T) {
 		}
 	}))
 
-	for name, tc := range testCases {
-		t.Run(name, func(t *testing.T) {
+	for i := range testCases {
+		tC := testCases[i]
+
+		t.Run(tC.name, func(t *testing.T) {
 			godl := NewRootCmd()
 			download := NewDownloadCmd(testClient)
 			godl.RegisterSubCommands([]*cobra.Command{download})
 
 			var errOutput string
-			if tc.useFlag {
-				_, errOutput = test.ExecuteCommand(t, true, godl.CobraCmd, "download", tc.flags)
+			if tC.useFlag {
+				_, errOutput = test.ExecuteCommand(t, true, godl.CobraCmd, "download", tC.flags)
 			} else {
 				_, errOutput = test.ExecuteCommand(t, true, godl.CobraCmd, "download")
 			}
-			if errOutput != tc.expected {
-				t.Errorf("godl download failed: expected: %s; got: %s", tc.expected, errOutput)
+			if errOutput != tC.expected {
+				t.Errorf("godl download failed: expected: %s; got: %s", tC.expected, errOutput)
 			}
 		})
 	}

@@ -35,23 +35,27 @@ func TestListRemoteVersions(t *testing.T) {
 		}
 	}))
 
-	tests := map[string]struct {
+	testCases := []struct {
+		name   string
 		client *http.Client
 		want   string
 	}{
-		"getBinaryReleases succeeds": {client: testClient},
-		"handles getBinaryReleases error": {
+		{name: "getBinaryReleases succeeds", client: testClient},
+		{
+			name:   "handles getBinaryReleases error",
 			client: failingTestClient,
 			want:   "\nerror fetching list: https://storage.googleapis.com/golang/?prefix=go1: ",
 		},
 	}
 
-	for name, tc := range tests {
-		t.Run(name, func(t *testing.T) {
-			lsRemote := ListRemote{tc.client, 2 * time.Second}
+	for i := range testCases {
+		tC := testCases[i]
+
+		t.Run(tC.name, func(t *testing.T) {
+			lsRemote := ListRemote{tC.client, 2 * time.Second}
 			err := lsRemote.Run(context.Background(), gv.Asc)
 			if err != nil {
-				diff := cmp.Diff(tc.want, err.Error())
+				diff := cmp.Diff(tC.want, err.Error())
 				if diff != "" {
 					t.Errorf(diff)
 				}
