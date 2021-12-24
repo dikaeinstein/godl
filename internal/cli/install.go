@@ -11,7 +11,7 @@ import (
 	"github.com/dikaeinstein/godl/internal/pkg/godlutil"
 	"github.com/dikaeinstein/godl/pkg/fsys"
 	"github.com/dikaeinstein/godl/pkg/hash"
-	"github.com/mholt/archiver"
+	"github.com/mholt/archiver/v3"
 	"github.com/spf13/cobra"
 )
 
