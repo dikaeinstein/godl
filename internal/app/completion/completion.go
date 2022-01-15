@@ -85,7 +85,7 @@ func (c *Completion) Run(shell string, out io.Writer, useDefault bool) error {
 // MakeTarget creates the file and it's parent directories where the
 // completion output can written to.
 func MakeTarget(shell, autocompleteDir string) string {
-	bashDir := filepath.Join(autocompleteDir, shell)
-	godlutil.Must(os.MkdirAll(bashDir, os.ModePerm))
-	return filepath.Join(bashDir, "godl")
+	shellDir := filepath.Join(autocompleteDir, shell)
+	godlutil.Must(os.MkdirAll(shellDir, os.ModePerm))
+	return filepath.Join(shellDir, "godl")
 }

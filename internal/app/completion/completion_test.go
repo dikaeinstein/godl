@@ -1,11 +1,14 @@
 package completion
 
 import (
+	"bytes"
 	"errors"
 	"io"
 	"testing"
 	"testing/fstest"
 )
+
+const completionFileContent string = "this is a test completion"
 
 type fakeSymLinkerFS struct{ fstest.MapFS }
 
@@ -15,9 +18,22 @@ func (fakeSymLinkerFS) Symlink(oldName, newName string) error {
 
 type fakeCompletionGenerator struct{}
 
-func (fakeCompletionGenerator) GenerateBashCompletion(io.Writer) error       { return nil }
-func (fakeCompletionGenerator) GenerateFishCompletion(io.Writer, bool) error { return nil }
-func (fakeCompletionGenerator) GenerateZshCompletion(io.Writer) error        { return nil }
+func generateTestCompletion(out io.Writer) error {
+	_, err := out.Write([]byte(completionFileContent))
+	return err
+}
+
+func (fakeCompletionGenerator) GenerateBashCompletion(out io.Writer) error {
+	return generateTestCompletion(out)
+}
+
+func (fakeCompletionGenerator) GenerateFishCompletion(out io.Writer, includeDesc bool) error {
+	return generateTestCompletion(out)
+}
+
+func (fakeCompletionGenerator) GenerateZshCompletion(out io.Writer) error {
+	return generateTestCompletion(out)
+}
 
 func TestCompletion(t *testing.T) {
 	testCases := []struct {
@@ -49,10 +65,16 @@ func TestCompletion(t *testing.T) {
 	for i := range testCases {
 		tC := testCases[i]
 		t.Run(tC.name, func(t *testing.T) {
-			err := completion.Run(tC.shell, io.Discard, tC.useDefault)
+			out := new(bytes.Buffer)
+			err := completion.Run(tC.shell, out, tC.useDefault)
 			if err != nil && err.Error() != tC.err.Error() {
 				t.Errorf("expected completion(%#v, %#v) => %#v, got %v",
 					tC.shell, tmpHome, tC.err, err)
+			}
+			content := out.String()
+			if err == nil && content != completionFileContent {
+				t.Errorf("expected completion file content %s, got %s",
+					content, completionFileContent)
 			}
 		})
 	}

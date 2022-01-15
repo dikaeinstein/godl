@@ -15,7 +15,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// NewCompletionCmd returns the a new instance of the completion command
+// NewCompletionCmd returns a new instance of the completion command
 func NewCompletionCmd(godl completion.Generator) *cobra.Command {
 	completionCmd := &cobra.Command{
 		Use:   "completion [bash|zsh|fish]",
