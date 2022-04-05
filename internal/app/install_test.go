@@ -1,9 +1,8 @@
-package install
+package app
 
 import (
 	"bytes"
 	"context"
-	"io"
 	"io/ioutil"
 	"net/http"
 	"testing"
@@ -19,10 +18,6 @@ import (
 type testGzUnArchiver struct{}
 
 func (testGzUnArchiver) Unarchive(source, target string) error { return nil }
-
-func fakeHashVerifier(input io.Reader, hex string) error {
-	return nil
-}
 
 func TestInstallRelease(t *testing.T) {
 	testClient := test.NewTestClient(test.RoundTripFunc(func(req *http.Request) *http.Response {

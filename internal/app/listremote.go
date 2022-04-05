@@ -1,4 +1,4 @@
-package listremote
+package app
 
 import (
 	"context"
@@ -77,7 +77,7 @@ func (lsRemote *ListRemote) Run(ctx context.Context, sortDirection gv.SortDirect
 		url = w + "&marker=" + listBucketResult.NextMarker
 	}
 
-	versions := mapToVersion(contents)
+	versions := mapXMLContentToVersion(contents)
 	// sort in-place comparing version numbers
 	sort.Slice(versions, func(i, j int) bool {
 		return gv.CompareVersions(versions[i], versions[j], sortDirection)
@@ -133,7 +133,7 @@ func selectDarwin(l *ListBucketResult) ListBucketResult {
 	return archiveList
 }
 
-func mapToVersion(contents []Content) []*version.Version {
+func mapXMLContentToVersion(contents []Content) []*version.Version {
 	versions := make([]*version.Version, len(contents))
 	for i, c := range contents {
 		versions[i] = gv.GetVersion(c.Key)

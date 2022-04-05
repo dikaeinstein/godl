@@ -1,4 +1,4 @@
-package list
+package app
 
 import (
 	"testing"

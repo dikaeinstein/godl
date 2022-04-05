@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/MakeNowJust/heredoc"
-	"github.com/dikaeinstein/godl/internal/app/update"
+	"github.com/dikaeinstein/godl/internal/app"
 	"github.com/spf13/cobra"
 )
 
@@ -26,7 +26,7 @@ func NewUpdateCmd(client *http.Client, v VersionOption) *cobra.Command {
 			}
 		`),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			u := update.Update{Client: client, Output: cmd.OutOrStdout()}
+			u := app.Update{Client: client, Output: cmd.OutOrStdout()}
 
 			const timeout = 15
 			ctx, cancel := context.WithTimeout(cmd.Context(), timeout*time.Second)

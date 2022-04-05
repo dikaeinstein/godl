@@ -7,7 +7,7 @@ import (
 	"path"
 
 	"github.com/MakeNowJust/heredoc"
-	"github.com/dikaeinstein/godl/internal/app/completion"
+	"github.com/dikaeinstein/godl/internal/app"
 	"github.com/dikaeinstein/godl/pkg/exitcode"
 	"github.com/dikaeinstein/godl/pkg/fsys"
 	"github.com/dikaeinstein/godl/pkg/text"
@@ -15,8 +15,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// NewCompletionCmd returns a new instance of the completion command
-func NewCompletionCmd(godl completion.Generator) *cobra.Command {
+// NewCompletionCmd returns the a new instance of the completion command
+func NewCompletionCmd(godl app.CompletionGenerator) *cobra.Command {
 	completionCmd := &cobra.Command{
 		Use:   "completion [bash|zsh|fish]",
 		Short: "Generate completion script.",
@@ -41,7 +41,7 @@ func NewCompletionCmd(godl completion.Generator) *cobra.Command {
 
 		var out io.Writer
 		if *useDefault {
-			outFile, err := os.Create(completion.MakeTarget(args[0], autocompleteDir))
+			outFile, err := os.Create(app.CompletionMakeTarget(args[0], autocompleteDir))
 			if err != nil {
 				return err
 			}
@@ -56,14 +56,14 @@ func NewCompletionCmd(godl completion.Generator) *cobra.Command {
 		zshSymlinkDir := path.Join("/usr", "local", "share", "zsh", "site-functions")
 		fishSymlinkDir := path.Join(home, ".config", "fish", "completions")
 
-		c := completion.Completion{
-			BashSymlinkDir:  bashSymlinkDir,
-			FS:              fsys.OsFS{},
-			FishSymlinkDir:  fishSymlinkDir,
-			HomeDir:         home,
-			Generator:       godl,
-			ZshSymlinkDir:   zshSymlinkDir,
-			AutocompleteDir: autocompleteDir,
+		c := app.Completion{
+			BashSymlinkDir:      bashSymlinkDir,
+			FS:                  fsys.OsFS{},
+			FishSymlinkDir:      fishSymlinkDir,
+			HomeDir:             home,
+			CompletionGenerator: godl,
+			ZshSymlinkDir:       zshSymlinkDir,
+			AutocompleteDir:     autocompleteDir,
 		}
 
 		return c.Run(args[0], out, *useDefault)

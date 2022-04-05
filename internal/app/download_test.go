@@ -1,4 +1,4 @@
-package download
+package app
 
 import (
 	"bytes"

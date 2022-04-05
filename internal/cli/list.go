@@ -2,7 +2,7 @@ package cli
 
 import (
 	"github.com/MakeNowJust/heredoc"
-	"github.com/dikaeinstein/godl/internal/app/list"
+	"github.com/dikaeinstein/godl/internal/app"
 	"github.com/dikaeinstein/godl/internal/pkg/godlutil"
 	"github.com/dikaeinstein/godl/internal/pkg/gv"
 	"github.com/dikaeinstein/godl/pkg/text"
@@ -30,7 +30,7 @@ func NewListCmd() *cobra.Command {
 			return err
 		}
 
-		ls := list.List{}
+		ls := app.List{}
 		return ls.Run(d, gv.SortDirection(*sortDirection))
 	}
 

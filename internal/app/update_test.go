@@ -1,4 +1,4 @@
-package update
+package app
 
 import (
 	"bytes"
@@ -17,7 +17,7 @@ import (
 
 func TestCheckForUpdate(t *testing.T) {
 	testClient := test.NewTestClient(test.RoundTripFunc(func(req *http.Request) *http.Response {
-		f, err := os.Open(path.Join("..", "..", "..", "test", "testdata", "releases.json"))
+		f, err := os.Open(path.Join("..", "..", "test", "testdata", "releases.json"))
 		if err != nil {
 			panic(err)
 		}
@@ -94,7 +94,7 @@ func TestCheckForUpdate(t *testing.T) {
 
 func TestRun(t *testing.T) {
 	testClient := test.NewTestClient(test.RoundTripFunc(func(req *http.Request) *http.Response {
-		f, err := os.Open(path.Join("..", "..", "..", "test", "testdata", "releases.json"))
+		f, err := os.Open(path.Join("..", "..", "test", "testdata", "releases.json"))
 		if err != nil {
 			panic(err)
 		}

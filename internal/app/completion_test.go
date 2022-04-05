@@ -1,4 +1,4 @@
-package completion
+package app
 
 import (
 	"bytes"
@@ -54,13 +54,13 @@ func TestCompletion(t *testing.T) {
 	tmpSymDir := t.TempDir()
 
 	completion := &Completion{
-		AutocompleteDir: t.TempDir(),
-		BashSymlinkDir:  tmpSymDir,
-		FishSymlinkDir:  tmpSymDir,
-		FS:              fakeSymLinkerFS{},
-		HomeDir:         tmpHome,
-		Generator:       fakeCompletionGenerator{},
-		ZshSymlinkDir:   tmpSymDir,
+		AutocompleteDir:     t.TempDir(),
+		BashSymlinkDir:      tmpSymDir,
+		FishSymlinkDir:      tmpSymDir,
+		FS:                  fakeSymLinkerFS{},
+		HomeDir:             tmpHome,
+		CompletionGenerator: fakeCompletionGenerator{},
+		ZshSymlinkDir:       tmpSymDir,
 	}
 	for i := range testCases {
 		tC := testCases[i]

@@ -1,4 +1,4 @@
-package listremote
+package app
 
 import (
 	"bytes"
@@ -17,7 +17,7 @@ import (
 
 func TestListRemoteVersions(t *testing.T) {
 	testClient := test.NewTestClient(test.RoundTripFunc(func(req *http.Request) *http.Response {
-		f, err := os.Open(path.Join("..", "..", "..", "test", "testdata", "listbucketresult.xml"))
+		f, err := os.Open(path.Join("..", "..", "test", "testdata", "listbucketresult.xml"))
 		if err != nil {
 			panic(err)
 		}

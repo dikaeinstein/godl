@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package completion
+package app
 
 import (
 	"errors"
@@ -26,7 +26,7 @@ import (
 )
 
 // Generator controls how the completion files should be generated
-type Generator interface {
+type CompletionGenerator interface {
 	GenerateBashCompletion(io.Writer) error
 	GenerateFishCompletion(out io.Writer, includeDesc bool) error
 	GenerateZshCompletion(io.Writer) error
@@ -38,7 +38,7 @@ type Completion struct {
 	BashSymlinkDir  string
 	FishSymlinkDir  string
 	FS              fs.FS
-	Generator
+	CompletionGenerator
 	HomeDir       string
 	ZshSymlinkDir string
 }
@@ -52,7 +52,7 @@ func (c *Completion) Run(shell string, out io.Writer, useDefault bool) error {
 		}
 
 		if useDefault {
-			bashTarget := MakeTarget(shell, c.AutocompleteDir)
+			bashTarget := CompletionMakeTarget(shell, c.AutocompleteDir)
 			return fsys.Symlink(c.FS, bashTarget, filepath.Join(c.BashSymlinkDir, "godl"))
 		}
 
@@ -63,7 +63,7 @@ func (c *Completion) Run(shell string, out io.Writer, useDefault bool) error {
 		}
 
 		if useDefault {
-			zshTarget := MakeTarget(shell, c.AutocompleteDir)
+			zshTarget := CompletionMakeTarget(shell, c.AutocompleteDir)
 			return fsys.Symlink(c.FS, zshTarget, filepath.Join(c.ZshSymlinkDir, "_godl"))
 		}
 		return nil
@@ -73,7 +73,7 @@ func (c *Completion) Run(shell string, out io.Writer, useDefault bool) error {
 		}
 
 		if useDefault {
-			zshTarget := MakeTarget(shell, c.AutocompleteDir)
+			zshTarget := CompletionMakeTarget(shell, c.AutocompleteDir)
 			return fsys.Symlink(c.FS, zshTarget, filepath.Join(c.FishSymlinkDir, "godl.fish"))
 		}
 		return nil
@@ -82,10 +82,10 @@ func (c *Completion) Run(shell string, out io.Writer, useDefault bool) error {
 	}
 }
 
-// MakeTarget creates the file and it's parent directories where the
-// completion output can written to.
-func MakeTarget(shell, autocompleteDir string) string {
-	shellDir := filepath.Join(autocompleteDir, shell)
-	godlutil.Must(os.MkdirAll(shellDir, os.ModePerm))
-	return filepath.Join(shellDir, "godl")
+// CompletionMakeTarget creates the file and it's parent directories where the
+// completion output can be written to.
+func CompletionMakeTarget(shell, autocompleteDir string) string {
+	bashDir := filepath.Join(autocompleteDir, shell)
+	godlutil.Must(os.MkdirAll(bashDir, os.ModePerm))
+	return filepath.Join(bashDir, "godl")
 }

@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/MakeNowJust/heredoc"
-	"github.com/dikaeinstein/godl/internal/app/install"
+	"github.com/dikaeinstein/godl/internal/app"
 	"github.com/dikaeinstein/godl/internal/pkg/downloader"
 	"github.com/dikaeinstein/godl/internal/pkg/godlutil"
 	"github.com/dikaeinstein/godl/pkg/fsys"
@@ -42,7 +42,7 @@ func NewInstallCmd(client *http.Client) *cobra.Command {
 			return err
 		}
 
-		install := install.Install{
+		install := app.Install{
 			Archiver: &archiver.TarGz{
 				Tar: &archiver.Tar{
 					OverwriteExisting: true,

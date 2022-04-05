@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/MakeNowJust/heredoc"
-	"github.com/dikaeinstein/godl/internal/app/listremote"
+	"github.com/dikaeinstein/godl/internal/app"
 	"github.com/dikaeinstein/godl/internal/pkg/gv"
 	"github.com/dikaeinstein/godl/pkg/text"
 	"github.com/spf13/cobra"
@@ -31,7 +31,7 @@ func NewListRemoteCmd(client *http.Client) *cobra.Command {
 	timeout := listRemoteCmd.Flags().DurationP("timeout", "t", defaultTimeout, "Set the download timeout.")
 
 	listRemoteCmd.RunE = func(cmd *cobra.Command, args []string) error {
-		lsRemote := listremote.ListRemote{Client: client, Timeout: *timeout}
+		lsRemote := app.ListRemote{Client: client, Timeout: *timeout}
 		return lsRemote.Run(cmd.Context(), gv.SortDirection(*sd))
 	}
 

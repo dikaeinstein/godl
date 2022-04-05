@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/MakeNowJust/heredoc"
-	"github.com/dikaeinstein/godl/internal/app/download"
+	"github.com/dikaeinstein/godl/internal/app"
 	"github.com/dikaeinstein/godl/internal/pkg/downloader"
 	"github.com/dikaeinstein/godl/internal/pkg/godlutil"
 	"github.com/dikaeinstein/godl/pkg/fsys"
@@ -53,7 +53,7 @@ func NewDownloadCmd(client *http.Client) *cobra.Command {
 			HashVerifier:  godlutil.VerifyHash,
 		}
 
-		d := download.Download{
+		d := app.Download{
 			Dl:      dl,
 			Timeout: *timeout,
 		}
