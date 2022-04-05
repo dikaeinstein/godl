@@ -3,7 +3,7 @@ package hash
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 )
 
@@ -14,7 +14,7 @@ type RemoteHasher struct {
 
 // Hash fetches the hash of the given URL and returns it as a string.
 func (r RemoteHasher) Hash(ctx context.Context, url string) (string, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, http.NoBody)
 	if err != nil {
 		return "", err
 	}
@@ -29,7 +29,7 @@ func (r RemoteHasher) Hash(ctx context.Context, url string) (string, error) {
 		return "", fmt.Errorf("%s: %v", url, res.Status)
 	}
 
-	urlHash, err := ioutil.ReadAll(res.Body)
+	urlHash, err := io.ReadAll(res.Body)
 	if err != nil {
 		return "", fmt.Errorf("reading %s: %v", url, err)
 	}

@@ -97,7 +97,7 @@ func (lsRemote *ListRemote) getBinaryReleases(url string) (*ListBucketResult, er
 	ctx, cancelFunc := context.WithTimeout(context.Background(), lsRemote.Timeout)
 	defer cancelFunc()
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, http.NoBody)
 	if err != nil {
 		return nil, err
 	}

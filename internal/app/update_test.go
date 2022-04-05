@@ -5,7 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"path"
@@ -40,7 +40,7 @@ func TestCheckForUpdate(t *testing.T) {
 		}
 		return &http.Response{
 			StatusCode: http.StatusBadGateway,
-			Body:       ioutil.NopCloser(bytes.NewReader(b)),
+			Body:       io.NopCloser(bytes.NewReader(b)),
 		}
 	}))
 

@@ -16,7 +16,7 @@ package app
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io/fs"
 	"os"
 	"sort"
 	"strings"
@@ -33,7 +33,7 @@ func (l List) Run(downloadDir string, sortDirection gv.SortDirection) error {
 	// Create download directory and its parent
 	godlutil.Must(os.MkdirAll(downloadDir, os.ModePerm))
 
-	files, err := ioutil.ReadDir(downloadDir)
+	files, err := os.ReadDir(downloadDir)
 	if err != nil {
 		return err
 	}
@@ -51,10 +51,10 @@ func (l List) Run(downloadDir string, sortDirection gv.SortDirection) error {
 	return nil
 }
 
-func mapToVersion(files []os.FileInfo) []*version.Version {
+func mapToVersion(entries []fs.DirEntry) []*version.Version {
 	versions := []*version.Version{}
-	for _, file := range files {
-		name := file.Name()
+	for _, e := range entries {
+		name := e.Name()
 		if strings.HasSuffix(name, ".darwin-amd64.tar.gz") {
 			versions = append(versions, gv.GetVersion(name))
 		}

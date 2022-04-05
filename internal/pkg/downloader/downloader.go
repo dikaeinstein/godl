@@ -73,7 +73,7 @@ func (d *Downloader) Download(ctx context.Context, version string) error {
 	defer tmp.Close()
 
 	goURL := d.VersionURL(version)
-	req, _ := http.NewRequestWithContext(ctx, http.MethodGet, goURL, nil)
+	req, _ := http.NewRequestWithContext(ctx, http.MethodGet, goURL, http.NoBody)
 	res, err := d.Client.Do(req)
 	if err != nil {
 		return err
@@ -125,7 +125,7 @@ func (d *Downloader) Download(ctx context.Context, version string) error {
 
 func (d *Downloader) CheckIfExistsRemote(ctx context.Context, version string) error {
 	u := d.VersionURL(version)
-	req, _ := http.NewRequestWithContext(ctx, http.MethodHead, u, nil)
+	req, _ := http.NewRequestWithContext(ctx, http.MethodHead, u, http.NoBody)
 	res, err := d.Client.Do(req)
 	if err != nil {
 		return err

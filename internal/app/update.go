@@ -78,7 +78,7 @@ func (u *Update) CheckForUpdate(ctx context.Context, currentVersion string) (boo
 }
 
 func (u *Update) fetchReleaseList(ctx context.Context, url string) (ListReleasesResult, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, http.NoBody)
 	if err != nil {
 		return nil, err
 	}

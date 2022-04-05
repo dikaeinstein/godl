@@ -44,7 +44,7 @@ func VersionExists(archiveVersion, downloadDir string) (bool, error) {
 	)
 
 	archiveName := fmt.Sprintf("%s%s.%s", archivePrefix, archiveVersion, archivePostfix)
-	downloadPath := filepath.Join(filepath.Join(downloadDir, archiveName))
+	downloadPath := filepath.Join(downloadDir, archiveName)
 
 	if _, err := os.Stat(downloadPath); err != nil {
 		if os.IsNotExist(err) {

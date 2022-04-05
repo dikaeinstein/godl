@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"testing"
 	"testing/fstest"
@@ -26,7 +25,7 @@ func TestDownloadRelease(t *testing.T) {
 
 		return &http.Response{
 			StatusCode:    http.StatusOK,
-			Body:          ioutil.NopCloser(testData),
+			Body:          io.NopCloser(testData),
 			ContentLength: int64(len(testData.Bytes())),
 		}
 	}

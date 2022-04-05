@@ -3,7 +3,7 @@ package app
 import (
 	"bytes"
 	"context"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"path"
@@ -31,7 +31,7 @@ func TestListRemoteVersions(t *testing.T) {
 	failingTestClient := test.NewTestClient(test.RoundTripFunc(func(req *http.Request) *http.Response {
 		return &http.Response{
 			StatusCode: http.StatusNotFound,
-			Body:       ioutil.NopCloser(bytes.NewBufferString("")),
+			Body:       io.NopCloser(bytes.NewBufferString("")),
 		}
 	}))
 

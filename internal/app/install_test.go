@@ -3,7 +3,7 @@ package app
 import (
 	"bytes"
 	"context"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"testing"
 	"testing/fstest"
@@ -25,7 +25,7 @@ func TestInstallRelease(t *testing.T) {
 
 		return &http.Response{
 			StatusCode:    http.StatusOK,
-			Body:          ioutil.NopCloser(testData),
+			Body:          io.NopCloser(testData),
 			ContentLength: int64(len(testData.Bytes())),
 		}
 	}))
@@ -33,7 +33,7 @@ func TestInstallRelease(t *testing.T) {
 	failingTestClient := test.NewTestClient(test.RoundTripFunc(func(req *http.Request) *http.Response {
 		return &http.Response{
 			StatusCode: http.StatusNotFound,
-			Body:       ioutil.NopCloser(bytes.NewBufferString("")),
+			Body:       io.NopCloser(bytes.NewBufferString("")),
 		}
 	}))
 
