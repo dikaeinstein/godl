@@ -79,7 +79,8 @@ func (i *Install) Run(ctx context.Context, version string) error {
 
 	fmt.Println("adding to $PATH...")
 	pathsD := path.Join("/etc", "paths.d", "go")
-	err = fsys.WriteFile(i.Dl.FS, pathsD, []byte("/usr/local/go/bin\n"), 0644)
+	const perm = 0o644
+	err = fsys.WriteFile(i.Dl.FS, pathsD, []byte("/usr/local/go/bin\n"), perm)
 	if err != nil {
 		return err
 	}
