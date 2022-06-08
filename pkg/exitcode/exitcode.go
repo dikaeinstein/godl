@@ -10,6 +10,10 @@ type Error interface {
 
 // NewError returns an exitcodeError which sets the exit code of the specified error.
 func NewError(err error, code int) error {
+	if err == nil {
+		return nil
+	}
+
 	return exitcodeError{err, code}
 }
 

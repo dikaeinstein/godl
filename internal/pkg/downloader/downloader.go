@@ -85,7 +85,7 @@ func (d *Downloader) Download(ctx context.Context, version string) error {
 	}
 
 	// Create the countWriter used for counting response bytes
-	cw := &countWriter{TotalExpectedBytes: res.ContentLength}
+	cw := &countWriter{totalExpectedBytes: res.ContentLength}
 
 	tmpFile, ok := tmp.(io.Writer)
 	if !ok {
@@ -113,10 +113,10 @@ func (d *Downloader) Download(ctx context.Context, version string) error {
 	defer f.Close()
 
 	err = d.HashVerifier(f, wantHex)
-
 	if err != nil {
 		return fmt.Errorf("error verifying SHA256 checksum of %v: %v", tmpFile, err)
 	}
+
 	fmt.Println("checksums matched!")
 
 	// Rename the temporary file once fully downloaded
@@ -158,7 +158,7 @@ func Prefix() string {
 // countWriter counts the number of bytes written to it.
 type countWriter struct {
 	bytesWritten       int64
-	TotalExpectedBytes int64
+	totalExpectedBytes int64
 }
 
 func (wc *countWriter) Write(p []byte) (int, error) {
@@ -170,6 +170,6 @@ func (wc *countWriter) Write(p []byte) (int, error) {
 
 // Progress prints the progress of bytes counted
 func (wc *countWriter) Progress() {
-	percentDownloaded := float64(wc.bytesWritten) / float64(wc.TotalExpectedBytes) * 100
+	percentDownloaded := float64(wc.bytesWritten) / float64(wc.totalExpectedBytes) * 100
 	fmt.Printf("\rDownloading... %.0f%% complete", math.Round(percentDownloaded))
 }

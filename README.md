@@ -79,6 +79,7 @@ output: go version go1.16 darwin/amd64 // or something similar
 ### Improvements / Coming features
 
 - Add support for the M1 Macs
+- Turn on all lint options
 
 ### Contributing
 

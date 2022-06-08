@@ -2,13 +2,15 @@
 package gv
 
 import (
+	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
 
-	"github.com/hashicorp/go-version"
+	version "github.com/hashicorp/go-version"
 )
 
 type SortDirection string
@@ -47,7 +49,7 @@ func VersionExists(archiveVersion, downloadDir string) (bool, error) {
 	downloadPath := filepath.Join(downloadDir, archiveName)
 
 	if _, err := os.Stat(downloadPath); err != nil {
-		if os.IsNotExist(err) {
+		if errors.Is(err, fs.ErrNotExist) {
 			return false, nil
 		}
 		return true, err // Assuming that other forms of errors are not due to non-existence
