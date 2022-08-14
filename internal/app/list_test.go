@@ -12,7 +12,7 @@ func TestListDownloadedBinaryArchives(t *testing.T) {
 	defer tmpFile.Close()
 
 	ls := List{}
-	if err := ls.Run(tmpDir, gv.Asc); err != nil {
+	if err := ls.Run(tmpDir, gv.SortAsc); err != nil {
 		t.Errorf("Error listing downloaded archive versions: %v", err)
 	}
 }

@@ -10,9 +10,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
+
 	"github.com/dikaeinstein/godl/internal/pkg/gv"
 	"github.com/dikaeinstein/godl/test"
-	"github.com/google/go-cmp/cmp"
 )
 
 func TestListRemoteVersions(t *testing.T) {
@@ -53,7 +54,7 @@ func TestListRemoteVersions(t *testing.T) {
 
 		t.Run(tC.name, func(t *testing.T) {
 			lsRemote := ListRemote{tC.client, 2 * time.Second}
-			err := lsRemote.Run(context.Background(), gv.Asc)
+			err := lsRemote.Run(context.Background(), gv.SortAsc)
 			if err != nil {
 				diff := cmp.Diff(tC.want, err.Error())
 				if diff != "" {

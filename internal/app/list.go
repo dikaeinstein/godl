@@ -21,15 +21,16 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/hashicorp/go-version"
+
 	"github.com/dikaeinstein/godl/internal/pkg/godlutil"
 	"github.com/dikaeinstein/godl/internal/pkg/gv"
-	"github.com/hashicorp/go-version"
 )
 
 // List lists the downloaded go versions
 type List struct{}
 
-func (l List) Run(downloadDir string, sortDirection gv.SortDirection) error {
+func (l List) Run(downloadDir, sortDirection string) error {
 	// Create download directory and its parent
 	godlutil.Must(os.MkdirAll(downloadDir, os.ModePerm))
 

@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/dikaeinstein/godl/test"
 	"github.com/spf13/cobra"
+	"github.com/stretchr/testify/require"
+
+	"github.com/dikaeinstein/godl/test"
 )
 
 func TestVersionCmd(t *testing.T) {
@@ -16,9 +18,9 @@ func TestVersionCmd(t *testing.T) {
 		GoVersion:   "go1.16.2",
 	}
 
-	godl := NewRootCmd()
-	version := NewVersionCmd(v)
-	godl.RegisterSubCommands([]*cobra.Command{version})
+	godl := newRootCmd()
+	version := newVersionCmd(v)
+	registerSubCommands(godl, []*cobra.Command{version})
 
 	expectedOutput := fmt.Sprintf(`Version: %s
 Go version: %s
@@ -26,12 +28,7 @@ Git hash: %s
 Built: %s
 `, v.GodlVersion, v.GoVersion, v.GitHash, v.BuildDate)
 
-	output, errOutput := test.ExecuteCommand(t, false, godl.CobraCmd, "version")
-	if errOutput != "" {
-		t.Errorf("godl version failed: expected errOutput %s; got %s", "", errOutput)
-	}
-
-	if output != expectedOutput {
-		t.Errorf("godl version failed: expected output %s; got %s", expectedOutput, output)
-	}
+	output, errOutput := test.ExecuteCommand(t, false, godl, "version")
+	require.Equal(t, "", errOutput)
+	require.Equal(t, expectedOutput, output)
 }

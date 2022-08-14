@@ -6,8 +6,10 @@ import (
 	"path"
 	"testing"
 
-	"github.com/dikaeinstein/godl/test"
 	"github.com/spf13/cobra"
+	"github.com/stretchr/testify/require"
+
+	"github.com/dikaeinstein/godl/test"
 )
 
 func TestInstallCmd(t *testing.T) {
@@ -23,7 +25,7 @@ func TestInstallCmd(t *testing.T) {
 	}{
 		{
 			name:     "CalledWithNoArgs",
-			expected: "Error: provide version to install\n",
+			expected: "Error: accepts 1 arg(s), received 0\n",
 			flags:    "",
 			useFlag:  false,
 		},
@@ -51,19 +53,18 @@ func TestInstallCmd(t *testing.T) {
 		tC := testCases[i]
 
 		t.Run(tC.name, func(t *testing.T) {
-			godl := NewRootCmd()
-			install := NewInstallCmd(testClient)
-			godl.RegisterSubCommands([]*cobra.Command{install})
+			godl := newRootCmd()
+			install := newInstallCmd(testClient)
+			registerSubCommands(godl, []*cobra.Command{install})
 
 			var errOutput string
 			if tC.useFlag {
-				_, errOutput = test.ExecuteCommand(t, true, godl.CobraCmd, "install", tC.flags)
+				_, errOutput = test.ExecuteCommand(t, true, godl, "install", tC.flags)
 			} else {
-				_, errOutput = test.ExecuteCommand(t, true, godl.CobraCmd, "install")
+				_, errOutput = test.ExecuteCommand(t, true, godl, "install")
 			}
-			if errOutput != tC.expected {
-				t.Errorf("godl install failed: expected: %s; got: %s", tC.expected, errOutput)
-			}
+
+			require.Equal(t, tC.expected, errOutput)
 		})
 	}
 }

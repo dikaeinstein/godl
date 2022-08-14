@@ -25,14 +25,20 @@ import (
 	"github.com/dikaeinstein/godl/pkg/fsys"
 )
 
+const (
+	ShellBash = "bash"
+	ShellZsh  = "zsh"
+	ShellFish = "fish"
+)
+
 // Generator controls how the completion files should be generated
 type CompletionGenerator interface {
-	GenerateBashCompletion(io.Writer) error
-	GenerateFishCompletion(out io.Writer, includeDesc bool) error
-	GenerateZshCompletion(io.Writer) error
+	GenBashCompletion(io.Writer) error
+	GenFishCompletion(out io.Writer, includeDesc bool) error
+	GenZshCompletion(io.Writer) error
 }
 
-// Completion generates completion files for zsh/bash shell.
+// Completion generates completion files for zsh/bash/fish shell.
 type Completion struct {
 	AutocompleteDir string
 	BashSymlinkDir  string
@@ -43,11 +49,13 @@ type Completion struct {
 	ZshSymlinkDir string
 }
 
-// Run generates completion file for specified shell
+// Run generates completion file for specified shell.
+// If useDefault is true, the completion file will be generated in the default
+// location for the shell.
 func (c *Completion) Run(shell string, out io.Writer, useDefault bool) error {
 	switch shell {
-	case "bash":
-		if err := c.GenerateBashCompletion(out); err != nil {
+	case ShellBash:
+		if err := c.GenBashCompletion(out); err != nil {
 			return err
 		}
 
@@ -57,8 +65,8 @@ func (c *Completion) Run(shell string, out io.Writer, useDefault bool) error {
 		}
 
 		return nil
-	case "zsh":
-		if err := c.GenerateZshCompletion(out); err != nil {
+	case ShellZsh:
+		if err := c.GenZshCompletion(out); err != nil {
 			return err
 		}
 
@@ -67,14 +75,14 @@ func (c *Completion) Run(shell string, out io.Writer, useDefault bool) error {
 			return fsys.Symlink(c.FS, zshTarget, filepath.Join(c.ZshSymlinkDir, "_godl"))
 		}
 		return nil
-	case "fish":
-		if err := c.GenerateFishCompletion(out, true); err != nil {
+	case ShellFish:
+		if err := c.GenFishCompletion(out, true); err != nil {
 			return err
 		}
 
 		if useDefault {
-			zshTarget := CompletionMakeTarget(shell, c.AutocompleteDir)
-			return fsys.Symlink(c.FS, zshTarget, filepath.Join(c.FishSymlinkDir, "godl.fish"))
+			fishTarget := CompletionMakeTarget(shell, c.AutocompleteDir)
+			return fsys.Symlink(c.FS, fishTarget, filepath.Join(c.FishSymlinkDir, "godl.fish"))
 		}
 		return nil
 	default:
@@ -85,7 +93,7 @@ func (c *Completion) Run(shell string, out io.Writer, useDefault bool) error {
 // CompletionMakeTarget creates the file and it's parent directories where the
 // completion output can be written to.
 func CompletionMakeTarget(shell, autocompleteDir string) string {
-	bashDir := filepath.Join(autocompleteDir, shell)
-	godlutil.Must(os.MkdirAll(bashDir, os.ModePerm))
-	return filepath.Join(bashDir, "godl")
+	shellDir := filepath.Join(autocompleteDir, shell)
+	godlutil.Must(os.MkdirAll(shellDir, os.ModePerm))
+	return filepath.Join(shellDir, "godl")
 }

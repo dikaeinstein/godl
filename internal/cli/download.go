@@ -1,21 +1,24 @@
 package cli
 
 import (
-	"errors"
 	"net/http"
 	"time"
 
 	"github.com/MakeNowJust/heredoc"
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+
 	"github.com/dikaeinstein/godl/internal/app"
 	"github.com/dikaeinstein/godl/internal/pkg/downloader"
 	"github.com/dikaeinstein/godl/internal/pkg/godlutil"
 	"github.com/dikaeinstein/godl/pkg/fsys"
 	"github.com/dikaeinstein/godl/pkg/hash"
-	"github.com/spf13/cobra"
 )
 
-// NewDownloadCmd returns a new instance of the download command
-func NewDownloadCmd(client *http.Client) *cobra.Command {
+// newDownloadCmd returns a new instance of the download command
+func newDownloadCmd(client *http.Client) *cobra.Command {
+	dCli := &downloadCli{httpClient: client}
+
 	downloadCmd := &cobra.Command{
 		Use:   "download version",
 		Short: "Download go binary archive.",
@@ -25,40 +28,65 @@ func NewDownloadCmd(client *http.Client) *cobra.Command {
 			By default, if archive version already exists locally, godl doesn't attempt to download it again.
 			To force it to download the version again pass the --force flag.
 		`),
-		Args: func(cmd *cobra.Command, args []string) error {
-			if len(args) < 1 {
-				return errors.New("provide version to download")
-			}
-			return nil
-		},
+		Args:    cobra.ExactArgs(1),
+		PreRunE: dCli.setupConfig,
+		RunE:    dCli.run,
 	}
 
-	const defaultTimeout = 60 * time.Second
-	forceDownload := downloadCmd.Flags().BoolP("force", "f", false, "Force download instead of using local version")
-	timeout := downloadCmd.Flags().DurationP("timeout", "t", defaultTimeout, "Set the download timeout.")
-
-	downloadCmd.RunE = func(cmd *cobra.Command, args []string) error {
-		dlDir, err := godlutil.GetDownloadDir()
-		if err != nil {
-			return err
-		}
-
-		dl := &downloader.Downloader{
-			BaseURL:       "https://storage.googleapis.com/golang/",
-			Client:        client,
-			DownloadDir:   dlDir,
-			FS:            fsys.OsFS{},
-			ForceDownload: *forceDownload,
-			Hasher:        hash.NewRemoteHasher(http.DefaultClient),
-			HashVerifier:  godlutil.VerifyHash,
-		}
-
-		d := app.Download{
-			Dl:      dl,
-			Timeout: *timeout,
-		}
-		return d.Run(cmd.Context(), args[0])
-	}
+	setupDownloadFlags(downloadCmd)
 
 	return downloadCmd
+}
+
+type downloadConfig struct {
+	timeout       time.Duration
+	forceDownload bool
+}
+
+type downloadCli struct {
+	downloadConfig
+	httpClient *http.Client
+}
+
+func (dCli *downloadCli) run(cmd *cobra.Command, args []string) error {
+	dlDir, err := godlutil.GetDownloadDir()
+	if err != nil {
+		return err
+	}
+
+	dl := &downloader.Downloader{
+		BaseURL:       "https://storage.googleapis.com/golang/",
+		Client:        dCli.httpClient,
+		DownloadDir:   dlDir,
+		FS:            fsys.OsFS{},
+		ForceDownload: dCli.downloadConfig.forceDownload,
+		Hasher:        hash.NewRemoteHasher(http.DefaultClient),
+		HashVerifier:  godlutil.VerifyHash,
+	}
+
+	d := app.Download{
+		Dl:      dl,
+		Timeout: dCli.downloadConfig.timeout,
+	}
+
+	return d.Run(cmd.Context(), args[0])
+}
+
+func (dCli *downloadCli) setupConfig(cmd *cobra.Command, args []string) error {
+	if err := viper.BindPFlags(cmd.Flags()); err != nil {
+		return err
+	}
+
+	dCli.downloadConfig.timeout = viper.GetDuration("timeout")
+	dCli.downloadConfig.forceDownload = viper.GetBool("force")
+
+	return nil
+}
+
+func setupDownloadFlags(cmd *cobra.Command) {
+	const defaultTimeout = 60 * time.Second
+	cmd.Flags().BoolP("force", "f", false,
+		"Force download instead of using local version")
+	cmd.Flags().DurationP("timeout", "t", defaultTimeout,
+		"Set the download timeout.")
 }

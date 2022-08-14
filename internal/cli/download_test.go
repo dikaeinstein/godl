@@ -6,8 +6,10 @@ import (
 	"path"
 	"testing"
 
-	"github.com/dikaeinstein/godl/test"
 	"github.com/spf13/cobra"
+	"github.com/stretchr/testify/require"
+
+	"github.com/dikaeinstein/godl/test"
 )
 
 func TestDownloadCmd(t *testing.T) {
@@ -25,7 +27,7 @@ func TestDownloadCmd(t *testing.T) {
 			name:     "CalledWithNoArgs",
 			flags:    "",
 			useFlag:  false,
-			expected: "Error: provide version to download\n",
+			expected: "Error: accepts 1 arg(s), received 0\n",
 		},
 		{
 			name:     "Help",
@@ -51,19 +53,18 @@ func TestDownloadCmd(t *testing.T) {
 		tC := testCases[i]
 
 		t.Run(tC.name, func(t *testing.T) {
-			godl := NewRootCmd()
-			download := NewDownloadCmd(testClient)
-			godl.RegisterSubCommands([]*cobra.Command{download})
+			godl := newRootCmd()
+			download := newDownloadCmd(testClient)
+			registerSubCommands(godl, []*cobra.Command{download})
 
 			var errOutput string
 			if tC.useFlag {
-				_, errOutput = test.ExecuteCommand(t, true, godl.CobraCmd, "download", tC.flags)
+				_, errOutput = test.ExecuteCommand(t, true, godl, "download", tC.flags)
 			} else {
-				_, errOutput = test.ExecuteCommand(t, true, godl.CobraCmd, "download")
+				_, errOutput = test.ExecuteCommand(t, true, godl, "download")
 			}
-			if errOutput != tC.expected {
-				t.Errorf("godl download failed: expected: %s; got: %s", tC.expected, errOutput)
-			}
+
+			require.Equal(t, tC.expected, errOutput)
 		})
 	}
 }

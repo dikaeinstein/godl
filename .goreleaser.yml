@@ -12,7 +12,7 @@ builds:
       - '-s -w -X "main.godlVersion={{.Tag}}" -X "main.buildDate={{.Date}}" -X "main.goVersion={{.Env.GO_VERSION}}" -X "main.gitHash={{.ShortCommit}}"'
     main: ./cmd/main.go
 checksum:
-  name_template: '{{ .ProjectName }}_checksums.txt'
+  name_template: '{{ .ProjectName }}_{{.Tag}}_checksums.txt'
 changelog:
   sort: asc
   filters:

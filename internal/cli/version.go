@@ -13,8 +13,8 @@ type VersionOption struct {
 	GoVersion   string
 }
 
-// NewVersionCmd returns the version command
-func NewVersionCmd(v VersionOption) *cobra.Command {
+// newVersionCmd returns the version command
+func newVersionCmd(v VersionOption) *cobra.Command {
 	return &cobra.Command{
 		Use:   "version",
 		Short: "Show the godl version information.",

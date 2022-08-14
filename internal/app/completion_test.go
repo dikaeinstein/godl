@@ -23,15 +23,15 @@ func generateTestCompletion(out io.Writer) error {
 	return err
 }
 
-func (fakeCompletionGenerator) GenerateBashCompletion(out io.Writer) error {
+func (fakeCompletionGenerator) GenBashCompletion(out io.Writer) error {
 	return generateTestCompletion(out)
 }
 
-func (fakeCompletionGenerator) GenerateFishCompletion(out io.Writer, includeDesc bool) error {
+func (fakeCompletionGenerator) GenFishCompletion(out io.Writer, includeDesc bool) error {
 	return generateTestCompletion(out)
 }
 
-func (fakeCompletionGenerator) GenerateZshCompletion(out io.Writer) error {
+func (fakeCompletionGenerator) GenZshCompletion(out io.Writer) error {
 	return generateTestCompletion(out)
 }
 

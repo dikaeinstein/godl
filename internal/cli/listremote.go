@@ -5,15 +5,18 @@ import (
 	"time"
 
 	"github.com/MakeNowJust/heredoc"
-	"github.com/dikaeinstein/godl/internal/app"
-	"github.com/dikaeinstein/godl/internal/pkg/gv"
-	"github.com/dikaeinstein/godl/pkg/text"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+
+	"github.com/dikaeinstein/godl/internal/app"
+	"github.com/dikaeinstein/godl/pkg/text"
 )
 
-// NewListRemoteCmd returns the list-remote command
-func NewListRemoteCmd(client *http.Client) *cobra.Command {
-	listRemoteCmd := &cobra.Command{
+// newListRemoteCmd returns the list-remote command
+func newListRemoteCmd(client *http.Client) *cobra.Command {
+	lsRemoteCli := &lsRemoteCli{httpClient: client}
+
+	lsRemoteCmd := &cobra.Command{
 		Use:     "list-remote",
 		Aliases: []string{"ls-remote"},
 		Short:   "List the available remote versions.",
@@ -23,17 +26,47 @@ func NewListRemoteCmd(client *http.Client) *cobra.Command {
 			$ ls-remote -s desc or ls-remote -s=desc
 			$ ls-remote -t 15s or ls-remote --timeout=15s
 		`), "  "),
+		PreRunE: lsRemoteCli.setupConfig,
+		RunE:    lsRemoteCli.run,
 	}
 
+	setupLsRemoteCliFlags(lsRemoteCmd)
+
+	return lsRemoteCmd
+}
+
+type lsRemoteConfig struct {
+	timeout       time.Duration
+	sortDirection string
+}
+
+type lsRemoteCli struct {
+	httpClient *http.Client
+	lsRemoteConfig
+}
+
+func (c *lsRemoteCli) setupConfig(cmd *cobra.Command, args []string) error {
+	if err := viper.BindPFlags(cmd.Flags()); err != nil {
+		return err
+	}
+
+	c.lsRemoteConfig.timeout = viper.GetDuration("timeout")
+	c.lsRemoteConfig.sortDirection = viper.GetString("sortDirection")
+
+	return nil
+}
+
+func (c *lsRemoteCli) run(cmd *cobra.Command, args []string) error {
+	lsRemote := app.ListRemote{Client: c.httpClient, Timeout: c.timeout}
+
+	return lsRemote.Run(cmd.Context(), c.sortDirection)
+}
+
+func setupLsRemoteCliFlags(cmd *cobra.Command) {
 	const defaultTimeout = 60 * time.Second
-	sd := listRemoteCmd.Flags().StringP("sortDirection", "s", string(gv.Asc),
-		"Specify the sort direction of the output of `list-remote`. It sorts in ascending order by default.")
-	timeout := listRemoteCmd.Flags().DurationP("timeout", "t", defaultTimeout, "Set the download timeout.")
-
-	listRemoteCmd.RunE = func(cmd *cobra.Command, args []string) error {
-		lsRemote := app.ListRemote{Client: client, Timeout: *timeout}
-		return lsRemote.Run(cmd.Context(), gv.SortDirection(*sd))
-	}
-
-	return listRemoteCmd
+	cmd.Flags().DurationP(
+		"timeout", "t", defaultTimeout, "Set the download timeout.")
+	cmd.Flags().StringP("sortDirection", "s", "",
+		"Specify the sort direction of the output of `list-remote`. "+
+			"It sorts in ascending order by default.")
 }

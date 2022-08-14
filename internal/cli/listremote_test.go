@@ -6,8 +6,10 @@ import (
 	"path"
 	"testing"
 
-	"github.com/dikaeinstein/godl/test"
 	"github.com/spf13/cobra"
+	"github.com/stretchr/testify/require"
+
+	"github.com/dikaeinstein/godl/test"
 )
 
 func TestListRemoteCmd(t *testing.T) {
@@ -27,13 +29,12 @@ func TestListRemoteCmd(t *testing.T) {
 		}
 	}))
 
-	lsRemote := NewListRemoteCmd(testClient)
-	godl := NewRootCmd()
-	godl.RegisterSubCommands([]*cobra.Command{lsRemote})
+	lsRemote := newListRemoteCmd(testClient)
 
-	_, errOutput := test.ExecuteCommand(t, false, godl.CobraCmd, "list-remote")
-	expected := ""
-	if errOutput != expected {
-		t.Errorf("godl list failed: expected %s; got %s", expected, errOutput)
-	}
+	godl := newRootCmd()
+	registerSubCommands(godl, []*cobra.Command{lsRemote})
+
+	_, errOutput := test.ExecuteCommand(t, false, godl, "list-remote")
+
+	require.Equal(t, "", errOutput)
 }

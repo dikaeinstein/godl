@@ -7,8 +7,10 @@ import (
 	"testing"
 
 	"github.com/MakeNowJust/heredoc"
-	"github.com/dikaeinstein/godl/test"
 	"github.com/spf13/cobra"
+	"github.com/stretchr/testify/require"
+
+	"github.com/dikaeinstein/godl/test"
 )
 
 func TestUpdateCmd(t *testing.T) {
@@ -56,17 +58,14 @@ func TestUpdateCmd(t *testing.T) {
 	for _, tC := range testCases {
 		t.Run(tC.name, func(t *testing.T) {
 			v := VersionOption{GodlVersion: tC.godlVersion}
-			update := NewUpdateCmd(testClient, v)
-			godl := NewRootCmd()
-			godl.RegisterSubCommands([]*cobra.Command{update})
+			update := newUpdateCmd(testClient, v)
+			godl := newRootCmd()
+			registerSubCommands(godl, []*cobra.Command{update})
 
-			output, errOutput := test.ExecuteCommand(t, false, godl.CobraCmd, "update")
-			if errOutput != tC.errOutput {
-				t.Errorf("godl update failed: expected errOutput: %s; got: %s", tC.errOutput, errOutput)
-			}
-			if output != tC.output {
-				t.Errorf("godl update failed: expected output: %s; got: %s", tC.output, output)
-			}
+			output, errOutput := test.ExecuteCommand(t, false, godl, "update")
+
+			require.Equal(t, tC.errOutput, errOutput)
+			require.Equal(t, tC.output, output)
 		})
 	}
 }

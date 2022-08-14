@@ -13,17 +13,15 @@ import (
 	version "github.com/hashicorp/go-version"
 )
 
-type SortDirection string
-
 const (
 	// Asc sorts in the ascending direction
-	Asc SortDirection = "asc"
+	SortAsc = "asc"
 	// Desc sorts in the descending direction
-	Desc SortDirection = "desc"
+	SortDesc = "desc"
 )
 
-func CompareVersions(left, right *version.Version, d SortDirection) bool {
-	if d == Asc {
+func CompareVersions(left, right *version.Version, d string) bool {
+	if d == SortAsc {
 		return left.LessThan(right)
 	}
 

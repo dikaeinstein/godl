@@ -9,10 +9,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/dikaeinstein/godl/internal/pkg/gv"
-	"github.com/dikaeinstein/godl/pkg/text"
 	"github.com/hashicorp/go-version"
 	"github.com/tj/go-spin"
+
+	"github.com/dikaeinstein/godl/internal/pkg/gv"
+	"github.com/dikaeinstein/godl/pkg/text"
 )
 
 // ListBucketResult represents the list of objects result
@@ -36,7 +37,7 @@ type ListRemote struct {
 	Timeout time.Duration
 }
 
-func (lsRemote *ListRemote) Run(ctx context.Context, sortDirection gv.SortDirection) error {
+func (lsRemote *ListRemote) Run(ctx context.Context, sortDirection string) error {
 	url := "https://storage.googleapis.com/golang/?prefix=go1"
 	w := url
 	ctx, cancel := context.WithCancel(ctx)
