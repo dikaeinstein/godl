@@ -21,10 +21,10 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/hashicorp/go-version"
+	go_version "github.com/hashicorp/go-version"
 
 	"github.com/dikaeinstein/godl/internal/pkg/godlutil"
-	"github.com/dikaeinstein/godl/internal/pkg/gv"
+	"github.com/dikaeinstein/godl/internal/pkg/version"
 )
 
 // List lists the downloaded go versions
@@ -42,7 +42,7 @@ func (l List) Run(downloadDir, sortDirection string) error {
 	versions := mapToVersion(files)
 	// sort in-place comparing version numbers
 	sort.Slice(versions, func(i, j int) bool {
-		return gv.CompareVersions(versions[i], versions[j], sortDirection)
+		return version.CompareVersions(versions[i], versions[j], sortDirection)
 	})
 
 	for _, v := range versions {
@@ -52,12 +52,12 @@ func (l List) Run(downloadDir, sortDirection string) error {
 	return nil
 }
 
-func mapToVersion(entries []fs.DirEntry) []*version.Version {
-	versions := []*version.Version{}
+func mapToVersion(entries []fs.DirEntry) []*go_version.Version {
+	versions := []*go_version.Version{}
 	for _, e := range entries {
 		name := e.Name()
 		if strings.HasSuffix(name, ".darwin-amd64.tar.gz") {
-			versions = append(versions, gv.GetVersion(name))
+			versions = append(versions, version.GetVersion(name))
 		}
 	}
 	return versions

@@ -12,7 +12,7 @@ import (
 	"path/filepath"
 
 	"github.com/dikaeinstein/godl/internal/pkg/godlutil"
-	"github.com/dikaeinstein/godl/internal/pkg/gv"
+	"github.com/dikaeinstein/godl/internal/pkg/version"
 	"github.com/dikaeinstein/godl/pkg/fsys"
 )
 
@@ -41,11 +41,12 @@ type Downloader struct {
 	HashVerifier  HashVerifier
 }
 
-func (d *Downloader) Download(ctx context.Context, version string) error {
+// Download downloads a binary release of a given version.
+func (d *Downloader) Download(ctx context.Context, ver string) error {
 	// Create download directory and its parent
 	godlutil.Must(os.MkdirAll(d.DownloadDir, os.ModePerm))
 
-	exists, err := gv.VersionExists(version, d.DownloadDir)
+	exists, err := version.Exists(ver, d.DownloadDir)
 	// handle stat errors even when file exists
 	if err != nil {
 		return err
@@ -56,12 +57,12 @@ func (d *Downloader) Download(ctx context.Context, version string) error {
 		return nil
 	}
 
-	err = d.CheckIfExistsRemote(ctx, version)
+	err = d.CheckIfExistsRemote(ctx, ver)
 	if err != nil {
 		return err
 	}
 
-	archiveName := fmt.Sprintf("%s%s.%s", prefix, version, postfix)
+	archiveName := fmt.Sprintf("%s%s.%s", prefix, ver, postfix)
 	downloadPath := filepath.Join(d.DownloadDir, archiveName)
 
 	// Create the file with tmp extension. So we don't overwrite until
@@ -72,7 +73,7 @@ func (d *Downloader) Download(ctx context.Context, version string) error {
 	}
 	defer tmp.Close()
 
-	goURL := d.VersionURL(version)
+	goURL := d.versionURL(ver)
 	req, _ := http.NewRequestWithContext(ctx, http.MethodGet, goURL, http.NoBody)
 	res, err := d.Client.Do(req)
 	if err != nil {
@@ -123,8 +124,8 @@ func (d *Downloader) Download(ctx context.Context, version string) error {
 	return fsys.Rename(d.FS, downloadPath+".tmp", downloadPath)
 }
 
-func (d *Downloader) CheckIfExistsRemote(ctx context.Context, version string) error {
-	u := d.VersionURL(version)
+func (d *Downloader) CheckIfExistsRemote(ctx context.Context, ver string) error {
+	u := d.versionURL(ver)
 	req, _ := http.NewRequestWithContext(ctx, http.MethodHead, u, http.NoBody)
 	res, err := d.Client.Do(req)
 	if err != nil {
@@ -133,7 +134,7 @@ func (d *Downloader) CheckIfExistsRemote(ctx context.Context, version string) er
 	defer res.Body.Close()
 
 	if res.StatusCode == http.StatusNotFound {
-		return fmt.Errorf("no binary release of %v", version)
+		return fmt.Errorf("no binary release of %v", ver)
 	}
 
 	if res.StatusCode != http.StatusOK {
@@ -143,8 +144,8 @@ func (d *Downloader) CheckIfExistsRemote(ctx context.Context, version string) er
 	return nil
 }
 
-func (d *Downloader) VersionURL(version string) string {
-	return d.BaseURL + prefix + version + "." + postfix
+func (d *Downloader) versionURL(ver string) string {
+	return d.BaseURL + prefix + ver + "." + postfix
 }
 
 func Postfix() string {

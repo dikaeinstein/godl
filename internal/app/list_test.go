@@ -3,7 +3,7 @@ package app
 import (
 	"testing"
 
-	"github.com/dikaeinstein/godl/internal/pkg/gv"
+	"github.com/dikaeinstein/godl/internal/pkg/version"
 	"github.com/dikaeinstein/godl/test"
 )
 
@@ -12,7 +12,7 @@ func TestListDownloadedBinaryArchives(t *testing.T) {
 	defer tmpFile.Close()
 
 	ls := List{}
-	if err := ls.Run(tmpDir, gv.SortAsc); err != nil {
+	if err := ls.Run(tmpDir, version.SortAsc); err != nil {
 		t.Errorf("Error listing downloaded archive versions: %v", err)
 	}
 }

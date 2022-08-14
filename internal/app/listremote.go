@@ -9,10 +9,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hashicorp/go-version"
+	go_version "github.com/hashicorp/go-version"
 	"github.com/tj/go-spin"
 
-	"github.com/dikaeinstein/godl/internal/pkg/gv"
+	"github.com/dikaeinstein/godl/internal/pkg/version"
 	"github.com/dikaeinstein/godl/pkg/text"
 )
 
@@ -81,7 +81,7 @@ func (lsRemote *ListRemote) Run(ctx context.Context, sortDirection string) error
 	versions := mapXMLContentToVersion(contents)
 	// sort in-place comparing version numbers
 	sort.Slice(versions, func(i, j int) bool {
-		return gv.CompareVersions(versions[i], versions[j], sortDirection)
+		return version.CompareVersions(versions[i], versions[j], sortDirection)
 	})
 
 	cancel()
@@ -134,10 +134,10 @@ func selectDarwin(l *ListBucketResult) ListBucketResult {
 	return archiveList
 }
 
-func mapXMLContentToVersion(contents []Content) []*version.Version {
-	versions := make([]*version.Version, len(contents))
+func mapXMLContentToVersion(contents []Content) []*go_version.Version {
+	versions := make([]*go_version.Version, len(contents))
 	for i, c := range contents {
-		versions[i] = gv.GetVersion(c.Key)
+		versions[i] = version.GetVersion(c.Key)
 	}
 	return versions
 }

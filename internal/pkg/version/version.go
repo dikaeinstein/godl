@@ -1,5 +1,5 @@
-// Package gv provides functions for working with versions
-package gv
+// Package version provides functions for working with versions
+package version
 
 import (
 	"errors"
@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"strings"
 
-	version "github.com/hashicorp/go-version"
+	go_version "github.com/hashicorp/go-version"
 )
 
 const (
@@ -20,7 +20,7 @@ const (
 	SortDesc = "desc"
 )
 
-func CompareVersions(left, right *version.Version, d string) bool {
+func CompareVersions(left, right *go_version.Version, d string) bool {
 	if d == SortAsc {
 		return left.LessThan(right)
 	}
@@ -30,14 +30,14 @@ func CompareVersions(left, right *version.Version, d string) bool {
 
 // GetVersion returns the version from the given string.
 // 		go1.11.4.darwin-amd64.tar.gz => 1.11.4
-func GetVersion(s string) *version.Version {
+func GetVersion(s string) *go_version.Version {
 	v := strings.Split(s, ".darwin-amd64")
-	vv := version.Must(version.NewVersion(strings.TrimPrefix(v[0], "go")))
+	vv := go_version.Must(go_version.NewVersion(strings.TrimPrefix(v[0], "go")))
 	return vv
 }
 
-// VersionExists checks if given archive version exists in the specified download directory.
-func VersionExists(archiveVersion, downloadDir string) (bool, error) {
+// Exists checks if given archive version exists in the specified download directory.
+func Exists(archiveVersion, downloadDir string) (bool, error) {
 	const (
 		archivePostfix = "darwin-amd64.tar.gz"
 		archivePrefix  = "go"
@@ -57,9 +57,9 @@ func VersionExists(archiveVersion, downloadDir string) (bool, error) {
 }
 
 // Segments returns a new version which is just the numeric segments of v.
-func Segments(v *version.Version) *version.Version {
+func Segments(v *go_version.Version) *go_version.Version {
 	segStr := intSliceToString(v.Segments())
-	return version.Must(version.NewSemver(segStr))
+	return go_version.Must(go_version.NewSemver(segStr))
 }
 
 func intSliceToString(segments []int) string {

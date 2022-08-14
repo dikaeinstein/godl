@@ -21,7 +21,7 @@ import (
 	"time"
 
 	"github.com/dikaeinstein/godl/internal/pkg/downloader"
-	"github.com/dikaeinstein/godl/internal/pkg/gv"
+	"github.com/dikaeinstein/godl/internal/pkg/version"
 	"github.com/dikaeinstein/godl/pkg/fsys"
 	"github.com/dikaeinstein/godl/pkg/text"
 )
@@ -36,27 +36,28 @@ type Install struct {
 	Timeout  time.Duration
 }
 
-func (i *Install) Run(ctx context.Context, version string) error {
-	archiveName := fmt.Sprintf("%s%s.%s", downloader.Prefix(), version, downloader.Postfix())
+// Run installs the go version.
+func (i *Install) Run(ctx context.Context, ver string) error {
+	archiveName := fmt.Sprintf("%s%s.%s", downloader.Prefix(), ver, downloader.Postfix())
 	downloadPath := path.Join(i.Dl.DownloadDir, archiveName)
 
 	fmt.Println(text.Green("Installing binary into /usr/local"))
 
-	exists, err := gv.VersionExists(version, i.Dl.DownloadDir)
+	exists, err := version.Exists(ver, i.Dl.DownloadDir)
 	if err != nil {
 		return err
 	}
 
 	// download binary if it doesn't exist locally or the -forceDownload flag is passed
 	if !exists || i.Dl.ForceDownload {
-		fmt.Printf("%v not found locally.\n", version)
+		fmt.Printf("%v not found locally.\n", ver)
 		fmt.Println("fetching from remote...")
 
 		ctx, cancel := context.WithTimeout(ctx, i.Timeout)
 		defer cancel()
-		err = i.Dl.Download(ctx, version)
+		err = i.Dl.Download(ctx, ver)
 		if err != nil {
-			return fmt.Errorf("error downloading %v: %v", version, err)
+			return fmt.Errorf("error downloading %v: %v", ver, err)
 		}
 	}
 
@@ -70,7 +71,7 @@ func (i *Install) Run(ctx context.Context, version string) error {
 	}
 	fmt.Println("old installation removed")
 
-	fmt.Printf("unpacking %v ...\n", version)
+	fmt.Printf("unpacking %v ...\n", ver)
 	target := path.Join("/usr", "local")
 	err = i.Archiver.Unarchive(downloadPath, target)
 	if err != nil {

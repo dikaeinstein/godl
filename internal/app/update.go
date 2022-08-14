@@ -8,10 +8,11 @@ import (
 	"net/http"
 
 	"github.com/MakeNowJust/heredoc"
-	"github.com/dikaeinstein/godl/internal/pkg/gv"
-	"github.com/dikaeinstein/godl/pkg/text"
-	"github.com/hashicorp/go-version"
+	go_version "github.com/hashicorp/go-version"
 	"github.com/spf13/viper"
+
+	"github.com/dikaeinstein/godl/internal/pkg/version"
+	"github.com/dikaeinstein/godl/pkg/text"
 )
 
 type Asset struct {
@@ -72,8 +73,8 @@ func (u *Update) CheckForUpdate(ctx context.Context, currentVersion string) (boo
 
 	// pick latest release
 	r := releases[0]
-	latest := gv.Segments(version.Must(version.NewSemver(r.TagName)))
-	current := gv.Segments(version.Must(version.NewSemver(currentVersion)))
+	latest := version.Segments(go_version.Must(go_version.NewSemver(r.TagName)))
+	current := version.Segments(go_version.Must(go_version.NewSemver(currentVersion)))
 	return latest.GreaterThan(current), &r, nil
 }
 

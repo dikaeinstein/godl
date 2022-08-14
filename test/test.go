@@ -10,18 +10,16 @@ import (
 	"testing"
 
 	"github.com/spf13/cobra"
+
+	"github.com/dikaeinstein/godl/internal/pkg/downloader"
 )
 
 // CreateTempGoBinaryArchive is test helper function used to create a fake golang binary archive.
 func CreateTempGoBinaryArchive(t *testing.T, archiveVersion string) (tmpArchive *os.File, tmpDir string) {
 	t.Helper()
 	tmpDir = t.TempDir()
-	const (
-		archivePostfix = "darwin-amd64.tar.gz"
-		archivePrefix  = "go"
-	)
 
-	archiveName := fmt.Sprintf("%s%s.%s", archivePrefix, archiveVersion, archivePostfix)
+	archiveName := fmt.Sprintf("%s%s.%s", downloader.Prefix(), archiveVersion, downloader.Postfix())
 	downloadPath := filepath.Join(tmpDir, archiveName)
 
 	tmpArchive, err := os.Create(downloadPath)
