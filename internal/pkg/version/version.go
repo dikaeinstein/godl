@@ -29,7 +29,7 @@ func CompareVersions(left, right *go_version.Version, d string) bool {
 }
 
 // GetVersion returns the version from the given string.
-// 		go1.11.4.darwin-amd64.tar.gz => 1.11.4
+// go1.11.4.darwin-amd64.tar.gz => 1.11.4
 func GetVersion(s string) *go_version.Version {
 	v := strings.Split(s, ".darwin-amd64")
 	vv := go_version.Must(go_version.NewVersion(strings.TrimPrefix(v[0], "go")))
