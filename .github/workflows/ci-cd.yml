@@ -18,7 +18,7 @@ jobs:
       - name: Send coverage to Coveralls
         env:
           COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: goveralls -coverprofile=cover.out -service=github
+        run: make coveralls
 
   golangci:
     name: Linting

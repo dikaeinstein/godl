@@ -8,21 +8,20 @@ GO_VERSION=$(shell go env GOVERSION)
 # setup -ldflags for go build
 LDFLAGS=-ldflags '-s -w -X "$(PACKAGE).godlVersion=$(VERSION)" -X "$(PACKAGE).buildDate=$(BUILD_DATE)" -X "$(PACKAGE).goVersion=$(GO_VERSION)" -X "$(PACKAGE).gitHash=$(GIT_COMMIT_HASH)"'
 
-## Fetch dependencies
-fetch:
-	@echo Download go.mod dependencies
-	@go mod download
-
 lint:
 	@golangci-lint run
 
 ## Run tests
 test:
-	@gotest -race $(TESTFLAGS) ./...
+	@go run github.com/rakyll/gotest -race $(TESTFLAGS) ./...
 
 ## Run tests with coverage
 test-cover:
-	@gotest -coverprofile=cover.out -race $(TESTFLAGS) ./...
+	@go run github.com/rakyll/gotest -coverprofile=cover.out -race $(TESTFLAGS) ./...
+
+## send test coverage to coveralls
+coveralls:
+	@go run github.com/mattn/goveralls -coverprofile=cover.out -service=github
 
 ## Build binary
 build:
