@@ -76,10 +76,6 @@ go version
 output: go version go1.16 darwin/amd64 // or something similar
 ```
 
-### Improvements / Coming features
-
-- Add support for the M1 Macs
-
 ### Contributing
 
 You can take a shot at the suggested improvements from the README. Also follow the convention from the `contribution.md`
