@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/dikaeinstein/godl/internal/app"
+	"github.com/dikaeinstein/godl/internal/pkg/version"
 	"github.com/dikaeinstein/godl/pkg/text"
 )
 
@@ -66,7 +67,7 @@ func setupLsRemoteCliFlags(cmd *cobra.Command) {
 	const defaultTimeout = 60 * time.Second
 	cmd.Flags().DurationP(
 		"timeout", "t", defaultTimeout, "Set the download timeout.")
-	cmd.Flags().StringP("sortDirection", "s", "",
+	cmd.Flags().StringP("sortDirection", "s", version.SortAsc,
 		"Specify the sort direction of the output of `list-remote`. "+
 			"It sorts in ascending order by default.")
 }

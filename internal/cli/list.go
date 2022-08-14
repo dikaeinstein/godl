@@ -7,6 +7,7 @@ import (
 
 	"github.com/dikaeinstein/godl/internal/app"
 	"github.com/dikaeinstein/godl/internal/pkg/godlutil"
+	"github.com/dikaeinstein/godl/internal/pkg/version"
 	"github.com/dikaeinstein/godl/pkg/text"
 )
 
@@ -26,7 +27,7 @@ func newListCmd() *cobra.Command {
 		RunE:    lsCli.run,
 	}
 
-	listCmd.Flags().StringP("sortDirection", "s", "",
+	listCmd.Flags().StringP("sortDirection", "s", version.SortAsc,
 		"Specify the sort direction of the output of `list`. "+
 			"It sorts in ascending order by default.")
 
