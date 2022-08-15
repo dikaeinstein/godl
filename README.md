@@ -1,6 +1,6 @@
 # godl
 
-Godl is a CLI tool used to download and install go binary releases on mac.
+Godl is a CLI tool used to download and install go binary releases on mac. It supports both Intel and M1 macs.
 
 [![Build Status](https://github.com/dikaeinstein/godl/actions/workflows/ci-cd.yml/badge.svg?branch=master)](https://github.com/dikaeinstein/godl/actions)
 [![Coverage Status](https://coveralls.io/repos/github/dikaeinstein/godl/badge.svg?branch=master)](https://coveralls.io/github/dikaeinstein/godl?branch=master)
@@ -10,7 +10,7 @@ Godl is a CLI tool used to download and install go binary releases on mac.
 To download and install a specific version of godl, copy and paste the installation command:
 
 ```bash
-curl -s https://raw.githubusercontent.com/dikaeinstein/godl/master/get.sh | bash -s -- v0.12.7
+curl -s https://raw.githubusercontent.com/dikaeinstein/godl/master/get.sh | sh -s -- v0.17.0
 ```
 
 ## Install with Go 1.16+
