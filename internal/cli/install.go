@@ -89,7 +89,7 @@ func (iCli *installCli) setupConfig(cmd *cobra.Command, args []string) error {
 func setupInstallCliFlags(cmd *cobra.Command) {
 	const defaultTimeout = 60 * time.Second
 	cmd.Flags().BoolP("force", "f", false,
-		"Force download instead of using local version")
+		"Force download instead of using local version.")
 	cmd.Flags().DurationP("timeout", "t", defaultTimeout,
 		"Set the download timeout.")
 }

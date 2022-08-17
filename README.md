@@ -31,8 +31,7 @@ Prerequisites for building from source are:
 ```bash
 git clone https://github.com/dikaeinstein/godl
 cd godl
-make fetch
-make install
+make build
 ```
 
 If you've have setup your $GOPATH or $GOBIN correctly, you should have `godl` command in your $PATH.
