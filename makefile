@@ -29,15 +29,15 @@ coveralls:
 
 ## Build binary
 build:
-	@go build -a $(LDFLAGS) ./cmd/godl
+	@go build -a $(LDFLAGS) ./cmd/$(BINARY_NAME)
 
 ## Build the binary to $GOBIN path using `go build`
 build-install:
-	@go build -a $(LDFLAGS) -o $(shell go env GOBIN)/godl cmd/main.go
+	@go build -a $(LDFLAGS) -o $(shell go env GOBIN)/godl ./cmd/$(BINARY_NAME)
 
 ## installing the binary to $GOBIN using `go install`
 install:
-	@go install $(LDFLAGS) ./cmd/godl
+	@go install $(LDFLAGS) ./cmd/$(BINARY_NAME)
 
 install-tools: fetch
 	@echo Installing tools from tools.go
@@ -45,7 +45,7 @@ install-tools: fetch
 
 ## Execute binary
 run:
-	@go run -a $(LDFLAGS) ./cmd/godl
+	@go run $(LDFLAGS) ./cmd/$(BINARY_NAME)
 
 .PHONY: build clean fetch install install-tools lint run test test-cover
 
