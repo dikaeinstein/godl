@@ -6,7 +6,11 @@ VERSION=$(shell git describe --tags)
 GO_VERSION=$(shell go env GOVERSION)
 
 # setup -ldflags for go build
-LDFLAGS=-ldflags '-s -w -X "$(PACKAGE).godlVersion=$(VERSION)" -X "$(PACKAGE).buildDate=$(BUILD_DATE)" -X "$(PACKAGE).goVersion=$(GO_VERSION)" -X "$(PACKAGE).gitHash=$(GIT_COMMIT_HASH)"'
+LDFLAGS=-ldflags '-s -w \
+	-X "$(PACKAGE).godlVersion=$(VERSION)" \
+	-X "$(PACKAGE).buildDate=$(BUILD_DATE)" \
+	-X "$(PACKAGE).goVersion=$(GO_VERSION)" \
+	-X "$(PACKAGE).gitHash=$(GIT_COMMIT_HASH)"'
 
 lint:
 	@golangci-lint run
@@ -25,11 +29,15 @@ coveralls:
 
 ## Build binary
 build:
-	@GOOS=darwin GOARCH=amd64 go build -a $(LDFLAGS) -o godl cmd/main.go
+	@go build -a $(LDFLAGS) ./cmd/godl
 
-## Simulate installing the binary to $GOBIN path using `go build`
+## Build the binary to $GOBIN path using `go build`
+build-install:
+	@go build -a $(LDFLAGS) -o $(shell go env GOBIN)/godl cmd/main.go
+
+## installing the binary to $GOBIN using `go install`
 install:
-	@GOOS=darwin GOARCH=amd64 go build -a $(LDFLAGS) -o $(shell go env GOVERSION)/godl cmd/main.go
+	@go install $(LDFLAGS) ./cmd/godl
 
 install-tools: fetch
 	@echo Installing tools from tools.go
@@ -37,7 +45,7 @@ install-tools: fetch
 
 ## Execute binary
 run:
-	@go run -a $(LDFLAGS) cmd/main.go
+	@go run -a $(LDFLAGS) ./cmd/godl
 
 .PHONY: build clean fetch install install-tools lint run test test-cover
 
