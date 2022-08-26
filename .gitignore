@@ -6,3 +6,5 @@ vendor
 .pprof
 .env
 dist/
+
+!cmd/godl
