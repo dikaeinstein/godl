@@ -23,7 +23,7 @@ linters-settings:
   gocyclo:
     min-complexity: 15
   goimports:
-    local-prefixes: github.com/dikaeinstein/downloader
+    local-prefixes: github.com/dikaeinstein/godl
   golint:
     min-confidence: 0
   gomnd:
