@@ -116,8 +116,8 @@ github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/denis-tingaikin/go-header v0.4.3 h1:tEaZKAlqql6SKCY++utLmkPLd6K8IBM20Ha7UVm+mtU=
 github.com/denis-tingaikin/go-header v0.4.3/go.mod h1:0wOCWuN71D5qIgE2nz9KrKmuYBAC2Mra5RassOIQ2/c=
-github.com/dikaeinstein/downloader v0.0.3 h1:bKYAkdTVxTJVoHqmoy2avZONhirZ6I+oYVs1R183afc=
-github.com/dikaeinstein/downloader v0.0.3/go.mod h1:kTOGRCysc7O6Uy0SkF5dIsZ5ZkjQuZigDiFhrZLWt5c=
+github.com/dikaeinstein/downloader v0.0.5 h1:Pa15GBVWR/SunRE1WLJnnWMWQmPjPTIldGp/9KZ7JUU=
+github.com/dikaeinstein/downloader v0.0.5/go.mod h1:kTOGRCysc7O6Uy0SkF5dIsZ5ZkjQuZigDiFhrZLWt5c=
 github.com/dsnet/compress v0.0.2-0.20210315054119-f66993602bf5 h1:iFaUwBSo5Svw6L7HYpRu/0lE3e0BaElwnNO1qkNQxBY=
 github.com/dsnet/compress v0.0.2-0.20210315054119-f66993602bf5/go.mod h1:qssHWj60/X5sZFNxpG4HBPDHVqxNm4DfnCKgrbZOT+s=
 github.com/dsnet/golib v0.0.0-20171103203638-1ea166775780/go.mod h1:Lj+Z9rebOhdfkVLjJ8T6VcRQv3SXugXy999NBtR9aFY=
