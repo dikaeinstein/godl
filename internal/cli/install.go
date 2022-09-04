@@ -9,11 +9,12 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
+	"github.com/dikaeinstein/downloader/pkg/hash"
+
 	"github.com/dikaeinstein/godl/internal/app"
 	"github.com/dikaeinstein/godl/internal/pkg/downloader"
 	"github.com/dikaeinstein/godl/internal/pkg/godlutil"
 	"github.com/dikaeinstein/godl/pkg/fsys"
-	"github.com/dikaeinstein/godl/pkg/hash"
 )
 
 // newInstallCmd returns the install command
@@ -67,7 +68,7 @@ func (iCli *installCli) run(cmd *cobra.Command, args []string) error {
 			FS:            fsys.OsFS{},
 			ForceDownload: iCli.cfg.forceDownload,
 			Hasher:        hash.NewRemoteHasher(http.DefaultClient),
-			HashVerifier:  godlutil.VerifyHash,
+			HashVerifier:  hash.Verifier{},
 		},
 		Timeout: iCli.cfg.timeout,
 	}

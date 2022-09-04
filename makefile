@@ -21,19 +21,20 @@ test:
 
 ## Run tests with coverage
 test-cover:
-	@go run github.com/rakyll/gotest -coverprofile=cover.out -race $(TESTFLAGS) ./...
+	@go run github.com/rakyll/gotest -coverprofile=coverage.out -race $(TESTFLAGS) ./...
+	@go tool cover -html=coverage.out -o coverage.html
 
 ## send test coverage to coveralls
 coveralls:
-	@go run github.com/mattn/goveralls -coverprofile=cover.out -service=github
+	@go run github.com/mattn/goveralls -coverprofile=coverage.out -service=github
 
 ## Build binary
 build:
-	@go build -a $(LDFLAGS) ./cmd/$(BINARY_NAME)
+	@go build $(LDFLAGS) ./cmd/$(BINARY_NAME)
 
 ## Build the binary to $GOBIN path using `go build`
 build-install:
-	@go build -a $(LDFLAGS) -o $(shell go env GOBIN)/godl ./cmd/$(BINARY_NAME)
+	@go build $(LDFLAGS) -o $(shell go env GOBIN)/godl ./cmd/$(BINARY_NAME)
 
 ## installing the binary to $GOBIN using `go install`
 install:

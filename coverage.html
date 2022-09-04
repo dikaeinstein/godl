@@ -1,0 +1,1444 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>app: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">github.com/dikaeinstein/godl/internal/app/completion.go (69.6%)</option>
+				
+				<option value="file1">github.com/dikaeinstein/godl/internal/app/download.go (87.5%)</option>
+				
+				<option value="file2">github.com/dikaeinstein/godl/internal/app/install.go (87.9%)</option>
+				
+				<option value="file3">github.com/dikaeinstein/godl/internal/app/list.go (87.5%)</option>
+				
+				<option value="file4">github.com/dikaeinstein/godl/internal/app/listremote.go (89.1%)</option>
+				
+				<option value="file5">github.com/dikaeinstein/godl/internal/app/update.go (81.8%)</option>
+				
+				<option value="file6">github.com/dikaeinstein/godl/internal/cli/cli.go (25.0%)</option>
+				
+				<option value="file7">github.com/dikaeinstein/godl/internal/cli/completion.go (73.1%)</option>
+				
+				<option value="file8">github.com/dikaeinstein/godl/internal/cli/download.go (38.9%)</option>
+				
+				<option value="file9">github.com/dikaeinstein/godl/internal/cli/install.go (41.2%)</option>
+				
+				<option value="file10">github.com/dikaeinstein/godl/internal/cli/list.go (84.6%)</option>
+				
+				<option value="file11">github.com/dikaeinstein/godl/internal/cli/listremote.go (92.9%)</option>
+				
+				<option value="file12">github.com/dikaeinstein/godl/internal/cli/update.go (100.0%)</option>
+				
+				<option value="file13">github.com/dikaeinstein/godl/internal/cli/version.go (100.0%)</option>
+				
+				<option value="file14">github.com/dikaeinstein/godl/pkg/exitcode/exitcode.go (30.0%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">no coverage</span>
+				<span class="cov1">low coverage</span>
+				<span class="cov2">*</span>
+				<span class="cov3">*</span>
+				<span class="cov4">*</span>
+				<span class="cov5">*</span>
+				<span class="cov6">*</span>
+				<span class="cov7">*</span>
+				<span class="cov8">*</span>
+				<span class="cov9">*</span>
+				<span class="cov10">high coverage</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">// Copyright © 2019 Onyedikachi Solomon Okwa &lt;solozyokwa@gmail.com&gt;
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package app
+
+import (
+        "errors"
+        "io"
+        "io/fs"
+        "os"
+        "path/filepath"
+
+        "github.com/dikaeinstein/godl/internal/pkg/godlutil"
+        "github.com/dikaeinstein/godl/pkg/fsys"
+)
+
+const (
+        ShellBash = "bash"
+        ShellZsh  = "zsh"
+        ShellFish = "fish"
+)
+
+// Generator controls how the completion files should be generated
+type CompletionGenerator interface {
+        GenBashCompletion(io.Writer) error
+        GenFishCompletion(out io.Writer, includeDesc bool) error
+        GenZshCompletion(io.Writer) error
+}
+
+// Completion generates completion files for zsh/bash/fish shell.
+type Completion struct {
+        AutocompleteDir string
+        BashSymlinkDir  string
+        FishSymlinkDir  string
+        FS              fs.FS
+        CompletionGenerator
+        HomeDir       string
+        ZshSymlinkDir string
+}
+
+// Run generates completion file for specified shell.
+// If useDefault is true, the completion file will be generated in the default
+// location for the shell.
+func (c *Completion) Run(shell string, out io.Writer, useDefault bool) error <span class="cov10" title="4">{
+        switch shell </span>{
+        case ShellBash:<span class="cov1" title="1">
+                if err := c.GenBashCompletion(out); err != nil </span><span class="cov0" title="0">{
+                        return err
+                }</span>
+
+                <span class="cov1" title="1">if useDefault </span><span class="cov0" title="0">{
+                        bashTarget := CompletionMakeTarget(shell, c.AutocompleteDir)
+                        return fsys.Symlink(c.FS, bashTarget, filepath.Join(c.BashSymlinkDir, "godl"))
+                }</span>
+
+                <span class="cov1" title="1">return nil</span>
+        case ShellZsh:<span class="cov1" title="1">
+                if err := c.GenZshCompletion(out); err != nil </span><span class="cov0" title="0">{
+                        return err
+                }</span>
+
+                <span class="cov1" title="1">if useDefault </span><span class="cov1" title="1">{
+                        zshTarget := CompletionMakeTarget(shell, c.AutocompleteDir)
+                        return fsys.Symlink(c.FS, zshTarget, filepath.Join(c.ZshSymlinkDir, "_godl"))
+                }</span>
+                <span class="cov0" title="0">return nil</span>
+        case ShellFish:<span class="cov1" title="1">
+                if err := c.GenFishCompletion(out, true); err != nil </span><span class="cov0" title="0">{
+                        return err
+                }</span>
+
+                <span class="cov1" title="1">if useDefault </span><span class="cov1" title="1">{
+                        fishTarget := CompletionMakeTarget(shell, c.AutocompleteDir)
+                        return fsys.Symlink(c.FS, fishTarget, filepath.Join(c.FishSymlinkDir, "godl.fish"))
+                }</span>
+                <span class="cov0" title="0">return nil</span>
+        default:<span class="cov1" title="1">
+                return errors.New("unknown shell passed")</span>
+        }
+}
+
+// CompletionMakeTarget creates the file and it's parent directories where the
+// completion output can be written to.
+func CompletionMakeTarget(shell, autocompleteDir string) string <span class="cov5" title="2">{
+        shellDir := filepath.Join(autocompleteDir, shell)
+        godlutil.Must(os.MkdirAll(shellDir, os.ModePerm))
+        return filepath.Join(shellDir, "godl")
+}</span>
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">// Copyright © 2019 Onyedikachi Solomon Okwa &lt;solozyokwa@gmail.com&gt;
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package app
+
+import (
+        "context"
+        "fmt"
+        "time"
+
+        "github.com/dikaeinstein/godl/internal/pkg/downloader"
+        "github.com/dikaeinstein/godl/pkg/text"
+)
+
+// Download downloads go binaries
+type Download struct {
+        Dl      *downloader.Downloader
+        Timeout time.Duration
+}
+
+// Run downloads the specified go version
+func (d *Download) Run(ctx context.Context, version string) error <span class="cov8" title="1">{
+        fmt.Println(text.GreenF("Downloading go archive %v", version))
+
+        ctx, cancel := context.WithTimeout(ctx, d.Timeout)
+        defer cancel()
+        err := d.Dl.Download(ctx, version)
+        if err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("error downloading %v: %v", version, err)
+        }</span>
+
+        <span class="cov8" title="1">fmt.Println(text.Green("\nDownload complete"))
+        return nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file2" style="display: none">// Copyright © 2019 Onyedikachi Solomon Okwa &lt;solozyokwa@gmail.com&gt;
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package app
+
+import (
+        "context"
+        "fmt"
+        "path"
+        "time"
+
+        "github.com/dikaeinstein/godl/internal/pkg/downloader"
+        "github.com/dikaeinstein/godl/internal/pkg/version"
+        "github.com/dikaeinstein/godl/pkg/fsys"
+        "github.com/dikaeinstein/godl/pkg/text"
+)
+
+type Archiver interface {
+        Unarchive(source, target string) error
+}
+
+type Install struct {
+        Archiver Archiver
+        Dl       *downloader.Downloader
+        Timeout  time.Duration
+}
+
+// Run installs the go version.
+func (i *Install) Run(ctx context.Context, ver string) error <span class="cov10" title="3">{
+        archiveName := fmt.Sprintf("%s%s.%s", downloader.Prefix(), ver, downloader.Postfix())
+        downloadPath := path.Join(i.Dl.DownloadDir, archiveName)
+
+        fmt.Println(text.Green("Installing binary into /usr/local"))
+
+        exists, err := version.Exists(ver, i.Dl.DownloadDir)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        // download binary if it doesn't exist locally or the -forceDownload flag is passed
+        <span class="cov10" title="3">if !exists || i.Dl.ForceDownload </span><span class="cov10" title="3">{
+                fmt.Printf("%v not found locally.\n", ver)
+                fmt.Println("fetching from remote...")
+
+                ctx, cancel := context.WithTimeout(ctx, i.Timeout)
+                defer cancel()
+                err = i.Dl.Download(ctx, ver)
+                if err != nil </span><span class="cov1" title="1">{
+                        return fmt.Errorf("error downloading %v: %v", ver, err)
+                }</span>
+        }
+
+        // clean install - remove existing go installation before installing
+        // new version
+        <span class="cov6" title="2">fmt.Println()
+        fmt.Println("removing old installation...")
+        err = fsys.RemoveAll(i.Dl.FS, path.Join("/usr", "local", "go"))
+        if err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("error removing old installation: %v", err)
+        }</span>
+        <span class="cov6" title="2">fmt.Println("old installation removed")
+
+        fmt.Printf("unpacking %v ...\n", ver)
+        target := path.Join("/usr", "local")
+        err = i.Archiver.Unarchive(downloadPath, target)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov6" title="2">fmt.Println("adding to $PATH...")
+        pathsD := path.Join("/etc", "paths.d", "go")
+        const perm = 0o644
+        err = fsys.WriteFile(i.Dl.FS, pathsD, []byte("/usr/local/go/bin\n"), perm)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov6" title="2">fmt.Println(text.Green("Installation successful. Type `go version` to check installation"))
+        return nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file3" style="display: none">// Copyright © 2019 Onyedikachi Solomon Okwa &lt;solozyokwa@gmail.com&gt;
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package app
+
+import (
+        "fmt"
+        "io/fs"
+        "os"
+        "sort"
+        "strings"
+
+        go_version "github.com/hashicorp/go-version"
+
+        "github.com/dikaeinstein/godl/internal/pkg/godlutil"
+        "github.com/dikaeinstein/godl/internal/pkg/version"
+)
+
+// List lists the downloaded go versions
+type List struct{}
+
+func (l List) Run(downloadDir, sortDirection string) error <span class="cov8" title="1">{
+        // Create download directory and its parent
+        godlutil.Must(os.MkdirAll(downloadDir, os.ModePerm))
+
+        files, err := os.ReadDir(downloadDir)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov8" title="1">versions := mapToVersion(files)
+        // sort in-place comparing version numbers
+        sort.Slice(versions, func(i, j int) bool </span><span class="cov0" title="0">{
+                return version.CompareVersions(versions[i], versions[j], sortDirection)
+        }</span>)
+
+        <span class="cov8" title="1">for _, v := range versions </span><span class="cov8" title="1">{
+                fmt.Println(v.Original())
+        }</span>
+
+        <span class="cov8" title="1">return nil</span>
+}
+
+func mapToVersion(entries []fs.DirEntry) []*go_version.Version <span class="cov8" title="1">{
+        versions := []*go_version.Version{}
+        for _, e := range entries </span><span class="cov8" title="1">{
+                name := e.Name()
+                if strings.HasSuffix(name, ".darwin-amd64.tar.gz") </span><span class="cov8" title="1">{
+                        versions = append(versions, version.GetVersion(name))
+                }</span>
+        }
+        <span class="cov8" title="1">return versions</span>
+}
+</pre>
+		
+		<pre class="file" id="file4" style="display: none">package app
+
+import (
+        "context"
+        "encoding/xml"
+        "fmt"
+        "net/http"
+        "sort"
+        "strings"
+        "time"
+
+        go_version "github.com/hashicorp/go-version"
+        "github.com/tj/go-spin"
+
+        "github.com/dikaeinstein/godl/internal/pkg/version"
+        "github.com/dikaeinstein/godl/pkg/text"
+)
+
+// ListBucketResult represents the list of objects result
+type ListBucketResult struct {
+        XMLNAME     xml.Name  `xml:"ListBucketResult"`
+        Contents    []Content `xml:"Contents"`
+        NextMarker  string
+        IsTruncated bool
+}
+
+// Content represents a ListBucketResult object
+type Content struct {
+        XMLNAME      xml.Name `xml:"Contents"`
+        Key          string
+        LastModified time.Time
+}
+
+// ListRemote lists remote versions available for install
+type ListRemote struct {
+        Client  *http.Client
+        Timeout time.Duration
+}
+
+func (lsRemote *ListRemote) Run(ctx context.Context, sortDirection string) error <span class="cov4" title="2">{
+        url := "https://storage.googleapis.com/golang/?prefix=go1"
+        w := url
+        ctx, cancel := context.WithCancel(ctx)
+        defer cancel()
+
+        var contents []Content
+        go func(ctx context.Context) </span><span class="cov4" title="2">{
+                duration := 50 * time.Millisecond
+                s := spin.New()
+        Loop:
+                for </span><span class="cov4" title="2">{
+                        select </span>{
+                        case &lt;-ctx.Done():<span class="cov0" title="0">
+                                break Loop</span>
+                        default:<span class="cov4" title="2">
+                                fmt.Printf("\r%s... %s", text.Green("fetching remote versions"), s.Next())
+                                // Pause current goroutine to reduce cpu workload
+                                time.Sleep(duration)</span>
+                        }
+                }
+        }(ctx)
+
+        <span class="cov4" title="2">for </span><span class="cov4" title="2">{
+                listBucketResult, err := lsRemote.getBinaryReleases(url)
+                if err != nil </span><span class="cov1" title="1">{
+                        return fmt.Errorf("\nerror fetching list: %v", err)
+                }</span>
+
+                <span class="cov1" title="1">fl := selectDarwin(listBucketResult)
+                contents = append(contents, fl.Contents...)
+
+                // if there's nothing left to fetch
+                if !listBucketResult.IsTruncated </span><span class="cov1" title="1">{
+                        break</span>
+                }
+
+                // update url with marker to fetch next list
+                <span class="cov0" title="0">url = w + "&amp;marker=" + listBucketResult.NextMarker</span>
+        }
+
+        <span class="cov1" title="1">versions := mapXMLContentToVersion(contents)
+        // sort in-place comparing version numbers
+        sort.Slice(versions, func(i, j int) bool </span><span class="cov0" title="0">{
+                return version.CompareVersions(versions[i], versions[j], sortDirection)
+        }</span>)
+
+        <span class="cov1" title="1">cancel()
+        fmt.Println()
+
+        for _, v := range versions </span><span class="cov1" title="1">{
+                fmt.Println(v.Original())
+        }</span>
+
+        <span class="cov1" title="1">return nil</span>
+}
+
+func (lsRemote *ListRemote) getBinaryReleases(url string) (*ListBucketResult, error) <span class="cov4" title="2">{
+        ctx, cancelFunc := context.WithTimeout(context.Background(), lsRemote.Timeout)
+        defer cancelFunc()
+
+        req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, http.NoBody)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov4" title="2">res, err := lsRemote.Client.Do(req)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov4" title="2">defer res.Body.Close()
+
+        if res.StatusCode != http.StatusOK </span><span class="cov1" title="1">{
+                return nil, fmt.Errorf("%s: %v", url, res.Status)
+        }</span>
+
+        <span class="cov1" title="1">var l ListBucketResult
+        err = xml.NewDecoder(res.Body).Decode(&amp;l)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("error decoding xml: %v", err)
+        }</span>
+
+        <span class="cov1" title="1">return &amp;l, nil</span>
+}
+
+func selectDarwin(l *ListBucketResult) ListBucketResult <span class="cov1" title="1">{
+        var archiveList ListBucketResult
+
+        for _, r := range l.Contents </span><span class="cov10" title="6">{
+                if strings.Contains(r.Key, "darwin-amd64") &amp;&amp; strings.HasSuffix(r.Key, "tar.gz") </span><span class="cov1" title="1">{
+                        archiveList.Contents = append(archiveList.Contents, r)
+                }</span>
+        }
+
+        <span class="cov1" title="1">return archiveList</span>
+}
+
+func mapXMLContentToVersion(contents []Content) []*go_version.Version <span class="cov1" title="1">{
+        versions := make([]*go_version.Version, len(contents))
+        for i, c := range contents </span><span class="cov1" title="1">{
+                versions[i] = version.GetVersion(c.Key)
+        }</span>
+        <span class="cov1" title="1">return versions</span>
+}
+</pre>
+		
+		<pre class="file" id="file5" style="display: none">package app
+
+import (
+        "context"
+        "encoding/json"
+        "fmt"
+        "io"
+        "net/http"
+
+        "github.com/MakeNowJust/heredoc"
+        go_version "github.com/hashicorp/go-version"
+        "github.com/spf13/viper"
+
+        "github.com/dikaeinstein/godl/internal/pkg/version"
+        "github.com/dikaeinstein/godl/pkg/text"
+)
+
+type Asset struct {
+        Name string `json:"name"`
+}
+
+type Release struct {
+        Assets  []Asset `json:"assets"`
+        TagName string  `json:"tag_name"`
+}
+type (
+        ListReleasesResult    []Release
+        ListReleasesErrorResp struct {
+                Message          string `json:"message"`
+                DocumentationURL string `json:"documentation_url"`
+        }
+)
+
+// Update checks for if there are updates available for Godl
+type Update struct {
+        Client *http.Client
+        Output io.Writer
+}
+
+func (u *Update) Run(ctx context.Context, currentVersion string) error <span class="cov6" title="3">{
+        exists, latest, err := u.CheckForUpdate(ctx, currentVersion)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov6" title="3">if exists </span><span class="cov1" title="1">{
+                fmt.Fprint(u.Output, heredoc.Docf(`
+                        %s
+
+                        The latest version is %s.
+                        You can update by downloading from https://github.com/dikaeinstein/godl/releases
+                `,
+                        text.Red("Your version of Godl is out of date!"), latest.TagName))
+        }</span> else<span class="cov4" title="2"> {
+                fmt.Fprintln(u.Output, "No update available.")
+        }</span>
+
+        <span class="cov6" title="3">return nil</span>
+}
+
+func (u *Update) CheckForUpdate(ctx context.Context, currentVersion string) (bool, *Release, error) <span class="cov10" title="6">{
+        url := "https://api.github.com/repos/dikaeinstein/godl/releases?per_page=10"
+        releases, err := u.fetchReleaseList(ctx, url)
+        if err != nil </span><span class="cov1" title="1">{
+                return false, nil, err
+        }</span>
+
+        // Only a single version exists or no version :)
+        <span class="cov9" title="5">const minNumOfRelease = 2
+        if len(releases) &lt; minNumOfRelease </span><span class="cov0" title="0">{
+                return false, nil, nil
+        }</span>
+
+        // pick latest release
+        <span class="cov9" title="5">r := releases[0]
+        latest := version.Segments(go_version.Must(go_version.NewSemver(r.TagName)))
+        current := version.Segments(go_version.Must(go_version.NewSemver(currentVersion)))
+        return latest.GreaterThan(current), &amp;r, nil</span>
+}
+
+func (u *Update) fetchReleaseList(ctx context.Context, url string) (ListReleasesResult, error) <span class="cov10" title="6">{
+        req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, http.NoBody)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov10" title="6">req.Header.Set("Accept", "application/vnd.github.v3+json")
+        req.Header.Set("User-Agent", "godl")
+
+        ghToken := viper.GetString("gh_token")
+        if ghToken != "" </span><span class="cov0" title="0">{
+                req.Header.Set("Authorization", fmt.Sprintf("token %s", ghToken))
+        }</span>
+
+        <span class="cov10" title="6">res, err := u.Client.Do(req)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov10" title="6">defer res.Body.Close()
+
+        if res.StatusCode != http.StatusOK &amp;&amp; res.StatusCode != http.StatusNotFound </span><span class="cov1" title="1">{
+                var errResp ListReleasesErrorResp
+                // using io.ReadAll because res.Body is very small
+                data, err := io.ReadAll(res.Body)
+                if err != nil </span><span class="cov0" title="0">{
+                        return nil, err
+                }</span>
+                <span class="cov1" title="1">err = json.Unmarshal(data, &amp;errResp)
+                if err != nil </span><span class="cov0" title="0">{
+                        return nil, err
+                }</span>
+                <span class="cov1" title="1">return nil, fmt.Errorf("%s: %v %v", url, res.StatusCode, errResp.Message)</span>
+        }
+
+        <span class="cov9" title="5">var releases ListReleasesResult
+        err = json.NewDecoder(res.Body).Decode(&amp;releases)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov9" title="5">return releases, nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file6" style="display: none">package cli
+
+import (
+        "context"
+        "errors"
+        "net/http"
+        "path/filepath"
+
+        "github.com/MakeNowJust/heredoc"
+        "github.com/mitchellh/go-homedir"
+        "github.com/spf13/cobra"
+        "github.com/spf13/viper"
+
+        "github.com/dikaeinstein/godl/pkg/exitcode"
+        "github.com/dikaeinstein/godl/pkg/text"
+)
+
+func newRootCmd() *cobra.Command <span class="cov10" title="16">{
+        rootCmd := &amp;cobra.Command{
+                Use:          "godl [command]",
+                Short:        "Godl is a CLI tool used to download and install go binary releases on mac.",
+                SilenceUsage: true,
+                PreRunE:      setupConfig,
+        }
+        rootCmd.SetUsageTemplate(usageTemplate())
+
+        setupFlags(rootCmd)
+
+        return rootCmd
+}</span>
+
+func setupFlags(cmd *cobra.Command) <span class="cov10" title="16">{
+        cmd.PersistentFlags().
+                Bool("debug", false, "Used to turn on debug mode.")
+        cmd.PersistentFlags().
+                String("config-file", "", "config file (default is $HOME/.godl/config)")
+}</span>
+
+func registerSubCommands(root *cobra.Command, subCmds []*cobra.Command) <span class="cov9" title="15">{
+        for _, subCmd := range subCmds </span><span class="cov9" title="15">{
+                root.AddCommand(subCmd)
+        }</span>
+}
+
+func setupConfig(cmd *cobra.Command, args []string) error <span class="cov0" title="0">{
+        if err := viper.BindPFlags(cmd.PersistentFlags()); err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov0" title="0">cfgFile := viper.GetString("config-file")
+
+        if cfgFile != "" </span><span class="cov0" title="0">{
+                // use config file from the flag
+                viper.SetConfigFile(cfgFile)
+        }</span> else<span class="cov0" title="0"> {
+                // use default config file path
+                home, err := homedir.Dir()
+                if err != nil </span><span class="cov0" title="0">{
+                        return err
+                }</span>
+
+                <span class="cov0" title="0">defaultCfgFile := filepath.Join(home, ".godl", "config.json")
+                viper.SetConfigFile(defaultCfgFile)</span>
+        }
+
+        <span class="cov0" title="0">if err := viper.ReadInConfig(); err != nil </span><span class="cov0" title="0">{
+                // it's ok if config file doesn't exist
+                e := &amp;viper.ConfigFileNotFoundError{}
+                if !errors.As(err, e) </span><span class="cov0" title="0">{
+                        return err
+                }</span>
+        }
+
+        <span class="cov0" title="0">viper.SetEnvPrefix("godl")
+        viper.AutomaticEnv()
+
+        return nil</span>
+}
+
+func usageTemplate() string <span class="cov10" title="16">{
+        return heredoc.Docf(`%s:{{if .Runnable}}
+  {{.UseLine}}{{end}}{{if .HasAvailableSubCommands}}
+  {{.CommandPath}} [command]{{end}}{{if gt (len .Aliases) 0}}
+
+%s:
+  {{.NameAndAliases}}{{end}}{{if .HasExample}}
+
+%s:
+{{.Example}}{{end}}{{if .HasAvailableSubCommands}}
+
+%s:{{range .Commands}}{{if (or .IsAvailableCommand (eq .Name "help"))}}
+  {{rpad .Name .NamePadding }} {{.Short}}{{end}}{{end}}{{end}}{{if .HasAvailableLocalFlags}}
+
+%s:
+{{.LocalFlags.FlagUsages | trimTrailingWhitespaces}}{{end}}{{if .HasAvailableInheritedFlags}}
+
+%s:
+{{.InheritedFlags.FlagUsages | trimTrailingWhitespaces}}{{end}}{{if .HasHelpSubCommands}}
+
+%s:{{range .Commands}}{{if .IsAdditionalHelpTopicCommand}}
+  {{rpad .CommandPath .CommandPathPadding}} {{.Short}}{{end}}{{end}}{{end}}{{if .HasAvailableSubCommands}}
+
+Use "{{.CommandPath}} help [command]" or "{{.CommandPath}} [command] --help" for more information about a command.{{end}}
+`, text.Bold("USAGE"), text.Bold("ALIASES"), text.Bold("EXAMPLES"),
+                text.Bold("AVAILABLE COMMANDS"), text.Bold("FLAGS"),
+                text.Bold("INHERITED FLAGS"), text.Bold("ADDITIONAL HELP TOPICS"))
+}</span>
+
+type Option struct {
+        Version VersionOption
+}
+
+func Run(opt Option) int <span class="cov0" title="0">{
+        godl := newRootCmd()
+
+        // subcommands
+        completionCmd := newCompletionCmd()
+        downloadCmd := newDownloadCmd(http.DefaultClient)
+        installCmd := newInstallCmd(http.DefaultClient)
+        lsCmd := newListCmd()
+        lsRemoteCmd := newListRemoteCmd(http.DefaultClient)
+        updateCmd := newUpdateCmd(http.DefaultClient, opt.Version)
+        versionCmd := newVersionCmd(opt.Version)
+
+        registerSubCommands(godl, []*cobra.Command{
+                completionCmd,
+                downloadCmd,
+                installCmd,
+                lsRemoteCmd,
+                lsCmd,
+                updateCmd,
+                versionCmd,
+        })
+
+        return exitcode.Get(godl.ExecuteContext(context.Background()))
+}</span>
+</pre>
+		
+		<pre class="file" id="file7" style="display: none">package cli
+
+import (
+        "io"
+        "os"
+        "path"
+
+        "github.com/MakeNowJust/heredoc"
+        "github.com/mitchellh/go-homedir"
+        "github.com/spf13/cobra"
+        "github.com/spf13/viper"
+
+        "github.com/dikaeinstein/godl/internal/app"
+        "github.com/dikaeinstein/godl/pkg/fsys"
+        "github.com/dikaeinstein/godl/pkg/text"
+)
+
+// newCompletionCmd returns the a new instance of the completion command
+func newCompletionCmd() *cobra.Command <span class="cov10" title="5">{
+        cCli := completionCli{}
+
+        completionCmd := &amp;cobra.Command{
+                Use:   "completion [bash|zsh|fish]",
+                Short: "Generate completion script.",
+                Example: text.Indent(heredoc.Docf(example(),
+                        text.Bold("Bash"), text.Bold("Zsh"), text.Bold("Fish")), "  "),
+                Args:      cobra.ExactValidArgs(1),
+                ValidArgs: []string{"bash", "zsh", "fish"},
+                PreRunE:   cCli.setupConfig,
+                RunE:      cCli.run,
+        }
+
+        completionCmd.Flags().BoolP(
+                "default",
+                "d",
+                false,
+                "Generate and load completion into default path based on shell",
+        )
+
+        return completionCmd
+}</span>
+
+type completionConfig struct{ useDefault bool }
+
+type completionCli struct {
+        completionConfig
+}
+
+func (cCli completionCli) run(cmd *cobra.Command, args []string) error <span class="cov7" title="3">{
+        home, err := homedir.Dir()
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        <span class="cov7" title="3">autocompleteDir := path.Join(home, ".godl", "autocomplete")
+
+        var out io.Writer
+        if cCli.useDefault </span><span class="cov0" title="0">{
+                outFile, err := os.Create(
+                        app.CompletionMakeTarget(args[0], autocompleteDir),
+                )
+                if err != nil </span><span class="cov0" title="0">{
+                        return err
+                }</span>
+                <span class="cov0" title="0">defer outFile.Close()
+
+                out = outFile</span>
+        } else<span class="cov7" title="3"> {
+                out = os.Stdout
+        }</span>
+
+        <span class="cov7" title="3">bashSymlinkDir := path.Join("/usr", "local", "etc", "bash_completion.d")
+        zshSymlinkDir := path.Join(
+                "/usr", "local", "share", "zsh", "site-functions",
+        )
+        fishSymlinkDir := path.Join(home, ".config", "fish", "completions")
+
+        c := app.Completion{
+                BashSymlinkDir:      bashSymlinkDir,
+                FS:                  fsys.OsFS{},
+                FishSymlinkDir:      fishSymlinkDir,
+                HomeDir:             home,
+                CompletionGenerator: cmd,
+                ZshSymlinkDir:       zshSymlinkDir,
+                AutocompleteDir:     autocompleteDir,
+        }
+
+        return c.Run(args[0], out, cCli.useDefault)</span>
+}
+
+func (cCli completionCli) setupConfig(cmd *cobra.Command, _ []string) error <span class="cov7" title="3">{
+        if err := viper.BindPFlags(cmd.Flags()); err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov7" title="3">cCli.completionConfig.useDefault = viper.GetBool("default")
+
+        return nil</span>
+}
+
+func example() string <span class="cov10" title="5">{
+        return `
+                %s:
+
+                $ source &lt;(godl completion bash)
+
+                # To load completions for each session, execute once:
+                $ godl completion bash &gt; /usr/local/etc/bash_completion.d/godl
+
+                %s:
+
+                # If shell completion is not already enabled in your environment,
+                # you will need to enable it.  You can execute the following once:
+
+                $ echo "autoload -U compinit; compinit" &gt;&gt; ~/.zshrc
+
+                # To load completions for each session, execute once:
+                $ godl completion zsh &gt; "/usr/local/share/zsh/site-functions/_godl"
+
+                # You will need to start a new shell for this setup to take effect.
+
+                %s:
+
+                $ godl completion fish | source
+
+                # To load completions for each session, execute once:
+                $ godl completion fish &gt; ~/.config/fish/completions/godl.fish
+
+                If you want 'godl' to generate and load the completion, just pass the --default(-d) flag:
+
+                $ godl completion -d [bash|zsh|fish]
+        `
+}</span>
+</pre>
+		
+		<pre class="file" id="file8" style="display: none">package cli
+
+import (
+        "net/http"
+        "time"
+
+        "github.com/MakeNowJust/heredoc"
+        "github.com/spf13/cobra"
+        "github.com/spf13/viper"
+
+        "github.com/dikaeinstein/downloader/pkg/hash"
+
+        "github.com/dikaeinstein/godl/internal/app"
+        "github.com/dikaeinstein/godl/internal/pkg/downloader"
+        "github.com/dikaeinstein/godl/internal/pkg/godlutil"
+        "github.com/dikaeinstein/godl/pkg/fsys"
+)
+
+// newDownloadCmd returns a new instance of the download command
+func newDownloadCmd(client *http.Client) *cobra.Command <span class="cov10" title="2">{
+        dCli := &amp;downloadCli{httpClient: client}
+
+        downloadCmd := &amp;cobra.Command{
+                Use:   "download version",
+                Short: "Download go binary archive.",
+                Long: heredoc.Doc(`
+                        Download the archive version from https://golang.org/dl/ and save to $HOME/godl/downloads.
+
+                        By default, if archive version already exists locally, godl doesn't attempt to download it again.
+                        To force it to download the version again pass the --force flag.
+                `),
+                Args:    cobra.ExactArgs(1),
+                PreRunE: dCli.setupConfig,
+                RunE:    dCli.run,
+        }
+
+        setupDownloadFlags(downloadCmd)
+
+        return downloadCmd
+}</span>
+
+type downloadConfig struct {
+        timeout       time.Duration
+        forceDownload bool
+}
+
+type downloadCli struct {
+        downloadConfig
+        httpClient *http.Client
+}
+
+func (dCli *downloadCli) run(cmd *cobra.Command, args []string) error <span class="cov0" title="0">{
+        dlDir, err := godlutil.GetDownloadDir()
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov0" title="0">dl := &amp;downloader.Downloader{
+                BaseURL:       "https://storage.googleapis.com/golang/",
+                Client:        dCli.httpClient,
+                DownloadDir:   dlDir,
+                FS:            fsys.OsFS{},
+                ForceDownload: dCli.downloadConfig.forceDownload,
+                Hasher:        hash.NewRemoteHasher(dCli.httpClient),
+                HashVerifier:  hash.Verifier{},
+        }
+
+        d := app.Download{
+                Dl:      dl,
+                Timeout: dCli.downloadConfig.timeout,
+        }
+
+        return d.Run(cmd.Context(), args[0])</span>
+}
+
+func (dCli *downloadCli) setupConfig(cmd *cobra.Command, args []string) error <span class="cov0" title="0">{
+        if err := viper.BindPFlags(cmd.Flags()); err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov0" title="0">dCli.downloadConfig.timeout = viper.GetDuration("timeout")
+        dCli.downloadConfig.forceDownload = viper.GetBool("force")
+
+        return nil</span>
+}
+
+func setupDownloadFlags(cmd *cobra.Command) <span class="cov10" title="2">{
+        const defaultTimeout = 60 * time.Second
+        cmd.Flags().BoolP("force", "f", false,
+                "Force download instead of using local version")
+        cmd.Flags().DurationP("timeout", "t", defaultTimeout,
+                "Set the download timeout.")
+}</span>
+</pre>
+		
+		<pre class="file" id="file9" style="display: none">package cli
+
+import (
+        "net/http"
+        "time"
+
+        "github.com/MakeNowJust/heredoc"
+        "github.com/mholt/archiver/v3"
+        "github.com/spf13/cobra"
+        "github.com/spf13/viper"
+
+        "github.com/dikaeinstein/downloader/pkg/hash"
+        "github.com/dikaeinstein/godl/internal/app"
+        "github.com/dikaeinstein/godl/internal/pkg/downloader"
+        "github.com/dikaeinstein/godl/internal/pkg/godlutil"
+        "github.com/dikaeinstein/godl/pkg/fsys"
+)
+
+// newInstallCmd returns the install command
+func newInstallCmd(client *http.Client) *cobra.Command <span class="cov10" title="2">{
+        iCli := &amp;installCli{httpClient: client}
+
+        installCmd := &amp;cobra.Command{
+                Use:   "install version",
+                Short: "Installs the specified go binary version from local or remote.",
+                Long: heredoc.Doc(`
+                        Installs the specified go binary version from local or remote.
+                        It fetches the version from the remote if not found locally before installing it.
+                `),
+                Args:    cobra.ExactArgs(1),
+                PreRunE: iCli.setupConfig,
+                RunE:    iCli.run,
+        }
+
+        setupInstallCliFlags(installCmd)
+
+        return installCmd
+}</span>
+
+type installConfig struct {
+        timeout       time.Duration
+        forceDownload bool
+}
+
+type installCli struct {
+        cfg        installConfig
+        httpClient *http.Client
+}
+
+func (iCli *installCli) run(cmd *cobra.Command, args []string) error <span class="cov0" title="0">{
+        dlDir, err := godlutil.GetDownloadDir()
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov0" title="0">install := app.Install{
+                Archiver: &amp;archiver.TarGz{
+                        Tar: &amp;archiver.Tar{
+                                OverwriteExisting: true,
+                        },
+                        CompressionLevel: -1,
+                },
+                Dl: &amp;downloader.Downloader{
+                        BaseURL:       "https://storage.googleapis.com/golang/",
+                        Client:        iCli.httpClient,
+                        DownloadDir:   dlDir,
+                        FS:            fsys.OsFS{},
+                        ForceDownload: iCli.cfg.forceDownload,
+                        Hasher:        hash.NewRemoteHasher(http.DefaultClient),
+                        HashVerifier:  hash.Verifier{},
+                },
+                Timeout: iCli.cfg.timeout,
+        }
+
+        return install.Run(cmd.Context(), args[0])</span>
+}
+
+func (iCli *installCli) setupConfig(cmd *cobra.Command, args []string) error <span class="cov0" title="0">{
+        if err := viper.BindPFlags(cmd.Flags()); err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov0" title="0">iCli.cfg.timeout = viper.GetDuration("timeout")
+        iCli.cfg.forceDownload = viper.GetBool("force")
+
+        return nil</span>
+}
+
+func setupInstallCliFlags(cmd *cobra.Command) <span class="cov10" title="2">{
+        const defaultTimeout = 60 * time.Second
+        cmd.Flags().BoolP("force", "f", false,
+                "Force download instead of using local version.")
+        cmd.Flags().DurationP("timeout", "t", defaultTimeout,
+                "Set the download timeout.")
+}</span>
+</pre>
+		
+		<pre class="file" id="file10" style="display: none">package cli
+
+import (
+        "github.com/MakeNowJust/heredoc"
+        "github.com/spf13/cobra"
+        "github.com/spf13/viper"
+
+        "github.com/dikaeinstein/godl/internal/app"
+        "github.com/dikaeinstein/godl/internal/pkg/godlutil"
+        "github.com/dikaeinstein/godl/internal/pkg/version"
+        "github.com/dikaeinstein/godl/pkg/text"
+)
+
+// newListCmd returns a new instance of the list command
+func newListCmd() *cobra.Command <span class="cov10" title="2">{
+        lsCli := &amp;lsCli{}
+
+        listCmd := &amp;cobra.Command{
+                Use:     "list",
+                Aliases: []string{"ls"},
+                Short:   "List the downloaded versions.",
+                Example: text.Indent(heredoc.Doc(`
+                        $ ls -s asc or ls -s=asc
+                        $ ls -s desc or ls -s=desc
+                `), "  "),
+                PreRunE: lsCli.setupConfig,
+                RunE:    lsCli.run,
+        }
+
+        listCmd.Flags().StringP("sortDirection", "s", version.SortAsc,
+                "Specify the sort direction of the output of `list`. "+
+                        "It sorts in ascending order by default.")
+
+        return listCmd
+}</span>
+
+type lsConfig struct{ sortDirection string }
+
+type lsCli struct{ lsConfig }
+
+func (c *lsCli) setupConfig(cmd *cobra.Command, args []string) error <span class="cov1" title="1">{
+        if err := viper.BindPFlags(cmd.Flags()); err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov1" title="1">c.lsConfig.sortDirection = viper.GetString("sortDirection")
+
+        return nil</span>
+}
+
+func (c *lsCli) run(cmd *cobra.Command, args []string) error <span class="cov1" title="1">{
+        d, err := godlutil.GetDownloadDir()
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov1" title="1">ls := app.List{}
+        return ls.Run(d, c.lsConfig.sortDirection)</span>
+}
+</pre>
+		
+		<pre class="file" id="file11" style="display: none">package cli
+
+import (
+        "net/http"
+        "time"
+
+        "github.com/MakeNowJust/heredoc"
+        "github.com/spf13/cobra"
+        "github.com/spf13/viper"
+
+        "github.com/dikaeinstein/godl/internal/app"
+        "github.com/dikaeinstein/godl/internal/pkg/version"
+        "github.com/dikaeinstein/godl/pkg/text"
+)
+
+// newListRemoteCmd returns the list-remote command
+func newListRemoteCmd(client *http.Client) *cobra.Command <span class="cov8" title="1">{
+        lsRemoteCli := &amp;lsRemoteCli{httpClient: client}
+
+        lsRemoteCmd := &amp;cobra.Command{
+                Use:     "list-remote",
+                Aliases: []string{"ls-remote"},
+                Short:   "List the available remote versions.",
+                Example: text.Indent(heredoc.Doc(`
+                        $ ls-remote
+                        $ ls-remote -s asc or ls-remote -s=asc
+                        $ ls-remote -s desc or ls-remote -s=desc
+                        $ ls-remote -t 15s or ls-remote --timeout=15s
+                `), "  "),
+                PreRunE: lsRemoteCli.setupConfig,
+                RunE:    lsRemoteCli.run,
+        }
+
+        setupLsRemoteCliFlags(lsRemoteCmd)
+
+        return lsRemoteCmd
+}</span>
+
+type lsRemoteConfig struct {
+        timeout       time.Duration
+        sortDirection string
+}
+
+type lsRemoteCli struct {
+        httpClient *http.Client
+        lsRemoteConfig
+}
+
+func (c *lsRemoteCli) setupConfig(cmd *cobra.Command, args []string) error <span class="cov8" title="1">{
+        if err := viper.BindPFlags(cmd.Flags()); err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov8" title="1">c.lsRemoteConfig.timeout = viper.GetDuration("timeout")
+        c.lsRemoteConfig.sortDirection = viper.GetString("sortDirection")
+
+        return nil</span>
+}
+
+func (c *lsRemoteCli) run(cmd *cobra.Command, args []string) error <span class="cov8" title="1">{
+        lsRemote := app.ListRemote{Client: c.httpClient, Timeout: c.timeout}
+
+        return lsRemote.Run(cmd.Context(), c.sortDirection)
+}</span>
+
+func setupLsRemoteCliFlags(cmd *cobra.Command) <span class="cov8" title="1">{
+        const defaultTimeout = 60 * time.Second
+        cmd.Flags().DurationP(
+                "timeout", "t", defaultTimeout, "Set the download timeout.")
+        cmd.Flags().StringP("sortDirection", "s", version.SortAsc,
+                "Specify the sort direction of the output of `list-remote`. "+
+                        "It sorts in ascending order by default.")
+}</span>
+</pre>
+		
+		<pre class="file" id="file12" style="display: none">package cli
+
+import (
+        "context"
+        "net/http"
+        "time"
+
+        "github.com/MakeNowJust/heredoc"
+        "github.com/spf13/cobra"
+
+        "github.com/dikaeinstein/godl/internal/app"
+)
+
+func newUpdateCmd(client *http.Client, v VersionOption) *cobra.Command <span class="cov10" title="2">{
+        uCli := &amp;updateCli{httpClient: client, vOpt: v}
+
+        updateCmd := &amp;cobra.Command{
+                Use:   "update",
+                Short: "Check for updates.",
+                Long: heredoc.Doc(`
+                        Check for updates.
+
+                        If you run into 403 Forbidden errors from Github release API, you need to a GitHub access token.
+                        See: https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token.
+
+                        You can set the token by setting the GODL_GH_TOKEN environment variable.
+                        Or you can set the token in the config file:
+                        {
+                                "gh_token": "yourGithubPersonalAccessToken"
+                        }
+                `),
+                RunE: uCli.run,
+        }
+
+        const defaultTimeout = 60 * time.Second
+        updateCmd.Flags().DurationP(
+                "timeout", "t", defaultTimeout, "Set the check update timeout.")
+
+        return updateCmd
+}</span>
+
+type updateCli struct {
+        httpClient *http.Client
+        vOpt       VersionOption
+}
+
+func (c *updateCli) run(cmd *cobra.Command, args []string) error <span class="cov10" title="2">{
+        u := app.Update{Client: c.httpClient, Output: cmd.OutOrStdout()}
+
+        const defaultTimeout = 15 * time.Second
+        ctx, cancel := context.WithTimeout(cmd.Context(), defaultTimeout)
+        defer cancel()
+
+        return u.Run(ctx, c.vOpt.GodlVersion)
+}</span>
+</pre>
+		
+		<pre class="file" id="file13" style="display: none">package cli
+
+import (
+        "fmt"
+
+        "github.com/spf13/cobra"
+)
+
+type VersionOption struct {
+        BuildDate   string
+        GitHash     string
+        GodlVersion string
+        GoVersion   string
+}
+
+// newVersionCmd returns the version command
+func newVersionCmd(v VersionOption) *cobra.Command <span class="cov8" title="1">{
+        return &amp;cobra.Command{
+                Use:   "version",
+                Short: "Show the godl version information.",
+                Run: func(cmd *cobra.Command, args []string) </span><span class="cov8" title="1">{
+                        fmt.Fprintf(cmd.OutOrStdout(), "Version: %s\nGo version: %s\nGit hash: %s\nBuilt: %s\n",
+                                v.GodlVersion, v.GoVersion, v.GitHash, v.BuildDate)
+                }</span>,
+        }
+}
+</pre>
+		
+		<pre class="file" id="file14" style="display: none">package exitcode
+
+import "errors"
+
+// Error wraps an error with an exit code
+type Error interface {
+        error
+        ExitCode() int
+}
+
+// NewError returns an exitcodeError which sets the exit code of the specified error.
+func NewError(err error, code int) error <span class="cov10" title="2">{
+        if err == nil </span><span class="cov1" title="1">{
+                return nil
+        }</span>
+
+        <span class="cov1" title="1">return exitcodeError{err, code}</span>
+}
+
+type exitcodeError struct {
+        error
+        code int
+}
+
+func (e exitcodeError) ExitCode() int <span class="cov0" title="0">{
+        return e.code
+}</span>
+
+func (e exitcodeError) Unwrap() error <span class="cov0" title="0">{
+        return e.error
+}</span>
+
+// Get returns the exit code of an error
+func Get(err error) int <span class="cov0" title="0">{
+        if err == nil </span><span class="cov0" title="0">{
+                return 0
+        }</span>
+
+        <span class="cov0" title="0">if exitcodeErr := Error(nil); errors.As(err, &amp;exitcodeErr) </span><span class="cov0" title="0">{
+                return exitcodeErr.ExitCode()
+        }</span>
+
+        <span class="cov0" title="0">return 1</span>
+}
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>

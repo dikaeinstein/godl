@@ -8,11 +8,12 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
+	"github.com/dikaeinstein/downloader/pkg/hash"
+
 	"github.com/dikaeinstein/godl/internal/app"
 	"github.com/dikaeinstein/godl/internal/pkg/downloader"
 	"github.com/dikaeinstein/godl/internal/pkg/godlutil"
 	"github.com/dikaeinstein/godl/pkg/fsys"
-	"github.com/dikaeinstein/godl/pkg/hash"
 )
 
 // newDownloadCmd returns a new instance of the download command
@@ -60,8 +61,8 @@ func (dCli *downloadCli) run(cmd *cobra.Command, args []string) error {
 		DownloadDir:   dlDir,
 		FS:            fsys.OsFS{},
 		ForceDownload: dCli.downloadConfig.forceDownload,
-		Hasher:        hash.NewRemoteHasher(http.DefaultClient),
-		HashVerifier:  godlutil.VerifyHash,
+		Hasher:        hash.NewRemoteHasher(dCli.httpClient),
+		HashVerifier:  hash.Verifier{},
 	}
 
 	d := app.Download{

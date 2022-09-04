@@ -9,9 +9,10 @@ import (
 	"testing/fstest"
 	"time"
 
+	"github.com/dikaeinstein/downloader/pkg/hash"
+
 	"github.com/dikaeinstein/godl/internal/pkg/downloader"
 	"github.com/dikaeinstein/godl/pkg/fsys"
-	"github.com/dikaeinstein/godl/pkg/hash"
 	"github.com/dikaeinstein/godl/test"
 )
 
@@ -74,7 +75,7 @@ func TestInstallRelease(t *testing.T) {
 				DownloadDir:  ".",
 				FS:           imFS,
 				Hasher:       hash.FakeHasher{},
-				HashVerifier: fakeHashVerifier,
+				HashVerifier: fakeHashVerifier{},
 			}
 			install := Install{
 				Archiver: testGzUnArchiver{},

@@ -26,7 +26,7 @@ if [ $code != "200" ]; then
   echo "[error] Failed to download Godl release ${VERSION} for $OS $ARCH."
   echo "Received HTTP status code $code"
   echo ""
-  echo "Supported version of the Godl CLI is:"
+  echo "Supported versions of the Godl CLI are:"
   echo " - darwin_amd64"
   echo " - darwin_arm64"
   echo ""
