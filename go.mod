@@ -2,7 +2,7 @@ module github.com/dikaeinstein/godl
 
 require (
 	github.com/MakeNowJust/heredoc v1.0.0
-	github.com/dikaeinstein/downloader v0.0.2
+	github.com/dikaeinstein/downloader v0.0.3
 	github.com/fatih/color v1.13.0
 	github.com/golangci/golangci-lint v1.49.0
 	github.com/google/go-cmp v0.5.8
