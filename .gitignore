@@ -3,6 +3,7 @@ godl
 vendor
 .vscode
 *.out
+coverage.html
 .pprof
 .env
 dist/

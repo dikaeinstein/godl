@@ -12,6 +12,7 @@ import (
 	"testing"
 
 	"github.com/MakeNowJust/heredoc"
+
 	"github.com/dikaeinstein/godl/test"
 )
 
