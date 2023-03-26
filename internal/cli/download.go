@@ -45,8 +45,8 @@ type downloadConfig struct {
 }
 
 type downloadCli struct {
-	downloadConfig
 	httpClient *http.Client
+	downloadConfig
 }
 
 func (dCli *downloadCli) run(cmd *cobra.Command, args []string) error {

@@ -1,5 +1,7 @@
 module github.com/dikaeinstein/godl
 
+go 1.20
+
 require (
 	github.com/MakeNowJust/heredoc v1.0.0
 	github.com/dikaeinstein/downloader v0.0.5
@@ -191,5 +193,3 @@ require (
 	mvdan.cc/lint v0.0.0-20170908181259-adc824a0674b // indirect
 	mvdan.cc/unparam v0.0.0-20220831102321-2fc90a84c7ec // indirect
 )
-
-go 1.18

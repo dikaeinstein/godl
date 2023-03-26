@@ -60,9 +60,12 @@ Run `godl help` to get help and see available options
 To download and install go1.16:
 
 ```bash
-godl download 1.16
+ # To download only
+godl download 1.19
 
-sudo godl install 1.16
+ # To download and install if the given version is already downloaded.
+sudo godl install 1.19
+
 ```
 
 Then run
@@ -72,8 +75,13 @@ go version
 ```
 
 ```bash
-output: go version go1.16 darwin/amd64 // or something similar
+output: go version go1.19 darwin/amd64 // or something similar
 ```
+
+### Improvement
+
+- update sub command to install latest version or specific version (tip: exec get.sh)
+- check-update subcommand to check for an update
 
 ### Contributing
 

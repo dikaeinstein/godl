@@ -20,16 +20,16 @@ type Asset struct {
 }
 
 type Release struct {
-	Assets  []Asset `json:"assets"`
 	TagName string  `json:"tag_name"`
+	Assets  []Asset `json:"assets"`
 }
-type (
-	ListReleasesResult    []Release
-	ListReleasesErrorResp struct {
-		Message          string `json:"message"`
-		DocumentationURL string `json:"documentation_url"`
-	}
-)
+
+type ListReleasesResult []Release
+
+type ListReleasesErrorResp struct {
+	Message          string `json:"message"`
+	DocumentationURL string `json:"documentation_url"`
+}
 
 // Update checks for if there are updates available for Godl
 type Update struct {

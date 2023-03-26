@@ -18,13 +18,13 @@ const (
 )
 
 type Downloader struct {
-	BaseURL       string
-	Client        *http.Client
-	DownloadDir   string
 	FS            fs.FS
-	ForceDownload bool
 	Hasher        downloader.Hasher
 	HashVerifier  downloader.HashVerifier
+	Client        *http.Client
+	BaseURL       string
+	DownloadDir   string
+	ForceDownload bool
 }
 
 // Download downloads a binary release of a given version.

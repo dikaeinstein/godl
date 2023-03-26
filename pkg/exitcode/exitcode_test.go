@@ -17,10 +17,10 @@ var errTest = errors.New("test error")
 
 func TestNewError(t *testing.T) {
 	testCases := []struct {
-		desc    string
 		err     error
-		code    int
 		wantErr error
+		desc    string
+		code    int
 	}{
 		{
 			desc:    "returns <nil> when given err is <nil>",

@@ -44,8 +44,8 @@ type installConfig struct {
 }
 
 type installCli struct {
-	cfg        installConfig
 	httpClient *http.Client
+	cfg        installConfig
 }
 
 func (iCli *installCli) run(cmd *cobra.Command, args []string) error {

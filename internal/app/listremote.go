@@ -18,17 +18,17 @@ import (
 
 // ListBucketResult represents the list of objects result
 type ListBucketResult struct {
-	XMLNAME     xml.Name  `xml:"ListBucketResult"`
-	Contents    []Content `xml:"Contents"`
+	XMLNAME     xml.Name `xml:"ListBucketResult"`
 	NextMarker  string
+	Contents    []Content `xml:"Contents"`
 	IsTruncated bool
 }
 
 // Content represents a ListBucketResult object
 type Content struct {
+	LastModified time.Time
 	XMLNAME      xml.Name `xml:"Contents"`
 	Key          string
-	LastModified time.Time
 }
 
 // ListRemote lists remote versions available for install

@@ -6,6 +6,8 @@ import (
 	"io"
 	"testing"
 	"testing/fstest"
+
+	"github.com/stretchr/testify/assert"
 )
 
 const completionFileContent string = "this is a test completion"
@@ -37,20 +39,42 @@ func (fakeCompletionGenerator) GenZshCompletion(out io.Writer) error {
 
 func TestCompletion(t *testing.T) {
 	testCases := []struct {
-		name       string
-		shell      string
-		useDefault bool
-		err        error
+		err         error
+		description string
+		name        string
+		shell       string
+		useDefault  bool
 	}{
-		{"creates completion file when bash is passed", "bash", false, nil},
-		{"creates completion file when zsh is passed", "zsh", true, nil},
-		{"creates completion file when fish is passed", "fish", true, nil},
 		{
-			"returns an error when unknown shell name is passed", "unknown", true, errors.New("unknown shell passed"),
+			err:         nil,
+			description: "creates completion file when bash is passed",
+			name:        "ShellBash",
+			shell:       "bash",
+			useDefault:  false,
+		},
+		{
+			err:         nil,
+			description: "creates completion file when zsh is passed",
+			name:        "ShellZsh",
+			shell:       "zsh",
+			useDefault:  true,
+		},
+		{
+			err:         nil,
+			description: "creates completion file when fish is passed",
+			name:        "ShellFish",
+			shell:       "fish",
+			useDefault:  true,
+		},
+		{
+			err:         errors.New("unknown shell passed"),
+			description: "returns an error when unknown shell name is passed",
+			name:        "ShellUnknown",
+			shell:       "unknown",
+			useDefault:  true,
 		},
 	}
 
-	tmpHome := t.TempDir()
 	tmpSymDir := t.TempDir()
 
 	completion := &Completion{
@@ -58,23 +82,22 @@ func TestCompletion(t *testing.T) {
 		BashSymlinkDir:      tmpSymDir,
 		FishSymlinkDir:      tmpSymDir,
 		FS:                  fakeSymLinkerFS{},
-		HomeDir:             tmpHome,
+		HomeDir:             t.TempDir(),
 		CompletionGenerator: fakeCompletionGenerator{},
 		ZshSymlinkDir:       tmpSymDir,
 	}
+
 	for i := range testCases {
 		tC := testCases[i]
 		t.Run(tC.name, func(t *testing.T) {
 			out := new(bytes.Buffer)
+
 			err := completion.Run(tC.shell, out, tC.useDefault)
-			if err != nil && err.Error() != tC.err.Error() {
-				t.Errorf("expected completion(%#v, %#v) => %#v, got %v",
-					tC.shell, tmpHome, tC.err, err)
-			}
-			content := out.String()
-			if err == nil && content != completionFileContent {
-				t.Errorf("expected completion file content %s, got %s",
-					content, completionFileContent)
+			assert.Equal(t, tC.err, err, tC.description)
+
+			if err == nil {
+				content := out.String()
+				assert.Equal(t, completionFileContent, content, tC.description)
 			}
 		})
 	}

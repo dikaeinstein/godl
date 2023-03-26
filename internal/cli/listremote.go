@@ -37,8 +37,8 @@ func newListRemoteCmd(client *http.Client) *cobra.Command {
 }
 
 type lsRemoteConfig struct {
-	timeout       time.Duration
 	sortDirection string
+	timeout       time.Duration
 }
 
 type lsRemoteCli struct {

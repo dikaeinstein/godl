@@ -46,11 +46,11 @@ func TestCheckForUpdate(t *testing.T) {
 	}))
 
 	testCases := []struct {
-		name           string
+		err            error
 		client         *http.Client
+		name           string
 		currentVersion string
 		want           bool
-		err            error
 	}{
 		{
 			name:           "Returns true if update is available",
