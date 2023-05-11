@@ -14,7 +14,7 @@ jobs:
           go-version-file: go.mod
           cache: true
       - name: Run tests
-        run: make test-cover
+        run: make test/cover
       - name: Send coverage to Coveralls
         env:
           COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}

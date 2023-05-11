@@ -52,6 +52,11 @@ linters-settings:
     allow-unused: false # report any unused nolint directives
     require-explanation: false # don't require an explanation for nolint directives
     require-specific: false # don't require nolint directives to be specific about which linter is being skipped
+  revive:
+    max-open-files: 2048
+    rules:
+      - name: unused-parameter
+        disabled: true # the unparam linter is better
 
 linters:
   # please, do not use `enable-all`: it's deprecated and will be removed soon.
