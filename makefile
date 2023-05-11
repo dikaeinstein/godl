@@ -24,11 +24,11 @@ lint:
 
 ## test: run tests
 test:
-	@go run github.com/rakyll/gotest -race $(TESTFLAGS) ./...
+	@go test -race $(TESTFLAGS) ./...
 
 ## test/cover: run tests with coverage
 test/cover:
-	@go run github.com/rakyll/gotest -coverprofile=coverage.out -race $(TESTFLAGS) ./...
+	@go test -coverprofile=coverage.out -race $(TESTFLAGS) ./...
 	@go tool cover -html=coverage.out -o coverage.html
 
 ## coveralls: send test coverage to coveralls
@@ -51,7 +51,16 @@ install:
 run:
 	@go run $(LDFLAGS) ./cmd/$(BINARY_NAME)
 
-.PHONY: build clean fetch install install-tools lint run test test-cover
+## audit: tidy dependencies and check for vulnerabilities that affects Go code
+.PHONY: audit
+audit:
+	@echo 'Tidying and verifying module dependencies...'
+	go mod tidy
+	go mod verify
+	@echo 'Checking for vulnerabilities...'
+	go run golang.org/x/vuln/cmd/govulncheck -test ./...
+
+.PHONY: audit build clean fetch install install/tools lint run test test/cover
 
 ## clean: remove binary
 clean:
