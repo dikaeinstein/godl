@@ -12,44 +12,47 @@ LDFLAGS=-ldflags '-s -w \
 	-X "$(PACKAGE).goVersion=$(GO_VERSION)" \
 	-X "$(PACKAGE).gitHash=$(GIT_COMMIT_HASH)"'
 
-lint:
-	@golangci-lint run
+## help: print this help message
+.PHONY: help
+help:
+	@echo 'Usage:'
+	@sed -n 's/^##//p' ${MAKEFILE_LIST} | column -t -s ':' | sed -e 's/^/ /'
 
-## Run tests
+## lint: lint the project
+lint:
+	@go run github.com/golangci/golangci-lint/cmd/golangci-lint run
+
+## test: run tests
 test:
 	@go run github.com/rakyll/gotest -race $(TESTFLAGS) ./...
 
-## Run tests with coverage
-test-cover:
+## test/cover: run tests with coverage
+test/cover:
 	@go run github.com/rakyll/gotest -coverprofile=coverage.out -race $(TESTFLAGS) ./...
 	@go tool cover -html=coverage.out -o coverage.html
 
-## send test coverage to coveralls
+## coveralls: send test coverage to coveralls
 coveralls:
 	@go run github.com/mattn/goveralls -coverprofile=coverage.out -service=github
 
-## Build binary
+## build: build the binary
 build:
 	@go build $(LDFLAGS) ./cmd/$(BINARY_NAME)
 
-## Build the binary to $GOBIN path using `go build`
-build-install:
+## build/install: build the binary and outputs it tothe $GOBIN path using `go build`
+build/install:
 	@go build $(LDFLAGS) -o $(shell go env GOBIN)/godl ./cmd/$(BINARY_NAME)
 
-## installing the binary to $GOBIN using `go install`
+## install: install the binary to $GOBIN using `go install`
 install:
 	@go install $(LDFLAGS) ./cmd/$(BINARY_NAME)
 
-install-tools: fetch
-	@echo Installing tools from tools.go
-	@cat tools.go | grep _ | awk -F'"' '{print $$2}' | xargs -tI % go install %
-
-## Execute binary
+## run: execute binary
 run:
 	@go run $(LDFLAGS) ./cmd/$(BINARY_NAME)
 
 .PHONY: build clean fetch install install-tools lint run test test-cover
 
-## Remove binary
+## clean: remove binary
 clean:
 	if [ -f $(BINARY_NAME) ]; then rm -f $(BINARY_NAME); fi

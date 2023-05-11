@@ -10,12 +10,10 @@ Godl is a CLI tool used to download and install go binary releases on mac. It su
 To download and install a specific version of godl, copy and paste the installation command:
 
 ```bash
-curl -s https://raw.githubusercontent.com/dikaeinstein/godl/master/get.sh | sh -s -- v0.17.0
+curl -s https://raw.githubusercontent.com/dikaeinstein/godl/master/get.sh | sh -s -- v0.18.0
 ```
 
-## Install with Go 1.16+
-
-From Go 1.16, the `go install` command can be used to install `godl` directly. The binary is placed in $GOPATH/bin, or in $GOBIN if set:
+## Install with Go
 
 ```bash
 go install github.com/dikaeinstein/godl
@@ -26,7 +24,7 @@ go install github.com/dikaeinstein/godl
 Prerequisites for building from source are:
 
 - make
-- Go 1.15+
+- Go 1.18+
 
 ```bash
 git clone https://github.com/dikaeinstein/godl
@@ -57,14 +55,14 @@ Run `godl help` to get help and see available options
 
 ## Typical Usage (example)
 
-To download and install go1.16:
+To download and install go1.20:
 
 ```bash
  # To download only
-godl download 1.19
+godl download 1.20
 
  # To download and install if the given version is already downloaded.
-sudo godl install 1.19
+sudo godl install 1.20
 
 ```
 
@@ -75,13 +73,14 @@ go version
 ```
 
 ```bash
-output: go version go1.19 darwin/amd64 // or something similar
+output: go version go1.20 darwin/amd64 // or something similar
 ```
 
 ### Improvement
 
 - update sub command to install latest version or specific version (tip: exec get.sh)
 - check-update subcommand to check for an update
+- support M1 Macs
 
 ### Contributing
 

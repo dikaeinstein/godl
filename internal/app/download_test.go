@@ -18,7 +18,7 @@ import (
 
 type fakeHashVerifier struct{}
 
-func (fakeHashVerifier) Verify(input io.Reader, hex string) error {
+func (fakeHashVerifier) Verify(_ io.Reader, _ string) error {
 	return nil
 }
 

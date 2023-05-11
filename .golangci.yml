@@ -1,5 +1,4 @@
 
-
 linters-settings:
   funlen:
     lines: 100
@@ -24,8 +23,6 @@ linters-settings:
     min-complexity: 15
   goimports:
     local-prefixes: github.com/dikaeinstein/godl
-  golint:
-    min-confidence: 0
   gomnd:
     settings:
       mnd:
@@ -62,7 +59,6 @@ linters:
   disable-all: true
   enable:
     - bodyclose
-    - deadcode
     - depguard
     - dogsled
     - dupl
@@ -90,13 +86,11 @@ linters:
     - revive
     - rowserrcheck
     - staticcheck
-    - structcheck
     - stylecheck
     - typecheck
     - unconvert
     - unparam
     - unused
-    - varcheck
     - whitespace
 
 issues:

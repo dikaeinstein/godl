@@ -9,3 +9,5 @@ coverage.html
 dist/
 
 !cmd/godl
+__debug_bin
+bin

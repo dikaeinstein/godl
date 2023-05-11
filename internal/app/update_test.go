@@ -16,6 +16,11 @@ import (
 	"github.com/dikaeinstein/godl/test"
 )
 
+const (
+	versionWithUpdate    = "0.11.5"
+	versionWithoutUpdate = "0.11.6"
+)
+
 func TestCheckForUpdate(t *testing.T) {
 	testClient := test.NewTestClient(test.RoundTripFunc(func(req *http.Request) *http.Response {
 		f, err := os.Open(path.Join("..", "..", "test", "testdata", "releases.json"))
@@ -55,21 +60,21 @@ func TestCheckForUpdate(t *testing.T) {
 		{
 			name:           "Returns true if update is available",
 			client:         testClient,
-			currentVersion: "0.11.5",
+			currentVersion: versionWithUpdate,
 			want:           true,
 			err:            nil,
 		},
 		{
 			name:           "Returns false if no update",
 			client:         testClient,
-			currentVersion: "0.11.6",
+			currentVersion: versionWithoutUpdate,
 			want:           false,
 			err:            nil,
 		},
 		{
 			name:           "Returns error encountered while checking for update",
 			client:         failingTestClient,
-			currentVersion: "0.11.5",
+			currentVersion: versionWithUpdate,
 			want:           false,
 			err:            fmt.Errorf("https://api.github.com/repos/dikaeinstein/godl/releases?per_page=10: 502 %s", errMsg),
 		},
@@ -105,6 +110,7 @@ func TestRun(t *testing.T) {
 			Body:       f,
 		}
 	}))
+
 	testCases := []struct {
 		client         *http.Client
 		currentVersion string
@@ -115,21 +121,21 @@ func TestRun(t *testing.T) {
 		{
 			name:           "Returns no error",
 			client:         testClient,
-			currentVersion: "0.11.6",
+			currentVersion: versionWithoutUpdate,
 			err:            nil,
 			want:           "No update available.\n",
 		},
 		{
 			name:           "Returns correct message when no update is available",
 			client:         testClient,
-			currentVersion: "0.11.6",
+			currentVersion: versionWithoutUpdate,
 			err:            nil,
 			want:           "No update available.\n",
 		},
 		{
 			name:           "Returns correct message when update is available",
 			client:         testClient,
-			currentVersion: "0.11.5",
+			currentVersion: versionWithUpdate,
 			err:            nil,
 			want: heredoc.Doc(`
 				Your version of Godl is out of date!
