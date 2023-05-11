@@ -1,16 +1,13 @@
 BINARY_NAME=godl
 PACKAGE=main
-BUILD_DATE=$(shell date +%Y-%m-%d\ %H:%M)
+BUILD_TIME=$(shell date +%Y-%m-%d\ %H:%M)
 GIT_COMMIT_HASH=$(shell git rev-parse --short HEAD)
-VERSION=$(shell git describe --tags)
-GO_VERSION=$(shell go env GOVERSION)
+GIT_TAG=$(shell git describe --always --dirty --tags --long)
 
 # setup -ldflags for go build
 LDFLAGS=-ldflags '-s -w \
-	-X "$(PACKAGE).godlVersion=$(VERSION)" \
-	-X "$(PACKAGE).buildDate=$(BUILD_DATE)" \
-	-X "$(PACKAGE).goVersion=$(GO_VERSION)" \
-	-X "$(PACKAGE).gitHash=$(GIT_COMMIT_HASH)"'
+	-X "$(PACKAGE).gitTag=$(GIT_TAG)" \
+	-X "$(PACKAGE).buildTime=$(BUILD_TIME)"'
 
 ## help: print this help message
 .PHONY: help

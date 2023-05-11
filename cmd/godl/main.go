@@ -17,24 +17,21 @@ package main
 import (
 	"os"
 
+	"github.com/dikaeinstein/godl/internal/app"
 	"github.com/dikaeinstein/godl/internal/cli"
 )
 
 // injected as ldflags during go build
 var (
-	buildDate   = "unknown"
-	gitHash     = "none"
-	godlVersion = "v0.0.0"
-	goVersion   = "unknown"
+	buildTime string
+	gitTag    string
 )
 
 func main() {
-	opt := cli.Option{}
+	code := cli.Run(app.BuildInfo{
+		BuildTime: buildTime,
+		GitTag:    gitTag,
+	})
 
-	opt.Version.BuildDate = buildDate
-	opt.Version.GitHash = gitHash
-	opt.Version.GodlVersion = godlVersion
-	opt.Version.GoVersion = goVersion
-
-	os.Exit(cli.Run(opt))
+	os.Exit(code)
 }

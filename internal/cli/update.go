@@ -11,8 +11,8 @@ import (
 	"github.com/dikaeinstein/godl/internal/app"
 )
 
-func newUpdateCmd(client *http.Client, v VersionOption) *cobra.Command {
-	uCli := &updateCli{httpClient: client, vOpt: v}
+func newUpdateCmd(client *http.Client, info app.BuildInfo) *cobra.Command {
+	uCli := &updateCli{httpClient: client, buildInfo: info}
 
 	updateCmd := &cobra.Command{
 		Use:   "update",
@@ -41,7 +41,7 @@ func newUpdateCmd(client *http.Client, v VersionOption) *cobra.Command {
 
 type updateCli struct {
 	httpClient *http.Client
-	vOpt       VersionOption
+	buildInfo  app.BuildInfo
 }
 
 func (c *updateCli) run(cmd *cobra.Command, args []string) error {
@@ -51,5 +51,5 @@ func (c *updateCli) run(cmd *cobra.Command, args []string) error {
 	ctx, cancel := context.WithTimeout(cmd.Context(), defaultTimeout)
 	defer cancel()
 
-	return u.Run(ctx, c.vOpt.GodlVersion)
+	return u.Run(ctx, c.buildInfo.GitTag)
 }

@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/require"
 
+	"github.com/dikaeinstein/godl/internal/app"
 	"github.com/dikaeinstein/godl/test"
 )
 
@@ -57,8 +58,8 @@ func TestUpdateCmd(t *testing.T) {
 
 	for _, tC := range testCases {
 		t.Run(tC.name, func(t *testing.T) {
-			v := VersionOption{GodlVersion: tC.godlVersion}
-			update := newUpdateCmd(testClient, v)
+			info := app.BuildInfo{GitTag: tC.godlVersion}
+			update := newUpdateCmd(testClient, info)
 			godl := newRootCmd()
 			registerSubCommands(godl, []*cobra.Command{update})
 

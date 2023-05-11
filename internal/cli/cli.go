@@ -11,6 +11,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
+	"github.com/dikaeinstein/godl/internal/app"
 	"github.com/dikaeinstein/godl/pkg/exitcode"
 	"github.com/dikaeinstein/godl/pkg/text"
 )
@@ -106,11 +107,7 @@ Use "{{.CommandPath}} help [command]" or "{{.CommandPath}} [command] --help" for
 		text.Bold("INHERITED FLAGS"), text.Bold("ADDITIONAL HELP TOPICS"))
 }
 
-type Option struct {
-	Version VersionOption
-}
-
-func Run(opt Option) int {
+func Run(info app.BuildInfo) int {
 	godl := newRootCmd()
 
 	// subcommands
@@ -119,8 +116,8 @@ func Run(opt Option) int {
 	installCmd := newInstallCmd(http.DefaultClient)
 	lsCmd := newListCmd()
 	lsRemoteCmd := newListRemoteCmd(http.DefaultClient)
-	updateCmd := newUpdateCmd(http.DefaultClient, opt.Version)
-	versionCmd := newVersionCmd(opt.Version)
+	updateCmd := newUpdateCmd(http.DefaultClient, info)
+	versionCmd := newVersionCmd(info)
 
 	registerSubCommands(godl, []*cobra.Command{
 		completionCmd,

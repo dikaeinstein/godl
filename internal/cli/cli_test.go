@@ -12,7 +12,10 @@ func TestGodlCmd(t *testing.T) {
 	godl := newRootCmd()
 	_, errOutput := test.ExecuteCommand(t, true, godl)
 	if errOutput != "" {
-		t.Errorf("calling command without subcommands should not have error: %v", errOutput)
+		t.Errorf(
+			"calling command without subcommands should not have error: %v",
+			errOutput,
+		)
 	}
 }
 
