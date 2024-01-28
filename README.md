@@ -79,7 +79,6 @@ output: go version go1.20 darwin/amd64 // or something similar
 ### Improvement
 
 - update sub command to install latest version or specific version (tip: exec get.sh)
-- check-update subcommand to check for an update
 - support M1 Macs
 
 ### Contributing
