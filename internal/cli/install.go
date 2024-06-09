@@ -73,7 +73,7 @@ func (iCli *installCli) run(cmd *cobra.Command, args []string) error {
 		Timeout: iCli.cfg.timeout,
 	}
 
-	return install.Run(cmd.Context(), args[0])
+	return install.Run(cmd.Context(), args[0], iCli.cfg.forceDownload)
 }
 
 func (iCli *installCli) setupConfig(cmd *cobra.Command, args []string) error {

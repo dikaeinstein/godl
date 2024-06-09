@@ -20,6 +20,12 @@ type testGzUnArchiver struct{}
 
 func (testGzUnArchiver) Unarchive(source, target string) error { return nil }
 
+type fakeHashVerifier struct{}
+
+func (fakeHashVerifier) Verify(_ io.Reader, _ string) error {
+	return nil
+}
+
 func TestInstallRelease(t *testing.T) {
 	testClient := test.NewTestClient(test.RoundTripFunc(func(req *http.Request) *http.Response {
 		testData := bytes.NewBufferString("This is test data")
@@ -81,8 +87,9 @@ func TestInstallRelease(t *testing.T) {
 				Archiver: testGzUnArchiver{},
 				Dl:       dl,
 				Timeout:  5 * time.Second,
+				FS:       imFS,
 			}
-			err := install.Run(context.Background(), tC.installVersion)
+			err := install.Run(context.Background(), tC.installVersion, false)
 			if err != nil && err.Error() != tC.errMsg {
 				t.Error(err)
 			}

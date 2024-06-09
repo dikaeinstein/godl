@@ -19,13 +19,16 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/dikaeinstein/godl/internal/pkg/downloader"
 	"github.com/dikaeinstein/godl/pkg/text"
 )
 
+type Downloader interface {
+	Download(ctx context.Context, version string) error
+}
+
 // Download downloads go binaries
 type Download struct {
-	Dl      *downloader.Downloader
+	Dl      Downloader
 	Timeout time.Duration
 }
 
@@ -37,7 +40,7 @@ func (d *Download) Run(ctx context.Context, version string) error {
 	defer cancel()
 	err := d.Dl.Download(ctx, version)
 	if err != nil {
-		return fmt.Errorf("error downloading %v: %v", version, err)
+		return fmt.Errorf("error downloading %v: %w", version, err)
 	}
 
 	fmt.Println(text.Green("\nDownload complete"))

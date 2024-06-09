@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/xml"
 	"fmt"
+	"log"
 	"net/http"
 	"sort"
 	"strings"
@@ -38,13 +39,10 @@ type ListRemote struct {
 }
 
 func (lsRemote *ListRemote) Run(ctx context.Context, sortDirection string) error {
-	url := "https://storage.googleapis.com/golang/?prefix=go1"
-	w := url
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	var contents []Content
-	go func(ctx context.Context) {
+	go func() {
 		duration := 50 * time.Millisecond
 		s := spin.New()
 	Loop:
@@ -58,10 +56,14 @@ func (lsRemote *ListRemote) Run(ctx context.Context, sortDirection string) error
 				time.Sleep(duration)
 			}
 		}
-	}(ctx)
+	}()
+
+	baseURI := "https://storage.googleapis.com/golang/?prefix=go1"
+	url := baseURI
+	var contents []Content
 
 	for {
-		listBucketResult, err := lsRemote.getBinaryReleases(url)
+		listBucketResult, err := lsRemote.getBinaryReleases(ctx, url)
 		if err != nil {
 			return fmt.Errorf("\nerror fetching list: %v", err)
 		}
@@ -75,7 +77,7 @@ func (lsRemote *ListRemote) Run(ctx context.Context, sortDirection string) error
 		}
 
 		// update url with marker to fetch next list
-		url = w + "&marker=" + listBucketResult.NextMarker
+		url = baseURI + "&marker=" + listBucketResult.NextMarker
 	}
 
 	versions := mapXMLContentToVersion(contents)
@@ -94,8 +96,8 @@ func (lsRemote *ListRemote) Run(ctx context.Context, sortDirection string) error
 	return nil
 }
 
-func (lsRemote *ListRemote) getBinaryReleases(url string) (*ListBucketResult, error) {
-	ctx, cancelFunc := context.WithTimeout(context.Background(), lsRemote.Timeout)
+func (lsRemote *ListRemote) getBinaryReleases(ctx context.Context, url string) (*ListBucketResult, error) {
+	ctx, cancelFunc := context.WithTimeout(ctx, lsRemote.Timeout)
 	defer cancelFunc()
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, http.NoBody)
@@ -107,7 +109,11 @@ func (lsRemote *ListRemote) getBinaryReleases(url string) (*ListBucketResult, er
 	if err != nil {
 		return nil, err
 	}
-	defer res.Body.Close()
+	defer func() {
+		if closeErr := res.Body.Close(); closeErr != nil {
+			log.Printf("failed to close the resp body: %v\n", err)
+		}
+	}()
 
 	if res.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("%s: %v", url, res.Status)

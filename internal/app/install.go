@@ -17,6 +17,7 @@ package app
 import (
 	"context"
 	"fmt"
+	"io/fs"
 	"path"
 	"time"
 
@@ -31,25 +32,27 @@ type Archiver interface {
 }
 
 type Install struct {
-	Archiver Archiver
-	Dl       *downloader.Downloader
-	Timeout  time.Duration
+	Archiver    Archiver
+	Dl          Downloader
+	Timeout     time.Duration
+	FS          fs.FS
+	DownloadDir string
 }
 
 // Run installs the go version.
-func (i *Install) Run(ctx context.Context, ver string) error {
+func (i *Install) Run(ctx context.Context, ver string, forceDownload bool) error {
 	archiveName := fmt.Sprintf("%s%s.%s", downloader.Prefix(), ver, downloader.Postfix())
-	downloadPath := path.Join(i.Dl.DownloadDir, archiveName)
+	downloadPath := path.Join(i.DownloadDir, archiveName)
 
 	fmt.Println(text.Green("Installing binary into /usr/local"))
 
-	exists, err := version.Exists(ver, i.Dl.DownloadDir)
+	exists, err := version.Exists(ver, i.DownloadDir)
 	if err != nil {
 		return err
 	}
 
 	// download binary if it doesn't exist locally or the -forceDownload flag is passed
-	if !exists || i.Dl.ForceDownload {
+	if !exists || forceDownload {
 		fmt.Printf("%v not found locally.\n", ver)
 		fmt.Println("fetching from remote...")
 
@@ -65,7 +68,7 @@ func (i *Install) Run(ctx context.Context, ver string) error {
 	// new version
 	fmt.Println()
 	fmt.Println("removing old installation...")
-	err = fsys.RemoveAll(i.Dl.FS, path.Join("/usr", "local", "go"))
+	err = fsys.RemoveAll(i.FS, path.Join("/usr", "local", "go"))
 	if err != nil {
 		return fmt.Errorf("error removing old installation: %v", err)
 	}
@@ -81,7 +84,7 @@ func (i *Install) Run(ctx context.Context, ver string) error {
 	fmt.Println("adding to $PATH...")
 	pathsD := path.Join("/etc", "paths.d", "go")
 	const perm = 0o644
-	err = fsys.WriteFile(i.Dl.FS, pathsD, []byte("/usr/local/go/bin\n"), perm)
+	err = fsys.WriteFile(i.FS, pathsD, []byte("/usr/local/go/bin\n"), perm)
 	if err != nil {
 		return err
 	}
