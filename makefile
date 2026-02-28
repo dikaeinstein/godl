@@ -17,7 +17,7 @@ help:
 
 ## lint: lint the project
 lint:
-	@go run github.com/golangci/golangci-lint/cmd/golangci-lint run
+	@go tool golangci-lint run
 
 ## test: run tests
 test:
@@ -30,7 +30,7 @@ test/cover:
 
 ## coveralls: send test coverage to coveralls
 coveralls:
-	@go run github.com/mattn/goveralls -coverprofile=coverage.out -service=github
+	@go tool goveralls -coverprofile=coverage.out -service=github
 
 ## build: build the binary
 build:
@@ -55,7 +55,7 @@ audit:
 	go mod tidy
 	go mod verify
 	@echo 'Checking for vulnerabilities...'
-	go run golang.org/x/vuln/cmd/govulncheck -test ./...
+	go tool govulncheck -test ./...
 
 .PHONY: audit build clean fetch install install/tools lint run test test/cover
 

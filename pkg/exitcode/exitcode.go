@@ -2,41 +2,37 @@ package exitcode
 
 import "errors"
 
-// Error wraps an error with an exit code
-type Error interface {
-	error
-	ExitCode() int
-}
-
-// NewError returns an exitcodeError which sets the exit code of the specified error.
+// NewError returns an exitcode Error which sets the exit code of the specified error.
 func NewError(err error, code int) error {
 	if err == nil {
 		return nil
 	}
 
-	return exitcodeError{err, code}
+	return Error{err, code}
 }
 
-type exitcodeError struct {
+type Error struct {
 	error
 	code int
 }
 
-func (e exitcodeError) ExitCode() int {
+func (e Error) ExitCode() int {
 	return e.code
 }
 
-func (e exitcodeError) Unwrap() error {
+func (e Error) Unwrap() error {
 	return e.error
 }
 
-// Get returns the exit code of an error
+// Get returns the exit code of an error if it is an exitcode Error,
+// otherwise it returns 1 for non-nil errors and 0 for nil errors.
 func Get(err error) int {
 	if err == nil {
 		return 0
 	}
 
-	if exitcodeErr := Error(nil); errors.As(err, &exitcodeErr) {
+	var exitcodeErr Error
+	if errors.As(err, &exitcodeErr) {
 		return exitcodeErr.ExitCode()
 	}
 

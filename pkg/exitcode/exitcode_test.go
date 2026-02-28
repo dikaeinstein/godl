@@ -6,9 +6,9 @@ import (
 )
 
 func TestExitCodeErrorImplementsError(t *testing.T) {
-	var err interface{} = exitcodeError{}
+	var err interface{} = Error{}
 
-	if _, ok := err.(Error); !ok {
+	if _, ok := err.(error); !ok {
 		t.Fatalf("expected %t to implement Error", err)
 	}
 }
@@ -23,16 +23,13 @@ func TestNewError(t *testing.T) {
 		code    int
 	}{
 		{
-			desc:    "returns <nil> when given err is <nil>",
-			err:     nil,
-			code:    1,
-			wantErr: nil,
+			desc: "returns <nil> when given err is <nil>",
 		},
 		{
 			desc:    "returns an exitcodeError that wraps given err",
 			err:     errTest,
-			code:    1,
-			wantErr: exitcodeError{errTest, 1},
+			code:    2,
+			wantErr: Error{errTest, 2},
 		},
 	}
 

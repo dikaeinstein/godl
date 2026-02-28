@@ -59,7 +59,7 @@ func executeCommandC(root *cobra.Command, args []string) (c *cobra.Command, outp
 	return c, outputBuf.String(), errBuf.String(), err
 }
 
-// The RoundTripFunc type is an adapter to allow the use of
+// RoundTripFunc is an adapter to allow the use of
 // ordinary functions as  net/http.RoundTripper. If f is a function
 // with the appropriate signature, RoundTripFunc(f) is a
 // RoundTripper that calls f.

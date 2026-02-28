@@ -5,21 +5,20 @@ import (
 	"time"
 
 	"github.com/MakeNowJust/heredoc"
-	"github.com/mholt/archiver/v3"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"github.com/dikaeinstein/downloader/pkg/hash"
-
 	"github.com/dikaeinstein/godl/internal/app"
 	"github.com/dikaeinstein/godl/internal/pkg/downloader"
-	"github.com/dikaeinstein/godl/internal/pkg/godlutil"
-	"github.com/dikaeinstein/godl/pkg/fsys"
 )
 
 // newInstallCmd returns the install command
-func newInstallCmd(client *http.Client) *cobra.Command {
-	iCli := &installCli{httpClient: client}
+func newInstallCmd(
+	client *http.Client,
+	dl *downloader.Downloader,
+	installer *app.Install,
+) *cobra.Command {
+	iCli := &installCli{httpClient: client, dl: dl, installer: installer}
 
 	installCmd := &cobra.Command{
 		Use:   "install version",
@@ -45,35 +44,15 @@ type installConfig struct {
 
 type installCli struct {
 	httpClient *http.Client
+	dl         *downloader.Downloader
 	cfg        installConfig
+	installer  *app.Install
 }
 
 func (iCli *installCli) run(cmd *cobra.Command, args []string) error {
-	dlDir, err := godlutil.GetDownloadDir()
-	if err != nil {
-		return err
-	}
-
-	install := app.Install{
-		Archiver: &archiver.TarGz{
-			Tar: &archiver.Tar{
-				OverwriteExisting: true,
-			},
-			CompressionLevel: -1,
-		},
-		Dl: &downloader.Downloader{
-			BaseURL:       "https://storage.googleapis.com/golang/",
-			Client:        iCli.httpClient,
-			DownloadDir:   dlDir,
-			FS:            fsys.OsFS{},
-			ForceDownload: iCli.cfg.forceDownload,
-			Hasher:        hash.NewRemoteHasher(http.DefaultClient),
-			HashVerifier:  hash.Verifier{},
-		},
-		Timeout: iCli.cfg.timeout,
-	}
-
-	return install.Run(cmd.Context(), args[0], iCli.cfg.forceDownload)
+	iCli.dl.Configure(iCli.cfg.forceDownload)
+	iCli.installer.Configure(iCli.dl, iCli.cfg.timeout)
+	return iCli.installer.Run(cmd.Context(), args[0], iCli.cfg.forceDownload)
 }
 
 func (iCli *installCli) setupConfig(cmd *cobra.Command, args []string) error {

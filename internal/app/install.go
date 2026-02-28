@@ -39,6 +39,11 @@ type Install struct {
 	DownloadDir string
 }
 
+func (i *Install) Configure(dl Downloader, timeout time.Duration) {
+	i.Dl = dl
+	i.Timeout = timeout
+}
+
 // Run installs the go version.
 func (i *Install) Run(ctx context.Context, ver string, forceDownload bool) error {
 	archiveName := fmt.Sprintf("%s%s.%s", downloader.Prefix(), ver, downloader.Postfix())

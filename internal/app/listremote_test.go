@@ -58,7 +58,7 @@ func TestListRemoteVersions(t *testing.T) {
 			if err != nil {
 				diff := cmp.Diff(tC.want, err.Error())
 				if diff != "" {
-					t.Errorf(diff)
+					t.Error(diff)
 				}
 			}
 		})

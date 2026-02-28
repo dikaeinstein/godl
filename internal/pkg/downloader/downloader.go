@@ -25,18 +25,44 @@ type Downloader struct {
 	BaseURL       string
 	DownloadDir   string
 	ForceDownload bool
+	dl            *downloader.Downloader
+}
+
+func New(
+	fsys fs.FS,
+	hasher downloader.Hasher,
+	hashVerifier downloader.HashVerifier,
+	client *http.Client,
+	baseURL string,
+	downloadDir string,
+	forceDownload bool,
+) (*Downloader, error) {
+	dl, err := downloader.New(
+		downloadDir, client, fsys,
+		hasher, &downloader.ProgressBar{}, hashVerifier,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Downloader{
+		FS:            fsys,
+		Hasher:        hasher,
+		HashVerifier:  hashVerifier,
+		Client:        client,
+		BaseURL:       baseURL,
+		DownloadDir:   downloadDir,
+		ForceDownload: forceDownload,
+		dl:            dl,
+	}, nil
+}
+
+func (d *Downloader) Configure(forceDownload bool) {
+	d.ForceDownload = forceDownload
 }
 
 // Download downloads a binary release of a given version.
 func (d *Downloader) Download(ctx context.Context, ver string) error {
-	dl, err := downloader.New(
-		d.DownloadDir, d.Client, d.FS,
-		d.Hasher, &downloader.ProgressBar{}, d.HashVerifier,
-	)
-	if err != nil {
-		return err
-	}
-
 	exists, err := version.Exists(ver, d.DownloadDir)
 	if err != nil {
 		return err
@@ -55,7 +81,7 @@ func (d *Downloader) Download(ctx context.Context, ver string) error {
 	archiveName := fmt.Sprintf("%s%s.%s", prefix, ver, postfix)
 	goURL := d.versionURL(ver)
 
-	return dl.Download(ctx, goURL, archiveName, goURL+".sha256")
+	return d.dl.Download(ctx, goURL, archiveName, goURL+".sha256")
 }
 
 func (d *Downloader) CheckIfExistsRemote(ctx context.Context, ver string) error {

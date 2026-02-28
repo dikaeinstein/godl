@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/dikaeinstein/downloader/pkg/hash"
+	"github.com/stretchr/testify/require"
 
 	"github.com/dikaeinstein/godl/internal/pkg/downloader"
 	"github.com/dikaeinstein/godl/pkg/fsys"
@@ -72,24 +73,28 @@ func TestInstallRelease(t *testing.T) {
 
 		t.Run(tC.name, func(t *testing.T) {
 			tmpFile, _ := test.CreateTempGoBinaryArchive(t, tC.downloadedVersion)
-			defer tmpFile.Close()
+			t.Cleanup(func() {
+				tmpFile.Close()
+			})
 
 			imFS := fsys.NewInMemFS(fstest.MapFS{})
-			dl := &downloader.Downloader{
-				BaseURL:      "https://storage.googleapis.com/golang/",
-				Client:       tC.c,
-				DownloadDir:  ".",
-				FS:           imFS,
-				Hasher:       hash.FakeHasher{},
-				HashVerifier: fakeHashVerifier{},
-			}
+			dl, err := downloader.New(
+				imFS,
+				hash.FakeHasher{},
+				fakeHashVerifier{}, tC.c,
+				"https://storage.googleapis.com/golang/",
+				".",
+				false,
+			)
+			require.NoError(t, err)
+
 			install := Install{
 				Archiver: testGzUnArchiver{},
 				Dl:       dl,
 				Timeout:  5 * time.Second,
 				FS:       imFS,
 			}
-			err := install.Run(context.Background(), tC.installVersion, false)
+			err = install.Run(context.Background(), tC.installVersion, false)
 			if err != nil && err.Error() != tC.errMsg {
 				t.Error(err)
 			}

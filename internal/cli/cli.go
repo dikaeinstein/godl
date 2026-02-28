@@ -7,12 +7,18 @@ import (
 	"path/filepath"
 
 	"github.com/MakeNowJust/heredoc"
+	"github.com/mholt/archiver/v3"
 	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
+	"github.com/dikaeinstein/downloader/pkg/hash"
+
 	"github.com/dikaeinstein/godl/internal/app"
+	"github.com/dikaeinstein/godl/internal/pkg/downloader"
+	"github.com/dikaeinstein/godl/internal/pkg/godlutil"
 	"github.com/dikaeinstein/godl/pkg/exitcode"
+	"github.com/dikaeinstein/godl/pkg/fsys"
 	"github.com/dikaeinstein/godl/pkg/text"
 )
 
@@ -107,13 +113,19 @@ Use "{{.CommandPath}} help [command]" or "{{.CommandPath}} [command] --help" for
 		text.Bold("INHERITED FLAGS"), text.Bold("ADDITIONAL HELP TOPICS"))
 }
 
+const distURL = "https://storage.googleapis.com/golang/"
+
 func Run(info app.BuildInfo) int {
 	godl := newRootCmd()
 
 	// subcommands
 	completionCmd := newCompletionCmd()
 	downloadCmd := newDownloadCmd(http.DefaultClient)
-	installCmd := newInstallCmd(http.DefaultClient)
+	installCmd, err := setupInstallCmd()
+	if err != nil {
+		return exitcode.Get(err)
+	}
+
 	lsCmd := newListCmd()
 	lsRemoteCmd := newListRemoteCmd(http.DefaultClient)
 	updateCmd := newUpdateCmd(http.DefaultClient, info)
@@ -129,5 +141,38 @@ func Run(info app.BuildInfo) int {
 		versionCmd,
 	})
 
-	return exitcode.Get(godl.ExecuteContext(context.Background()))
+	execErr := godl.ExecuteContext(context.Background())
+	godl.PrintErr(execErr)
+	return exitcode.Get(execErr)
+}
+
+func setupInstallCmd() (*cobra.Command, error) {
+	dlDir, err := godlutil.GetDownloadDir()
+	if err != nil {
+		return nil, err
+	}
+
+	dl, err := downloader.New(
+		fsys.OsFS{},
+		hash.NewRemoteHasher(http.DefaultClient),
+		hash.Verifier{},
+		http.DefaultClient,
+		distURL,
+		dlDir,
+		false,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	installer := app.Install{
+		Archiver: &archiver.TarGz{
+			Tar: &archiver.Tar{
+				OverwriteExisting: true,
+			},
+			CompressionLevel: -1,
+		},
+	}
+
+	return newInstallCmd(http.DefaultClient, dl, &installer), nil
 }

@@ -23,17 +23,7 @@ linters-settings:
     min-complexity: 15
   goimports:
     local-prefixes: github.com/dikaeinstein/godl
-  gomnd:
-    settings:
-      mnd:
-        # don't include the "operation" and "assign"
-        checks:
-          - argument
-          - case
-          - condition
-          - return
   govet:
-    check-shadowing: true
     settings:
       printf:
         funcs:
@@ -64,12 +54,10 @@ linters:
   disable-all: true
   enable:
     - bodyclose
-    - depguard
     - dogsled
     - dupl
     - errcheck
     - exhaustive
-    - exportloopref
     - funlen
     - gochecknoinits
     - goconst
@@ -77,7 +65,6 @@ linters:
     - gocyclo
     - gofmt
     - goimports
-    - gomnd
     - goprintffuncname
     - gosec
     - gosimple
@@ -112,7 +99,5 @@ issues:
     - linters:
         - gocritic
       text: "unnecessaryDefer:"
-
-run:
-  skip-dirs:
+  exclude-dirs:
     - test/testdata
