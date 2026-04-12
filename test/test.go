@@ -11,7 +11,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/dikaeinstein/godl/internal/pkg/downloader"
+	"github.com/dikaeinstein/godl/internal/downloader"
 )
 
 // CreateTempGoBinaryArchive is test helper function used to create a fake golang binary archive.

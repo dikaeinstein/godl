@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/dikaeinstein/godl/internal/app"
-	"github.com/dikaeinstein/godl/internal/pkg/downloader"
+	"github.com/dikaeinstein/godl/internal/downloader"
 )
 
 // newInstallCmd returns the install command

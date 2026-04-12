@@ -9,7 +9,7 @@ import (
 
 	"github.com/dikaeinstein/downloader/pkg/downloader"
 
-	"github.com/dikaeinstein/godl/internal/pkg/version"
+	"github.com/dikaeinstein/godl/internal/version"
 )
 
 const (
@@ -47,8 +47,6 @@ func New(
 
 	return &Downloader{
 		FS:            fsys,
-		Hasher:        hasher,
-		HashVerifier:  hashVerifier,
 		Client:        client,
 		BaseURL:       baseURL,
 		DownloadDir:   downloadDir,

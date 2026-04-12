@@ -1,4 +1,4 @@
-// Copyright © 2019 Onyedikachi Solomon Okwa <solozyokwa@gmail.com>
+// Copyright © 2019 Onyedikachi Solomon Okwa <onyedikachi.okwa@gmail.com>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,8 +23,8 @@ import (
 
 	go_version "github.com/hashicorp/go-version"
 
-	"github.com/dikaeinstein/godl/internal/pkg/godlutil"
-	"github.com/dikaeinstein/godl/internal/pkg/version"
+	"github.com/dikaeinstein/godl/internal/godlutil"
+	"github.com/dikaeinstein/godl/internal/version"
 )
 
 // List lists the downloaded go versions

@@ -11,8 +11,8 @@ import (
 	"github.com/dikaeinstein/downloader/pkg/hash"
 
 	"github.com/dikaeinstein/godl/internal/app"
-	"github.com/dikaeinstein/godl/internal/pkg/downloader"
-	"github.com/dikaeinstein/godl/internal/pkg/godlutil"
+	"github.com/dikaeinstein/godl/internal/downloader"
+	"github.com/dikaeinstein/godl/internal/godlutil"
 	"github.com/dikaeinstein/godl/pkg/fsys"
 )
 

@@ -13,7 +13,7 @@ import (
 	go_version "github.com/hashicorp/go-version"
 	"github.com/tj/go-spin"
 
-	"github.com/dikaeinstein/godl/internal/pkg/version"
+	"github.com/dikaeinstein/godl/internal/version"
 	"github.com/dikaeinstein/godl/pkg/text"
 )
 

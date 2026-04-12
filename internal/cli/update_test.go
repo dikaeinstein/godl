@@ -39,7 +39,8 @@ func TestUpdateCmd(t *testing.T) {
 				Your version of Godl is out of date!
 
 				The latest version is v0.11.6.
-				You can update by downloading from https://github.com/dikaeinstein/godl/releases
+				You can update by downloading from https://github.com/dikaeinstein/godl/releases or
+				running "go install github.com/dikaeinstein/godl/cmd/godl@v0.11.6".
 			`),
 		},
 	}
