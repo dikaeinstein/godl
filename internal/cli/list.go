@@ -6,8 +6,8 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/dikaeinstein/godl/internal/app"
-	"github.com/dikaeinstein/godl/internal/pkg/godlutil"
-	"github.com/dikaeinstein/godl/internal/pkg/version"
+	"github.com/dikaeinstein/godl/internal/godlutil"
+	"github.com/dikaeinstein/godl/internal/version"
 	"github.com/dikaeinstein/godl/pkg/text"
 )
 

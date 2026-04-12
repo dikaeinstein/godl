@@ -12,14 +12,16 @@ import (
 	"github.com/dikaeinstein/downloader/pkg/hash"
 	"github.com/stretchr/testify/require"
 
-	"github.com/dikaeinstein/godl/internal/pkg/downloader"
+	"github.com/dikaeinstein/godl/internal/downloader"
 	"github.com/dikaeinstein/godl/pkg/fsys"
 	"github.com/dikaeinstein/godl/test"
 )
 
 type testGzUnArchiver struct{}
 
-func (testGzUnArchiver) Unarchive(source, target string) error { return nil }
+func (testGzUnArchiver) Unarchive(ctx context.Context, source, target string) error {
+	return nil
+}
 
 type fakeHashVerifier struct{}
 

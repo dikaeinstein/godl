@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 
 	"github.com/MakeNowJust/heredoc"
-	"github.com/mholt/archiver/v3"
 	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -15,8 +14,9 @@ import (
 	"github.com/dikaeinstein/downloader/pkg/hash"
 
 	"github.com/dikaeinstein/godl/internal/app"
-	"github.com/dikaeinstein/godl/internal/pkg/downloader"
-	"github.com/dikaeinstein/godl/internal/pkg/godlutil"
+	"github.com/dikaeinstein/godl/internal/archives"
+	"github.com/dikaeinstein/godl/internal/downloader"
+	"github.com/dikaeinstein/godl/internal/godlutil"
 	"github.com/dikaeinstein/godl/pkg/exitcode"
 	"github.com/dikaeinstein/godl/pkg/fsys"
 	"github.com/dikaeinstein/godl/pkg/text"
@@ -141,9 +141,12 @@ func Run(info app.BuildInfo) int {
 		versionCmd,
 	})
 
-	execErr := godl.ExecuteContext(context.Background())
-	godl.PrintErr(execErr)
-	return exitcode.Get(execErr)
+	if execErr := godl.ExecuteContext(context.Background()); execErr != nil {
+		godl.PrintErr(execErr)
+		return exitcode.Get(execErr)
+	}
+
+	return 0
 }
 
 func setupInstallCmd() (*cobra.Command, error) {
@@ -166,12 +169,7 @@ func setupInstallCmd() (*cobra.Command, error) {
 	}
 
 	installer := app.Install{
-		Archiver: &archiver.TarGz{
-			Tar: &archiver.Tar{
-				OverwriteExisting: true,
-			},
-			CompressionLevel: -1,
-		},
+		Archiver: archives.NewTarGZ(),
 	}
 
 	return newInstallCmd(http.DefaultClient, dl, &installer), nil

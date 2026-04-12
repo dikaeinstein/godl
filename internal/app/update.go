@@ -11,7 +11,7 @@ import (
 	go_version "github.com/hashicorp/go-version"
 	"github.com/spf13/viper"
 
-	"github.com/dikaeinstein/godl/internal/pkg/version"
+	"github.com/dikaeinstein/godl/internal/version"
 	"github.com/dikaeinstein/godl/pkg/text"
 )
 
@@ -37,6 +37,8 @@ type Update struct {
 	Output io.Writer
 }
 
+const godlReleaseURL = "https://github.com/dikaeinstein/godl/releases"
+
 func (u *Update) Run(ctx context.Context, currentVersion string) error {
 	exists, latest, err := u.CheckForUpdate(ctx, currentVersion)
 	if err != nil {
@@ -48,9 +50,12 @@ func (u *Update) Run(ctx context.Context, currentVersion string) error {
 			%s
 
 			The latest version is %s.
-			You can update by downloading from https://github.com/dikaeinstein/godl/releases
+			You can update by downloading from %s or
+			running "go install github.com/dikaeinstein/godl/cmd/godl@%s".
 		`,
-			text.Red("Your version of Godl is out of date!"), latest.TagName))
+			text.Red("Your version of Godl is out of date!"),
+			latest.TagName, godlReleaseURL, latest.TagName,
+		))
 	} else {
 		fmt.Fprintln(u.Output, "No update available.")
 	}
@@ -83,6 +88,7 @@ func (u *Update) fetchReleaseList(ctx context.Context, url string) (ListReleases
 	if err != nil {
 		return nil, err
 	}
+
 	req.Header.Set("Accept", "application/vnd.github.v3+json")
 	req.Header.Set("User-Agent", "godl")
 

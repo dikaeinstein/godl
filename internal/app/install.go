@@ -1,4 +1,4 @@
-// Copyright © 2019 Onyedikachi Solomon Okwa <solozyokwa@gmail.com>
+// Copyright © 2019 Onyedikachi Solomon Okwa <onyedikachi.okwa@gmail.com>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,14 +21,14 @@ import (
 	"path"
 	"time"
 
-	"github.com/dikaeinstein/godl/internal/pkg/downloader"
-	"github.com/dikaeinstein/godl/internal/pkg/version"
+	"github.com/dikaeinstein/godl/internal/downloader"
+	"github.com/dikaeinstein/godl/internal/version"
 	"github.com/dikaeinstein/godl/pkg/fsys"
 	"github.com/dikaeinstein/godl/pkg/text"
 )
 
 type Archiver interface {
-	Unarchive(source, target string) error
+	Unarchive(ctx context.Context, source, target string) error
 }
 
 type Install struct {
@@ -81,7 +81,7 @@ func (i *Install) Run(ctx context.Context, ver string, forceDownload bool) error
 
 	fmt.Printf("unpacking %v ...\n", ver)
 	target := path.Join("/usr", "local")
-	err = i.Archiver.Unarchive(downloadPath, target)
+	err = i.Archiver.Unarchive(ctx, downloadPath, target)
 	if err != nil {
 		return err
 	}

@@ -3,7 +3,7 @@ package app
 import (
 	"testing"
 
-	"github.com/dikaeinstein/godl/internal/pkg/version"
+	"github.com/dikaeinstein/godl/internal/version"
 	"github.com/dikaeinstein/godl/test"
 )
 

@@ -6,14 +6,14 @@ import (
 	"path"
 	"testing"
 
-	"github.com/mholt/archiver/v3"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/require"
 
 	"github.com/dikaeinstein/downloader/pkg/hash"
 
 	"github.com/dikaeinstein/godl/internal/app"
-	"github.com/dikaeinstein/godl/internal/pkg/downloader"
+	"github.com/dikaeinstein/godl/internal/archives"
+	"github.com/dikaeinstein/godl/internal/downloader"
 	"github.com/dikaeinstein/godl/pkg/fsys"
 	"github.com/dikaeinstein/godl/test"
 )
@@ -72,14 +72,7 @@ func TestInstallCmd(t *testing.T) {
 			)
 			require.NoError(t, err)
 
-			installer := app.Install{
-				Archiver: &archiver.TarGz{
-					Tar: &archiver.Tar{
-						OverwriteExisting: true,
-					},
-					CompressionLevel: -1,
-				},
-			}
+			installer := app.Install{Archiver: archives.NewTarGZ()}
 
 			install := newInstallCmd(testClient, dl, &installer)
 			registerSubCommands(godl, []*cobra.Command{install})
