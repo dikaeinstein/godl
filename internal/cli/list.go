@@ -43,7 +43,7 @@ func (c *lsCli) setupConfig(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	c.lsConfig.sortDirection = viper.GetString("sortDirection")
+	c.sortDirection = viper.GetString("sortDirection")
 
 	return nil
 }
@@ -55,5 +55,5 @@ func (c *lsCli) run(cmd *cobra.Command, args []string) error {
 	}
 
 	ls := app.List{}
-	return ls.Run(d, c.lsConfig.sortDirection)
+	return ls.Run(d, c.sortDirection)
 }

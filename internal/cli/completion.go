@@ -92,7 +92,7 @@ func (cCli completionCli) setupConfig(cmd *cobra.Command, _ []string) error {
 		return err
 	}
 
-	cCli.completionConfig.useDefault = viper.GetBool("default")
+	cCli.useDefault = viper.GetBool("default")
 
 	return nil
 }

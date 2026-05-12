@@ -85,7 +85,7 @@ func extractArchive(fileInfo archives.FileInfo, destination string) error {
 	return os.Chmod(to, fileInfo.Mode())
 }
 
-func fileExists(path string) bool {
-	_, err := os.Stat(path)
+func fileExists(p string) bool {
+	_, err := os.Stat(p)
 	return !errors.Is(err, os.ErrNotExist)
 }

@@ -66,7 +66,7 @@ func (dCli *downloadCli) run(cmd *cobra.Command, args []string) error {
 		dCli.httpClient,
 		"https://dl.google.com/go/",
 		dlDir,
-		dCli.downloadConfig.forceDownload,
+		dCli.forceDownload,
 	)
 	if err != nil {
 		return fmt.Errorf("failed to initialize downloader: %w", err)
@@ -74,10 +74,10 @@ func (dCli *downloadCli) run(cmd *cobra.Command, args []string) error {
 
 	d := app.Download{
 		Dl:      dl,
-		Timeout: dCli.downloadConfig.timeout,
+		Timeout: dCli.timeout,
 	}
 
-	return d.Run(cmd.Context(), args[0], dCli.downloadConfig.os, dCli.downloadConfig.arch)
+	return d.Run(cmd.Context(), args[0], dCli.os, dCli.arch)
 }
 
 func (dCli *downloadCli) setupConfig(cmd *cobra.Command, args []string) error {
@@ -85,10 +85,10 @@ func (dCli *downloadCli) setupConfig(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	dCli.downloadConfig.timeout = viper.GetDuration("timeout")
-	dCli.downloadConfig.forceDownload = viper.GetBool("force")
-	dCli.downloadConfig.os = viper.GetString("os")
-	dCli.downloadConfig.arch = viper.GetString("arch")
+	dCli.timeout = viper.GetDuration("timeout")
+	dCli.forceDownload = viper.GetBool("force")
+	dCli.os = viper.GetString("os")
+	dCli.arch = viper.GetString("arch")
 
 	return nil
 }
