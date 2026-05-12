@@ -8,7 +8,7 @@ import (
 )
 
 func TestListDownloadedBinaryArchives(t *testing.T) {
-	tmpFile, tmpDir := test.CreateTempGoBinaryArchive(t, "1.13")
+	tmpFile, tmpDir := test.CreateTempGoBinaryArchive(t, "1.13", "darwin", "arm64")
 	defer tmpFile.Close()
 
 	ls := List{}

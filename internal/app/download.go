@@ -23,7 +23,7 @@ import (
 )
 
 type Downloader interface {
-	Download(ctx context.Context, version string) error
+	Download(ctx context.Context, version, os, arch string) error
 }
 
 // Download downloads go binaries
@@ -33,12 +33,13 @@ type Download struct {
 }
 
 // Run downloads the specified go version
-func (d *Download) Run(ctx context.Context, version string) error {
-	fmt.Println(text.GreenF("Downloading go archive %v", version))
+func (d *Download) Run(ctx context.Context, version, os, arch string) error {
+	fmt.Println(text.GreenF("Downloading go version: %v", version))
 
 	ctx, cancel := context.WithTimeout(ctx, d.Timeout)
 	defer cancel()
-	err := d.Dl.Download(ctx, version)
+
+	err := d.Dl.Download(ctx, version, os, arch)
 	if err != nil {
 		return fmt.Errorf("error downloading %v: %w", version, err)
 	}

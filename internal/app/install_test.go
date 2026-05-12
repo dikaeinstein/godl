@@ -56,17 +56,17 @@ func TestInstallRelease(t *testing.T) {
 		goPathsD          string
 	}{
 		{
-			"installRelease downloads from remote when version not found locally",
+			"RemoteVersion",
 			testClient, "1.10.1", "1.11.7", "", "/usr/local/go/bin\n",
 		},
 		{
-			"installRelease installs local downloaded version",
+			"LocalVersion",
 			testClient, "1.10.6", "1.10.6", "", "/usr/local/go/bin\n",
 		},
 		{
-			"installRelease handle error when fetching binary from remote",
+			"HandleErrorWhenFetchingBinaryFromRemote",
 			failingTestClient, "1.10.1", "1.11.9",
-			"error downloading 1.11.9: no binary release of 1.11.9", "",
+			"error downloading 1.11.9: no binary release of https://dl.google.com/go/go1.11.9.darwin-arm64.tar.gz", "",
 		},
 	}
 
@@ -74,7 +74,7 @@ func TestInstallRelease(t *testing.T) {
 		tC := testCases[i]
 
 		t.Run(tC.name, func(t *testing.T) {
-			tmpFile, _ := test.CreateTempGoBinaryArchive(t, tC.downloadedVersion)
+			tmpFile, _ := test.CreateTempGoBinaryArchive(t, tC.downloadedVersion, "darwin", "arm64")
 			t.Cleanup(func() {
 				tmpFile.Close()
 			})
@@ -84,7 +84,7 @@ func TestInstallRelease(t *testing.T) {
 				imFS,
 				hash.FakeHasher{},
 				fakeHashVerifier{}, tC.c,
-				"https://storage.googleapis.com/golang/",
+				"https://dl.google.com/go/",
 				".",
 				false,
 			)
@@ -96,7 +96,7 @@ func TestInstallRelease(t *testing.T) {
 				Timeout:  5 * time.Second,
 				FS:       imFS,
 			}
-			err = install.Run(context.Background(), tC.installVersion, false)
+			err = install.Run(context.Background(), tC.installVersion, "darwin", "arm64", false)
 			if err != nil && err.Error() != tC.errMsg {
 				t.Error(err)
 			}

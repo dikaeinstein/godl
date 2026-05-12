@@ -2,12 +2,11 @@ package app
 
 import (
 	"context"
-	"encoding/xml"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"sort"
-	"strings"
 	"time"
 
 	go_version "github.com/hashicorp/go-version"
@@ -17,19 +16,11 @@ import (
 	"github.com/dikaeinstein/godl/pkg/text"
 )
 
-// ListBucketResult represents the list of objects result
-type ListBucketResult struct {
-	XMLNAME     xml.Name `xml:"ListBucketResult"`
-	NextMarker  string
-	Contents    []Content `xml:"Contents"`
-	IsTruncated bool
-}
-
-// Content represents a ListBucketResult object
-type Content struct {
-	LastModified time.Time
-	XMLNAME      xml.Name `xml:"Contents"`
-	Key          string
+// GoRelease represents a go release as returned by https://go.dev/dl/
+// excluding the `files` field.
+type GoRelease struct {
+	Version string
+	Stable  bool
 }
 
 // ListRemote lists remote versions available for install
@@ -37,6 +28,8 @@ type ListRemote struct {
 	Client  *http.Client
 	Timeout time.Duration
 }
+
+const goDownloadURL = "https://go.dev/dl/?mode=json&include=all"
 
 func (lsRemote *ListRemote) Run(ctx context.Context, sortDirection string) error {
 	ctx, cancel := context.WithCancel(ctx)
@@ -58,29 +51,13 @@ func (lsRemote *ListRemote) Run(ctx context.Context, sortDirection string) error
 		}
 	}()
 
-	baseURI := "https://storage.googleapis.com/golang/?prefix=go1"
-	url := baseURI
-	var contents []Content
-
-	for {
-		listBucketResult, err := lsRemote.getBinaryReleases(ctx, url)
-		if err != nil {
-			return fmt.Errorf("\nerror fetching list: %v", err)
-		}
-
-		fl := selectDarwin(listBucketResult)
-		contents = append(contents, fl.Contents...)
-
-		// if there's nothing left to fetch
-		if !listBucketResult.IsTruncated {
-			break
-		}
-
-		// update url with marker to fetch next list
-		url = baseURI + "&marker=" + listBucketResult.NextMarker
+	releases, err := lsRemote.fetchGoReleases(ctx, goDownloadURL)
+	if err != nil {
+		return fmt.Errorf("could not fetch Go releases: %w", err)
 	}
 
-	versions := mapXMLContentToVersion(contents)
+	versions := mapGoReleasesToVersions(releases)
+
 	// sort in-place comparing version numbers
 	sort.Slice(versions, func(i, j int) bool {
 		return version.CompareVersions(versions[i], versions[j], sortDirection)
@@ -96,7 +73,7 @@ func (lsRemote *ListRemote) Run(ctx context.Context, sortDirection string) error
 	return nil
 }
 
-func (lsRemote *ListRemote) getBinaryReleases(ctx context.Context, url string) (*ListBucketResult, error) {
+func (lsRemote *ListRemote) fetchGoReleases(ctx context.Context, url string) ([]GoRelease, error) {
 	ctx, cancelFunc := context.WithTimeout(ctx, lsRemote.Timeout)
 	defer cancelFunc()
 
@@ -119,31 +96,21 @@ func (lsRemote *ListRemote) getBinaryReleases(ctx context.Context, url string) (
 		return nil, fmt.Errorf("%s: %v", url, res.Status)
 	}
 
-	var l ListBucketResult
-	err = xml.NewDecoder(res.Body).Decode(&l)
+	var releases []GoRelease
+	err = json.NewDecoder(res.Body).Decode(&releases)
 	if err != nil {
-		return nil, fmt.Errorf("error decoding xml: %v", err)
+		return nil, fmt.Errorf("error decoding json: %v", err)
 	}
 
-	return &l, nil
+	return releases, nil
 }
 
-func selectDarwin(l *ListBucketResult) ListBucketResult {
-	var archiveList ListBucketResult
+func mapGoReleasesToVersions(releases []GoRelease) []*go_version.Version {
+	versions := make([]*go_version.Version, len(releases))
 
-	for _, r := range l.Contents {
-		if strings.Contains(r.Key, "darwin-amd64") && strings.HasSuffix(r.Key, "tar.gz") {
-			archiveList.Contents = append(archiveList.Contents, r)
-		}
+	for i, r := range releases {
+		versions[i] = version.GetVersion(r.Version)
 	}
 
-	return archiveList
-}
-
-func mapXMLContentToVersion(contents []Content) []*go_version.Version {
-	versions := make([]*go_version.Version, len(contents))
-	for i, c := range contents {
-		versions[i] = version.GetVersion(c.Key)
-	}
 	return versions
 }

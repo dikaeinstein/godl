@@ -2,8 +2,6 @@ package cli
 
 import (
 	"net/http"
-	"os"
-	"path"
 	"testing"
 
 	"github.com/spf13/cobra"
@@ -44,14 +42,9 @@ func TestInstallCmd(t *testing.T) {
 	}
 
 	testClient := test.NewTestClient(test.RoundTripFunc(func(req *http.Request) *http.Response {
-		f, err := os.Open(path.Join("..", "..", "test", "testdata", "listbucketresult.xml"))
-		if err != nil {
-			panic(err)
-		}
-
 		return &http.Response{
 			StatusCode: http.StatusOK,
-			Body:       f,
+			Body:       http.NoBody,
 		}
 	}))
 

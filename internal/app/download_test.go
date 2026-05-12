@@ -33,7 +33,7 @@ func TestDownload(t *testing.T) {
 
 			d := Download{dl, 5 * time.Second}
 			version := "1.12"
-			err := d.Run(context.Background(), version)
+			err := d.Run(context.Background(), version, "darwin", "arm64")
 			if !errors.Is(err, tC.expectedErr) {
 				t.Fatalf("Download.Run(ctx, %s) = %v; want: %v",
 					version, err, tC.expectedErr)
@@ -46,7 +46,7 @@ type fakeDownloader struct {
 	returnErr bool
 }
 
-func (d fakeDownloader) Download(_ context.Context, v string) error {
+func (d fakeDownloader) Download(_ context.Context, _, _, _ string) error {
 	if d.returnErr {
 		return errDownloadFailed
 	}

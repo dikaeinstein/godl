@@ -18,6 +18,10 @@ func (fakeSymLinkerFS) Symlink(oldName, newName string) error {
 	return nil
 }
 
+func (fakeSymLinkerFS) SymlinkDir(oldDir, newDir string) error {
+	return nil
+}
+
 type fakeCompletionGenerator struct{}
 
 func generateTestCompletion(out io.Writer) error {

@@ -18,10 +18,11 @@ type RenameFS interface {
 	Rename(oldPath, newPath string) error
 }
 
-// SymlinkFS is a filesystem that can symlink a file.
+// SymlinkFS is a filesystem that can symlink files.
 type SymlinkFS interface {
 	fs.FS
 	Symlink(oldName, newName string) error
+	SymlinkDir(oldDir, newDir string) error
 }
 
 // RemoveAllFS is a filesystem that remove path and it's children that it may contain.
@@ -61,6 +62,16 @@ func Symlink(fsys fs.FS, oldName, newName string) error {
 	}
 
 	return fmt.Errorf("symlink %s %s: operation not supported", oldName, newName)
+}
+
+// SymlinkDir symlinks all files in the source directory to the destination
+// directory using the given filesystem. Excludes directories and symlinks.
+func SymlinkDir(fsys fs.FS, oldDir, newDir string) error {
+	if fsys, ok := fsys.(SymlinkFS); ok {
+		return fsys.SymlinkDir(oldDir, newDir)
+	}
+
+	return fmt.Errorf("symlinkDir %s %s: operation not supported", oldDir, newDir)
 }
 
 // RemoveAll path and it's children using the given filesystem.

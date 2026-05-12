@@ -70,3 +70,11 @@ func (inmem *InMemFS) WriteFile(filename string, data []byte, perm os.FileMode) 
 
 	return err
 }
+
+func (inmem *InMemFS) Symlink(oldName, newName string) error {
+	return nil
+}
+
+func (inmem *InMemFS) SymlinkDir(oldDir, newDir string) error {
+	return nil
+}

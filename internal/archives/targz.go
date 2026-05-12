@@ -53,7 +53,7 @@ func (tgz TarGZ) Unarchive(
 }
 
 func extractArchive(fileInfo archives.FileInfo, destination string) error {
-	to := filepath.Join(destination, path.Clean(fileInfo.Name()))
+	to := filepath.Join(destination, path.Clean(fileInfo.NameInArchive))
 
 	if fileInfo.IsDir() {
 		return os.MkdirAll(to, fileInfo.Mode())

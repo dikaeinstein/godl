@@ -6,7 +6,6 @@ require (
 	github.com/MakeNowJust/heredoc v1.0.0
 	github.com/dikaeinstein/downloader v0.0.5
 	github.com/fatih/color v1.18.0
-	github.com/google/go-cmp v0.7.0
 	github.com/hashicorp/go-version v1.8.0
 	github.com/mholt/archives v0.1.5
 	github.com/mitchellh/go-homedir v1.1.0
@@ -88,6 +87,7 @@ require (
 	github.com/golangci/plugin-module-register v0.1.1 // indirect
 	github.com/golangci/revgrep v0.8.0 // indirect
 	github.com/golangci/unconvert v0.0.0-20240309020433-c5143eacb3ed // indirect
+	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/gordonklaus/ineffassign v0.1.0 // indirect
 	github.com/gostaticanalysis/analysisutil v0.7.1 // indirect
 	github.com/gostaticanalysis/comment v1.5.0 // indirect
