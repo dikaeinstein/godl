@@ -16,6 +16,7 @@ package app
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"io/fs"
 	"os"
@@ -71,8 +72,11 @@ func (c *Completion) Run(shell string, out io.Writer, useDefault bool) error {
 		}
 
 		if useDefault {
-			zshTarget := CompletionMakeTarget(shell, c.AutocompleteDir)
-			return fsys.Symlink(c.FS, zshTarget, filepath.Join(c.ZshSymlinkDir, "_godl"))
+			zshCompletionFile := CompletionMakeTarget(shell, c.AutocompleteDir)
+			_godl := filepath.Join(c.ZshSymlinkDir, "_godl")
+			if err := fsys.Symlink(c.FS, zshCompletionFile, _godl); err != nil {
+				return fmt.Errorf("failed to link %s to %s: %w", zshCompletionFile, _godl, err)
+			}
 		}
 		return nil
 	case ShellFish:

@@ -46,7 +46,7 @@ type completionCli struct {
 	completionConfig
 }
 
-func (cCli completionCli) run(cmd *cobra.Command, args []string) error {
+func (cCli *completionCli) run(cmd *cobra.Command, args []string) error {
 	home, err := homedir.Dir()
 	if err != nil {
 		return err
@@ -87,7 +87,7 @@ func (cCli completionCli) run(cmd *cobra.Command, args []string) error {
 	return c.Run(args[0], out, cCli.useDefault)
 }
 
-func (cCli completionCli) setupConfig(cmd *cobra.Command, _ []string) error {
+func (cCli *completionCli) setupConfig(cmd *cobra.Command, _ []string) error {
 	if err := viper.BindPFlags(cmd.Flags()); err != nil {
 		return err
 	}
