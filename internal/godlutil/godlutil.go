@@ -15,6 +15,7 @@ func GetDownloadDir() (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("home directory cannot be detected: %v", err)
 	}
+
 	return path.Join(home, ".godl", "downloads"), nil
 }
 
@@ -37,4 +38,10 @@ func VerifyHash(input io.Reader, hex string) error {
 	}
 
 	return nil
+}
+
+// ArchiveName returns the name of the go archive for a given version, os, and architecture.
+// For example, ArchiveName("1.26.2", "darwin", "arm64") returns "go1.26.2.darwin-arm64.tar.gz"
+func ArchiveName(version, os, arch string) string {
+	return fmt.Sprintf("go%s.%s-%s.tar.gz", version, os, arch)
 }

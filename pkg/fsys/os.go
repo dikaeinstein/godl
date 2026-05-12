@@ -1,8 +1,11 @@
 package fsys
 
 import (
+	"errors"
+	"fmt"
 	"io/fs"
 	"os"
+	"path/filepath"
 )
 
 // OsFS is an os based filesystem.
@@ -29,6 +32,41 @@ func (OsFS) Rename(oldPath, newPath string) error {
 // Symlink creates newname as a symbolic link to oldname
 func (OsFS) Symlink(oldName, newName string) error {
 	return os.Symlink(oldName, newName)
+}
+
+// SymlinkDir creates symlinks for all files in the source directory to the destination directory.
+// Excludes directories and symlinks.
+func (OsFS) SymlinkDir(oldDir, newDir string) error {
+	return filepath.WalkDir(oldDir, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+
+		if d.IsDir() {
+			return nil
+		}
+
+		if d.Type()&os.ModeSymlink != 0 {
+			return nil
+		}
+
+		oldName := filepath.Join(oldDir, d.Name())
+		newName := filepath.Join(newDir, d.Name())
+
+		if err := os.Symlink(oldName, newName); err != nil {
+			if errors.Is(err, os.ErrExist) {
+				if err := os.Remove(newName); err != nil {
+					return fmt.Errorf("failed to unlink existing symlink: %w", err)
+				}
+
+				return os.Symlink(oldName, newName)
+			}
+
+			return fmt.Errorf("failed to symlink: %w", err)
+		}
+
+		return nil
+	})
 }
 
 // WriteFile writes data to file with filename

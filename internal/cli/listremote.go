@@ -51,8 +51,8 @@ func (c *lsRemoteCli) setupConfig(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	c.lsRemoteConfig.timeout = viper.GetDuration("timeout")
-	c.lsRemoteConfig.sortDirection = viper.GetString("sortDirection")
+	c.timeout = viper.GetDuration("timeout")
+	c.sortDirection = viper.GetString("sortDirection")
 
 	return nil
 }

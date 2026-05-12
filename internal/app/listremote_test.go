@@ -3,6 +3,8 @@ package app
 import (
 	"bytes"
 	"context"
+	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -10,15 +12,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/go-cmp/cmp"
-
 	"github.com/dikaeinstein/godl/internal/version"
 	"github.com/dikaeinstein/godl/test"
 )
 
 func TestListRemoteVersions(t *testing.T) {
 	testClient := test.NewTestClient(test.RoundTripFunc(func(req *http.Request) *http.Response {
-		f, err := os.Open(path.Join("..", "..", "test", "testdata", "listbucketresult.xml"))
+		f, err := os.Open(path.Join("..", "..", "test", "testdata", "go_releases.json"))
 		if err != nil {
 			panic(err)
 		}
@@ -32,6 +32,7 @@ func TestListRemoteVersions(t *testing.T) {
 	failingTestClient := test.NewTestClient(test.RoundTripFunc(func(req *http.Request) *http.Response {
 		return &http.Response{
 			StatusCode: http.StatusNotFound,
+			Status:     fmt.Sprintf("%d %s", http.StatusNotFound, http.StatusText(http.StatusNotFound)),
 			Body:       io.NopCloser(bytes.NewBufferString("")),
 		}
 	}))
@@ -39,13 +40,15 @@ func TestListRemoteVersions(t *testing.T) {
 	testCases := []struct {
 		name   string
 		client *http.Client
-		want   string
+		want   error
 	}{
 		{name: "getBinaryReleases succeeds", client: testClient},
 		{
 			name:   "handles getBinaryReleases error",
 			client: failingTestClient,
-			want:   "\nerror fetching list: https://storage.googleapis.com/golang/?prefix=go1: ",
+			want: errors.New(
+				"could not fetch Go releases: https://go.dev/dl/?mode=json&include=all: 404 Not Found",
+			),
 		},
 	}
 
@@ -56,9 +59,8 @@ func TestListRemoteVersions(t *testing.T) {
 			lsRemote := ListRemote{tC.client, 2 * time.Second}
 			err := lsRemote.Run(context.Background(), version.SortAsc)
 			if err != nil {
-				diff := cmp.Diff(tC.want, err.Error())
-				if diff != "" {
-					t.Error(diff)
+				if err.Error() != tC.want.Error() {
+					t.Errorf("got: %v, want: %v", err, tC.want)
 				}
 			}
 		})

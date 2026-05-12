@@ -54,11 +54,15 @@ func (l List) Run(downloadDir, sortDirection string) error {
 
 func mapToVersion(entries []fs.DirEntry) []*go_version.Version {
 	versions := []*go_version.Version{}
+
 	for _, e := range entries {
 		name := e.Name()
-		if strings.HasSuffix(name, ".darwin-amd64.tar.gz") {
+		if strings.HasPrefix(name, "go") &&
+			strings.Contains(name, "darwin") &&
+			strings.HasSuffix(name, ".tar.gz") {
 			versions = append(versions, version.GetVersion(name))
 		}
 	}
+
 	return versions
 }

@@ -21,7 +21,9 @@ import (
 	"path"
 	"time"
 
-	"github.com/dikaeinstein/godl/internal/downloader"
+	"github.com/mitchellh/go-homedir"
+
+	"github.com/dikaeinstein/godl/internal/godlutil"
 	"github.com/dikaeinstein/godl/internal/version"
 	"github.com/dikaeinstein/godl/pkg/fsys"
 	"github.com/dikaeinstein/godl/pkg/text"
@@ -39,19 +41,22 @@ type Install struct {
 	DownloadDir string
 }
 
-func (i *Install) Configure(dl Downloader, timeout time.Duration) {
-	i.Dl = dl
+func (i *Install) Configure(timeout time.Duration) {
 	i.Timeout = timeout
 }
 
 // Run installs the go version.
-func (i *Install) Run(ctx context.Context, ver string, forceDownload bool) error {
-	archiveName := fmt.Sprintf("%s%s.%s", downloader.Prefix(), ver, downloader.Postfix())
+func (i *Install) Run(
+	ctx context.Context,
+	ver, os, arch string,
+	forceDownload bool,
+) error {
+	archiveName := godlutil.ArchiveName(ver, os, arch)
 	downloadPath := path.Join(i.DownloadDir, archiveName)
 
-	fmt.Println(text.Green("Installing binary into /usr/local"))
+	fmt.Println("Installing binary into /usr/local/bin...")
 
-	exists, err := version.Exists(ver, i.DownloadDir)
+	exists, err := version.Exists(archiveName, i.DownloadDir)
 	if err != nil {
 		return err
 	}
@@ -63,37 +68,41 @@ func (i *Install) Run(ctx context.Context, ver string, forceDownload bool) error
 
 		ctx, cancel := context.WithTimeout(ctx, i.Timeout)
 		defer cancel()
-		err = i.Dl.Download(ctx, ver)
+		err = i.Dl.Download(ctx, ver, os, arch)
 		if err != nil {
 			return fmt.Errorf("error downloading %v: %v", ver, err)
 		}
 	}
 
-	// clean install - remove existing go installation before installing
-	// new version
-	fmt.Println()
-	fmt.Println("removing old installation...")
-	err = fsys.RemoveAll(i.FS, path.Join("/usr", "local", "go"))
+	fmt.Printf("unpacking %v ...\n", archiveName)
+	target, err := installDir(ver)
 	if err != nil {
-		return fmt.Errorf("error removing old installation: %v", err)
+		return fmt.Errorf("error getting install directory: %v", err)
 	}
-	fmt.Println("old installation removed")
 
-	fmt.Printf("unpacking %v ...\n", ver)
-	target := path.Join("/usr", "local")
 	err = i.Archiver.Unarchive(ctx, downloadPath, target)
 	if err != nil {
 		return err
 	}
 
-	fmt.Println("adding to $PATH...")
-	pathsD := path.Join("/etc", "paths.d", "go")
-	const perm = 0o644
-	err = fsys.WriteFile(i.FS, pathsD, []byte("/usr/local/go/bin\n"), perm)
-	if err != nil {
+	goBinDir := path.Join(target, "go", "bin")
+	if err := fsys.SymlinkDir(i.FS, goBinDir, "/usr/local/bin/"); err != nil {
 		return err
 	}
 
-	fmt.Println(text.Green("Installation successful. Type `go version` to check installation"))
+	fmt.Println(text.Green("Installation successful."))
+	fmt.Println("Make sure to add /usr/local/bin to your PATH if it's not already there.")
+	fmt.Println("You may need to restart your terminal for changes to take effect.")
+	fmt.Println("Type `go version` to check installation")
 	return nil
+}
+
+// installDir returns the `godl` installations directory
+func installDir(v string) (string, error) {
+	home, err := homedir.Dir()
+	if err != nil {
+		return "", fmt.Errorf("home directory cannot be detected: %v", err)
+	}
+
+	return path.Join(home, ".godl", "installations", v), nil
 }

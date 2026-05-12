@@ -142,7 +142,6 @@ func Run(info app.BuildInfo) int {
 	})
 
 	if execErr := godl.ExecuteContext(context.Background()); execErr != nil {
-		godl.PrintErr(execErr)
 		return exitcode.Get(execErr)
 	}
 
@@ -169,7 +168,10 @@ func setupInstallCmd() (*cobra.Command, error) {
 	}
 
 	installer := app.Install{
-		Archiver: archives.NewTarGZ(),
+		Archiver:    archives.NewTarGZ(),
+		Dl:          dl,
+		DownloadDir: dlDir,
+		FS:          fsys.OsFS{},
 	}
 
 	return newInstallCmd(http.DefaultClient, dl, &installer), nil

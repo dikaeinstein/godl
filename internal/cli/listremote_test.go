@@ -18,9 +18,9 @@ func TestListRemoteCmd(t *testing.T) {
 	}
 
 	testClient := test.NewTestClient(test.RoundTripFunc(func(req *http.Request) *http.Response {
-		f, err := os.Open(path.Join("..", "..", "test", "testdata", "listbucketresult.xml"))
+		f, err := os.Open(path.Join("..", "..", "test", "testdata", "go_releases.json"))
 		if err != nil {
-			panic(err)
+			t.Fatalf("failed to open testdata: %v", err)
 		}
 
 		return &http.Response{

@@ -3,7 +3,6 @@ package test
 import (
 	"bytes"
 	"compress/gzip"
-	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -11,15 +10,18 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/dikaeinstein/godl/internal/downloader"
+	"github.com/dikaeinstein/godl/internal/godlutil"
 )
 
 // CreateTempGoBinaryArchive is test helper function used to create a fake golang binary archive.
-func CreateTempGoBinaryArchive(t *testing.T, archiveVersion string) (tmpArchive *os.File, tmpDir string) {
+func CreateTempGoBinaryArchive(
+	t *testing.T,
+	archiveVersion, goos, arch string,
+) (tmpArchive *os.File, tmpDir string) {
 	t.Helper()
 	tmpDir = t.TempDir()
 
-	archiveName := fmt.Sprintf("%s%s.%s", downloader.Prefix(), archiveVersion, downloader.Postfix())
+	archiveName := godlutil.ArchiveName(archiveVersion, goos, arch)
 	downloadPath := filepath.Join(tmpDir, archiveName)
 
 	tmpArchive, err := os.Create(downloadPath)

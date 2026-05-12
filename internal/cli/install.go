@@ -2,6 +2,7 @@ package cli
 
 import (
 	"net/http"
+	"runtime"
 	"time"
 
 	"github.com/MakeNowJust/heredoc"
@@ -40,6 +41,8 @@ func newInstallCmd(
 type installConfig struct {
 	timeout       time.Duration
 	forceDownload bool
+	os            string
+	arch          string
 }
 
 type installCli struct {
@@ -51,8 +54,14 @@ type installCli struct {
 
 func (iCli *installCli) run(cmd *cobra.Command, args []string) error {
 	iCli.dl.Configure(iCli.cfg.forceDownload)
-	iCli.installer.Configure(iCli.dl, iCli.cfg.timeout)
-	return iCli.installer.Run(cmd.Context(), args[0], iCli.cfg.forceDownload)
+	iCli.installer.Configure(iCli.cfg.timeout)
+	return iCli.installer.Run(
+		cmd.Context(),
+		args[0],
+		iCli.cfg.os,
+		iCli.cfg.arch,
+		iCli.cfg.forceDownload,
+	)
 }
 
 func (iCli *installCli) setupConfig(cmd *cobra.Command, args []string) error {
@@ -62,6 +71,8 @@ func (iCli *installCli) setupConfig(cmd *cobra.Command, args []string) error {
 
 	iCli.cfg.timeout = viper.GetDuration("timeout")
 	iCli.cfg.forceDownload = viper.GetBool("force")
+	iCli.cfg.os = viper.GetString("os")
+	iCli.cfg.arch = viper.GetString("arch")
 
 	return nil
 }
@@ -72,4 +83,9 @@ func setupInstallCliFlags(cmd *cobra.Command) {
 		"Force download instead of using local version.")
 	cmd.Flags().DurationP("timeout", "t", defaultTimeout,
 		"Set the download timeout.")
+	cmd.Flags().StringP("os", "o", runtime.GOOS,
+		`Set the target OS. One of darwin, freebsd, linux, and so on.
+To view possible combinations of GOOS and GOARCH, run "go tool dist list".`)
+	cmd.Flags().StringP("arch", "a", runtime.GOARCH, `Set the target architecture.
+GOARCH is the running program's architecture target: one of 386, amd64, arm, s390x, and so on.`)
 }

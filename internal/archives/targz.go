@@ -53,7 +53,7 @@ func (tgz TarGZ) Unarchive(
 }
 
 func extractArchive(fileInfo archives.FileInfo, destination string) error {
-	to := filepath.Join(destination, path.Clean(fileInfo.Name()))
+	to := filepath.Join(destination, path.Clean(fileInfo.NameInArchive))
 
 	if fileInfo.IsDir() {
 		return os.MkdirAll(to, fileInfo.Mode())
@@ -85,7 +85,7 @@ func extractArchive(fileInfo archives.FileInfo, destination string) error {
 	return os.Chmod(to, fileInfo.Mode())
 }
 
-func fileExists(path string) bool {
-	_, err := os.Stat(path)
+func fileExists(p string) bool {
+	_, err := os.Stat(p)
 	return !errors.Is(err, os.ErrNotExist)
 }

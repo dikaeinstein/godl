@@ -9,12 +9,8 @@ import (
 
 	"github.com/dikaeinstein/downloader/pkg/downloader"
 
+	"github.com/dikaeinstein/godl/internal/godlutil"
 	"github.com/dikaeinstein/godl/internal/version"
-)
-
-const (
-	postfix = "darwin-amd64.tar.gz"
-	prefix  = "go"
 )
 
 type Downloader struct {
@@ -60,8 +56,10 @@ func (d *Downloader) Configure(forceDownload bool) {
 }
 
 // Download downloads a binary release of a given version.
-func (d *Downloader) Download(ctx context.Context, ver string) error {
-	exists, err := version.Exists(ver, d.DownloadDir)
+func (d *Downloader) Download(ctx context.Context, ver, os, arch string) error {
+	archiveName := godlutil.ArchiveName(ver, os, arch)
+
+	exists, err := version.Exists(archiveName, d.DownloadDir)
 	if err != nil {
 		return err
 	}
@@ -71,20 +69,18 @@ func (d *Downloader) Download(ctx context.Context, ver string) error {
 		return nil
 	}
 
-	err = d.CheckIfExistsRemote(ctx, ver)
+	goReleaseURL := d.BaseURL + archiveName
+
+	err = d.CheckIfExistsRemote(ctx, goReleaseURL)
 	if err != nil {
 		return err
 	}
 
-	archiveName := fmt.Sprintf("%s%s.%s", prefix, ver, postfix)
-	goURL := d.versionURL(ver)
-
-	return d.dl.Download(ctx, goURL, archiveName, goURL+".sha256")
+	return d.dl.Download(ctx, goReleaseURL, archiveName, goReleaseURL+".sha256")
 }
 
-func (d *Downloader) CheckIfExistsRemote(ctx context.Context, ver string) error {
-	u := d.versionURL(ver)
-	req, _ := http.NewRequestWithContext(ctx, http.MethodHead, u, http.NoBody)
+func (d *Downloader) CheckIfExistsRemote(ctx context.Context, goReleaseURL string) error {
+	req, _ := http.NewRequestWithContext(ctx, http.MethodHead, goReleaseURL, http.NoBody)
 	res, err := d.Client.Do(req)
 	if err != nil {
 		return err
@@ -92,7 +88,7 @@ func (d *Downloader) CheckIfExistsRemote(ctx context.Context, ver string) error 
 	defer res.Body.Close()
 
 	if res.StatusCode == http.StatusNotFound {
-		return fmt.Errorf("no binary release of %v", ver)
+		return fmt.Errorf("no binary release of %v", goReleaseURL)
 	}
 
 	if res.StatusCode != http.StatusOK {
@@ -100,16 +96,4 @@ func (d *Downloader) CheckIfExistsRemote(ctx context.Context, ver string) error 
 	}
 
 	return nil
-}
-
-func (d *Downloader) versionURL(ver string) string {
-	return d.BaseURL + prefix + ver + "." + postfix
-}
-
-func Postfix() string {
-	return postfix
-}
-
-func Prefix() string {
-	return prefix
 }
