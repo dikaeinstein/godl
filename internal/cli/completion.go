@@ -1,132 +1,80 @@
 package cli
 
 import (
-	"io"
-	"os"
-	"path"
+	"fmt"
 
 	"github.com/MakeNowJust/heredoc"
-	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 
-	"github.com/dikaeinstein/godl/internal/app"
-	"github.com/dikaeinstein/godl/pkg/fsys"
 	"github.com/dikaeinstein/godl/pkg/text"
+)
+
+const (
+	ShellBash = "bash"
+	ShellZsh  = "zsh"
+	ShellFish = "fish"
 )
 
 // newCompletionCmd returns the a new instance of the completion command
 func newCompletionCmd() *cobra.Command {
-	cCli := completionCli{}
-
 	completionCmd := &cobra.Command{
-		Use:   "completion [bash|zsh|fish]",
+		Use:   "completion [" + ShellBash + "|" + ShellZsh + "|" + ShellFish + "]",
 		Short: "Generate completion script.",
 		Example: text.Indent(heredoc.Docf(example(),
 			text.Bold("Bash"), text.Bold("Zsh"), text.Bold("Fish")), "  "),
 		Args:      cobra.MatchAll(cobra.ExactArgs(1), cobra.OnlyValidArgs),
-		ValidArgs: []string{"bash", "zsh", "fish"},
-		PreRunE:   cCli.setupConfig,
-		RunE:      cCli.run,
-	}
+		ValidArgs: []string{ShellBash, ShellZsh, ShellFish},
+		RunE: func(cmd *cobra.Command, args []string) error {
+			rootCmd := cmd.Parent()
+			shell := args[0]
+			out := rootCmd.OutOrStdout()
 
-	completionCmd.Flags().BoolP(
-		"default",
-		"d",
-		false,
-		"Generate and load completion into default path based on shell",
-	)
+			switch shell {
+			case ShellBash:
+				return rootCmd.GenBashCompletionV2(out, true)
+			case ShellZsh:
+				return rootCmd.GenZshCompletion(out)
+			case ShellFish:
+				return rootCmd.GenFishCompletion(out, true)
+			default:
+				return fmt.Errorf("unsupported shell: %q", shell)
+			}
+		},
+	}
 
 	return completionCmd
-}
-
-type completionConfig struct{ useDefault bool }
-
-type completionCli struct {
-	completionConfig
-}
-
-func (cCli *completionCli) run(cmd *cobra.Command, args []string) error {
-	home, err := homedir.Dir()
-	if err != nil {
-		return err
-	}
-	autocompleteDir := path.Join(home, ".godl", "autocomplete")
-
-	var out io.Writer
-	if cCli.useDefault {
-		outFile, err := os.Create(
-			app.CompletionMakeTarget(args[0], autocompleteDir),
-		)
-		if err != nil {
-			return err
-		}
-		defer outFile.Close()
-
-		out = outFile
-	} else {
-		out = os.Stdout
-	}
-
-	bashSymlinkDir := path.Join("/usr", "local", "etc", "bash_completion.d")
-	zshSymlinkDir := path.Join(
-		"/usr", "local", "share", "zsh", "site-functions",
-	)
-	fishSymlinkDir := path.Join(home, ".config", "fish", "completions")
-
-	c := app.Completion{
-		BashSymlinkDir:      bashSymlinkDir,
-		FS:                  fsys.OsFS{},
-		FishSymlinkDir:      fishSymlinkDir,
-		HomeDir:             home,
-		CompletionGenerator: cmd,
-		ZshSymlinkDir:       zshSymlinkDir,
-		AutocompleteDir:     autocompleteDir,
-	}
-
-	return c.Run(args[0], out, cCli.useDefault)
-}
-
-func (cCli *completionCli) setupConfig(cmd *cobra.Command, _ []string) error {
-	if err := viper.BindPFlags(cmd.Flags()); err != nil {
-		return err
-	}
-
-	cCli.useDefault = viper.GetBool("default")
-
-	return nil
 }
 
 func example() string {
 	return `
 		%s:
 
-		$ source <(godl completion bash)
+		# Generate completion script
+		$ godl completion bash > godl-completion.bash
 
-		# To load completions for each session, execute once:
-		$ godl completion bash > /usr/local/etc/bash_completion.d/godl
+		# Install the completion script
+		$ sudo cp godl-completion.bash /etc/bash_completion.d/
 
-		%s:
-
-		# If shell completion is not already enabled in your environment,
-		# you will need to enable it.  You can execute the following once:
-
-		$ echo "autoload -U compinit; compinit" >> ~/.zshrc
-
-		# To load completions for each session, execute once:
-		$ godl completion zsh > "/usr/local/share/zsh/site-functions/_godl"
-
-		# You will need to start a new shell for this setup to take effect.
+		# Reload the shell
+		$ source ~/.bashrc
 
 		%s:
 
-		$ godl completion fish | source
+		# Generate completion script
+		$ godl completion zsh > _godl
 
-		# To load completions for each session, execute once:
+		# Install the completion script
+		$ sudo cp _godl /usr/local/share/zsh/site-functions/
+
+		# Reload the shell
+		$ source ~/.zshrc
+
+		%s:
+
+		# Generate and install completion script
 		$ godl completion fish > ~/.config/fish/completions/godl.fish
 
-		If you want 'godl' to generate and load the completion, just pass the --default(-d) flag:
-
-		$ godl completion -d [bash|zsh|fish]
+		# Reload the shell
+		$ source ~/.config/fish/config.fish
 	`
 }

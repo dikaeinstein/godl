@@ -11,3 +11,4 @@ dist/
 !cmd/godl
 __debug_bin
 bin
+_godl
