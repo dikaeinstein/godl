@@ -25,28 +25,24 @@ func newCompletionCmd() *cobra.Command {
 		Args:      cobra.MatchAll(cobra.ExactArgs(1), cobra.OnlyValidArgs),
 		ValidArgs: []string{ShellBash, ShellZsh, ShellFish},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return run(cmd, args)
+			rootCmd := cmd.Parent()
+			shell := args[0]
+			out := rootCmd.OutOrStdout()
+
+			switch shell {
+			case ShellBash:
+				return rootCmd.GenBashCompletionV2(out, true)
+			case ShellZsh:
+				return rootCmd.GenZshCompletion(out)
+			case ShellFish:
+				return rootCmd.GenFishCompletion(out, true)
+			default:
+				return fmt.Errorf("unsupported shell: %q", shell)
+			}
 		},
 	}
 
 	return completionCmd
-}
-
-func run(cmd *cobra.Command, args []string) error {
-	rootCmd := cmd.Parent()
-	shell := args[0]
-	out := rootCmd.OutOrStdout()
-
-	switch shell {
-	case ShellBash:
-		return rootCmd.GenBashCompletionV2(out, true)
-	case ShellZsh:
-		return rootCmd.GenZshCompletion(out)
-	case ShellFish:
-		return rootCmd.GenFishCompletion(out, true)
-	default:
-		return fmt.Errorf("unsupported shell: %q", shell)
-	}
 }
 
 func example() string {
