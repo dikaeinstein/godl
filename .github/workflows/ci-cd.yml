@@ -6,10 +6,10 @@ on:
 jobs:
   test:
     name: Test with Coverage
-    runs-on: macos-15
+    runs-on: macos-26
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-go@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
           cache: true
@@ -22,28 +22,28 @@ jobs:
 
   golangci:
     name: Linting
-    runs-on: macos-15
+    runs-on: macos-26
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-go@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v9
         with:
-          version: v2.12.2
+          version: v2.15.0
           args: --timeout 3m --verbose
 
   goreleaser:
     name: Make Release
     needs: [golangci, test]
-    runs-on: macos-15
+    runs-on: macos-26
     if: startsWith(github.ref, 'refs/tags/')
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
       - name: Set GO_VERSION
