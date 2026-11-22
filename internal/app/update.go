@@ -7,7 +7,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/MakeNowJust/heredoc"
+	"github.com/MakeNowJust/heredoc/v2"
 	go_version "github.com/hashicorp/go-version"
 	"github.com/spf13/viper"
 

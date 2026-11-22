@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/MakeNowJust/heredoc"
+	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 
 	"github.com/dikaeinstein/godl/internal/app"
